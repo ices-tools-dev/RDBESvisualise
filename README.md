@@ -1,7 +1,7 @@
 `RDBESvisualise`
 =========
 
-`RDBEScore` provides functions to visualise [**Regional DataBase and Estimation System (RDBES)**](https://sboxrdbes.ices.dk/#/) data.
+`RDBESvisualise` provides functions to visualise [**Regional DataBase and Estimation System (RDBES)**](https://sboxrdbes.ices.dk/#/) data.
 
 It is implemented as an [**R**](https://www.r-project.org) package and
 available on <!-- [CRAN](https://cran.r-project.org/package=RDBESvisualise) --> 
