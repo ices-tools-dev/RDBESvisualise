@@ -1,0 +1,190 @@
+---
+title: "Coverage of Regional Sampling Programmes to aid Analysis of Potential Bias"
+date: "`r Sys.Date()`"
+author: Vanessa Tebbitt
+output:
+  rmdformats::downcute:
+    self_contained: true
+    thumbnails: false
+    lightbox: false
+    gallery: false
+    highlight: tango
+---
+
+```{r, echo=FALSE,warning=FALSE,message=FALSE,quietly=T}
+library(RDBEScore)
+library(dplyr)
+library(lubridate)
+library(sf)
+library(ggplot2)
+library(rgdal)
+library(DT)
+library(plotly)
+library(biscale)
+library(cowplot)
+library(leaflet)
+library(ggiraph)
+library(viridis)
+library(magrittr)
+library(tidyverse)
+library(readxl)
+library(reshape2)
+```
+
+
+```{r,warning=FALSE,message=FALSE, echo = FALSE }
+source("coverageEffort.R")
+source("coverageLandings.R")
+```
+
+## Define Data for Functions
+
+This example uses test data in the hierarchy 1 RDBES format.
+
+```{r,warning=FALSE,message=FALSE,}
+
+  # Load the test data
+  testData <- RDBEScore::createRDBESDataObject("testData/RegionalTestData")
+  # validate the data
+  RDBEScore::validateRDBESDataObject(testData)
+
+
+```
+
+## Landings Species Plot - All years
+*Sampling Catch Category: Discards*
+
+This output shows the top species discards for each year in the test data - 2018, 2019 & 2020.The bars represent relative species count values per year. The bars are coloured per quarter.
+
+```{r,warning=FALSE,message=FALSE }
+coverageLandings(dataToPlot = testData, var="species", CatchCat = "Dis")
+```
+## Landings Species Plot for 2018, French Vessels
+*Sampling Catch Category: Landings*
+
+This output shows the top species landings for French Vessels in 2018.The bars represent relative species count values per year. The bars are coloured per quarter.
+
+```{r,warning=FALSE,message=FALSE }
+coverageLandings(dataToPlot = testData, year=2018,Vessel_flag= "FR", var="species", CatchCat = "Lan")
+```
+## Landings Species Plot for 2018 and 2020, Quarters 1 and 4 - All Vessels
+
+*Sampling Catch Category: Landings*
+
+This output shows the top species landings for all Vessels in 2018 and 2020 in quarters 1 and 4.The bars represent relative species count values per year. The bars are coloured per quarter.
+
+```{r,warning=FALSE,message=FALSE }
+coverageLandings(dataToPlot = testData, year=c(2018,2020),quarter=c(1,4),var="species", CatchCat = "Lan")
+```
+## Effort Gear Plot for 2020, Irish Vessels
+
+*Sampling Catch Category: Landings*
+
+The following output shows the top gear used in effort and sampling landings for Irish vessels in 2020. The bars represent relative gear count values per plot.
+
+```{r,warning=FALSE,message=FALSE }
+coverageEffort(dataToPlot = testData, year= 2020, Vessel_flag= "IE", var="gear", CatchCat = "Lan")
+```
+## Effort Gear plot for 2020, Quarter 1, French Vessels
+
+*Sampling Catch Category: Discards*
+
+The following output shows the top gear used in effort and sampling discards for French vessels in 2018, quarter 1. The bars represent relative gear count values per plot.
+
+
+```{r,warning=FALSE,message=FALSE }
+coverageEffort(dataToPlot = testData, year= 2018, quarter=1, Vessel_flag= "FR", var="gear", CatchCat = "Dis")
+```
+
+## Landings Gear plot for 2018, All Vessels
+
+*Sampling Catch Category: Landings*
+
+The following output shows the top gear used in landings and sampling landings for all flag vessels in 2019. The bars represent relative gear count values per plot.
+
+```{r,warning=FALSE,message=FALSE }
+coverageLandings(dataToPlot = testData, year=2019,var="gear", CatchCat = "Lan")
+```
+
+## Landings Temporal plot for all years - Plotting Landings official Weight vs Sampling Live Weight
+
+*Sampling Catch Category: Landings*
+The following output shows the comparison of the landings variable 'CLoffWeight' vs the sampling variable 'SAsampWtLive' for sampling landings. Each plot represents data for one year, and the bars show data per quarter. The values are relative per graph.
+
+```{r,warning=FALSE,message=FALSE }
+coverageLandings(dataToPlot = testData, CommercialVariable="CLoffWeight",  SamplingVariable = "SAsampWtLive", CatchCat = "Lan")
+```
+
+## Landings Temporal Plot for 2020, Quarters 1 & 2, Spanish Vessels
+
+*Sampling Catch Category: Discards*
+
+The following output shows the comparison of the landings variable 'CLsciWeight' vs the sampling variable 'SAnumSamp' for sampling discards in Spanish vessels. The graph shows data for 2020, and the bars show data for quarters 1 and 2. The values are relative per variable for 2020 Q1 & Q2.
+
+```{r,warning=FALSE,message=FALSE }
+coverageLandings(dataToPlot = testData, year=2020,quarter=c(1,2), Vessel_flag = "ES", CommercialVariable="CLsciWeight",  SamplingVariable = "SAnumSamp", CatchCat = "Dis")
+```
+## Effort Temporal Plot for 2019, Quarters 1 & 2, Spanish Vessels
+
+*Sampling Catch Category: Discards*
+
+This output shows the comparison of the effort variable 'CEgTFishDay' vs the sampling variable 'SAnumSamp' for sampling discards in Spanish vessels. The graph shows data for 2019, and the bars show data for quarters 2 and 4. The values are relative per variable for 2019 Q2 & Q4.
+
+```{r,warning=FALSE,message=FALSE }
+coverageEffort(dataToPlot = testData, year=2019,quarter=c(2,4), Vessel_flag = "ES", CommercialVariable="CEgTFishDay",  SamplingVariable = "SAnumSamp", CatchCat = "Dis")
+```
+
+## Landings Spatial Plot (Type points) for 2018
+*Sampling Catch Category: Landings*
+
+The below output shows the spatial location of the landings variable 'CLoffWeight' and sampling variable 'SAnumSamp' for sampling landings per statistical rectangle. The rectangles are coloured by the landings variable with red representing a higher value and blue representing a lower value. The circles show the sampling variable with higher values representing a larger circle. This output shows data for 2018.
+
+```{r,warning=FALSE,message=FALSE }
+coverageLandings(dataToPlot = testData, year=2018,var="Statrec",CommercialVariable="CLoffWeight",SamplingVariable="SAnumSamp", CatchCat = "Lan", SpatialPlot = "Points" )
+```
+
+## Landings Spatial Plot (Type bivariate) for 2020
+
+*Sampling Catch Category: Landings*
+
+This bivariate plot shows the spatial location of the landings variable 'CLoffWeight' and sampling variable 'SAsampWtLive' for sampling landings per statistical rectangle. The areas in blue represent higher values for the landings variable. The areas in red represent higher values for the sampling variable. Beige colours show low values for both landings and sampling. Purple shows high values for the landings variable and high values for the sampling variable.This output shows data for 2020.
+
+```{r,warning=FALSE,message=FALSE}
+coverageLandings(dataToPlot = testData, year=2020,var="Statrec",CommercialVariable="CLoffWeight",SamplingVariable="SAsampWtLive", CatchCat = "Lan", SpatialPlot = "Bivariate")
+
+```
+
+
+## Effort Spatial Plot (Type bivariate) for 2019
+
+*Sampling Catch Category: Landing*
+
+This bivariate plot shows the spatial location of the effort variable 'CEsciNumHaulSet' and sampling variable 'SAsampWtMes' for sampling landings per statistical rectangle. The areas in blue represent higher values for the landings variable. The areas in red represent higher values for the sampling variable. Beige colours show low values for both landings and sampling. Purple shows high values for the landings variable and high values for the sampling variable.This output shows data for 2019.
+
+```{r,warning=FALSE,message=FALSE}
+coverageEffort(dataToPlot = testData, year=2019,var="Statrec",CommercialVariable="CEsciNumHaulSet",SamplingVariable="SAsampWtMes", CatchCat = "Lan", SpatialPlot = "Bivariate")
+```
+
+
+## Effort Spatial Plot (Type Points) for 2020
+
+*Sampling Catch Category: Discards*
+
+The below output shows the spatial location of the effort variable 'CEsciNumHaulSet' and sampling variable 'SAsampWtMes' for sampling discards per statistical rectangle. The rectangles are coloured by the effort variable with red representing a higher value and blue representing a lower value. The circles show the sampling variable with higher values representing a larger circle. This output shows data for 2020 and all vessels.
+
+```{r,warning=FALSE,message=FALSE }
+coverageEffort(dataToPlot = testData, year=2020,var="Statrec",CommercialVariable="CEsciNumHaulSet",SamplingVariable="SAsampWtMes", CatchCat = "Dis", SpatialPlot = "Points")
+```
+
+## Effort Spatial Plot (Type Points) for 2019
+
+*Sampling Catch Category: Discards*
+
+The below output shows the spatial location of the effort variable 'CEscikWFishDay' and sampling variable 'SAnumSamp' for sampling discards per statistical rectangle. The rectangles are coloured by the effort variable with red representing a higher value and blue representing a lower value. The circles show the sampling variable with higher values representing a larger circle. This output shows data for 2019 and Spanish vessels only.
+
+```{r,warning=FALSE,message=FALSE }
+coverageEffort(dataToPlot = testData, year=2019,var="Statrec", Vessel_flag= "ES", CommercialVariable="CEscikWFishDay",SamplingVariable="SAnumSamp", CatchCat = "Dis", SpatialPlot = "Points")
+```
+
+
+

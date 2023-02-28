@@ -1,0 +1,514 @@
+---
+title: "Examples of variance plots"
+date: "`r Sys.Date()`"
+author: "Vanessa Tebbitt"
+output:
+  rmdformats::downcute:
+    self_contained: true
+    thumbnails: true
+    lightbox: false
+    gallery: false
+    highlight: tango
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo    = FALSE, 
+  message = FALSE, 
+  warning = FALSE
+)
+```
+
+
+```{r,warning=FALSE,message=FALSE, echo = FALSE,quietly=T}
+#library(remotes)
+#remotes::install_github("ices-tools-dev/RDBEScore", ref = "dev")
+library(RDBEScore)
+library(DT)
+library(dplyr)
+library(plotly)
+library(ggplot2)
+library(leaflet)
+library(formattable)
+library(collapsibleTree)
+library(scales)
+#install.packages('devtools')
+#devtools::install_github("ricardo-bion/ggtech", dependencies=TRUE)
+library(ggtech)
+
+```
+
+
+
+```{r, results=FALSE, quietly=T}
+# Suppress summarise info
+#options(dplyr.summarise.inform = FALSE)
+
+StrataEst <- readRDS("./testData/StrataEst.rds")
+df <- StrataEst
+
+```
+
+
+```{r,warning=FALSE,message=FALSE, echo = FALSE,quietly=T}
+ 
+
+df$Year = substr(df$stratumName, 0, 4)
+
+df <- df  %>%
+  filter_at(vars(est.total), any_vars((!is.na(.))))
+  #%>% mutate(var.sd = sqrt(var.total)) 
+
+# Design
+DE <-df %>% filter(recType == 'DE') %>%
+  rename('DE.Total' = est.total)
+
+
+# Sampling Details
+SD <-df %>% filter(recType == 'SD')%>%
+  filter_at(vars(est.total), any_vars((!is.na(.)))) %>%
+  rename('SD.Total' = est.total)
+
+SD$Country <- substr(SD$Year, 0,2)
+
+SD <- select(SD, -Year)
+
+# vessel Selection
+VS <-df %>% filter(recType == 'VS')
+
+
+SD_DE <- full_join(SD,DE, by = c('parentTableStratum'='parentIDandStratum'))
+
+
+#Set a few color variables to make our table more visually appealing
+
+customGreen0 = "#DeF7E9"
+
+customGreen = "#71CA97"
+
+customRed = "#ff7f7f"
+
+customRed0 = "#f9d1d1"
+
+# scientific_10 <- function(x) {
+#   parse(text=gsub("e", " %*% 10^", scales::scientific_format()(x)))
+# }
+
+```
+
+
+
+## Tree Diagram for standard error of Vessel Selection Strata
+
+Plot showing the standard error for the vessel selection strata. The tree displays the parent strata, Design and Sampling Details. Click on a node to expand its child strata. 
+
+```{r, fig.width=10}
+
+All_Data <- full_join(VS, 
+                      SD_DE, 
+                      by = c('parentTableStratum'='parentIDandStratum'))%>%
+  select(stratumName.y, 
+         stratumName.x, 
+         stratumName,
+         SD.Total, 
+         DE.Total, 
+         est.total,
+         var.total,
+         se.total,
+         #var.sd, 
+         Year.y, 
+         Country)  %>%
+  mutate(stratumName.y = 
+           paste0(stratumName.y,': DE Total - ',
+                  format(round(as.numeric(DE.Total), 0), big.mark=","))) %>%
+  mutate(stratumName.x = 
+           paste0(stratumName.x,': SD Total - ',
+                  format(round(as.numeric(SD.Total), 0), big.mark=","))) %>%
+  mutate(se.total = 
+           paste0(stratumName,': VS stand. error - ',
+                  format(round(as.numeric(se.total), 0), big.mark=","))) %>%
+  rename('SD_Stratum' = stratumName.x,
+         'Variance_VS' = se.total,
+         'DE_Stratum' = stratumName.y)%>%
+  arrange(Year.y, Country) %>%
+  distinct()
+
+All_Data$colour <- All_Data$var.total
+levels(All_Data$colour) <- colorspace::rainbow_hcl(11)
+
+p <- collapsibleTreeSummary(All_Data, 
+                            c("Year.y",
+                              "DE_Stratum",
+                              "SD_Stratum",
+                              "Variance_VS"),
+                            nodeSize = "leafCount",
+                            width = 800,
+                            height = 600,
+                            root = "All Data",
+                            tooltip = FALSE,
+                            collapsed = TRUE,
+                            maxPercent = 70)
+p
+```
+
+
+## Data Visualisations {.tabset .tabset-pills}
+
+### Design
+
+Graph showing the Estimated Total per Year, coloured by Design Stratum Name.
+
+```{r,warning=FALSE,message=FALSE,fig.width=10,fig.height=8}
+#Design Plot and Table
+
+
+DE <- DE %>%
+  select(recType, stratumName, DE.Total, se.total, Year, stratumName)
+# # plot
+DE_Plot <- ggplot(data = DE, aes(x = Year, y= DE.Total, fill = stratumName)) +
+  geom_bar(stat='identity',  alpha= 0.7)+
+   #scale_fill_brewer(palette = "Spectral") + 
+  labs(title="Design Estimated Total by Year",x="Year", y = "Estimated Total") +
+# scale_y_continuous(labels = scientific_10)+
+ theme_tech(theme="airbnb")+
+ theme(plot.title = element_text(color = "grey30"))+
+  labs(fill = "DE Stratum Name")
+ggplotly(DE_Plot)
+
+formattable(DE,align =c("l","c","c","c","c", "c", "c", "c", "r"), 
+      list(`Indicator Name` = 
+      formatter("span", style = ~ style(color = "grey",font.weight = "bold")), 
+            `DE.Total`= 
+        color_tile(customGreen, customGreen0)
+))
+
+
+
+```
+
+
+
+### Sampling Details
+
+Graph showing the Estimated Total by Stratum, coloured by Sampling Details Stratum Name.
+
+```{r,warning=FALSE,message=FALSE, fig.width=10,fig.height=8}
+#Sampling Details Plot and Table
+SD <- SD %>%
+  select(recType, stratumName, SD.Total, se.total, parentTableStratum) %>%
+  mutate(parentTableStratum = sub('.', '', parentTableStratum)) 
+
+SD_Plot <- ggplot(data = SD,
+                  aes(x= parentTableStratum, y= SD.Total, fill = stratumName)) +
+  geom_bar(stat = 'identity' ,  alpha= 0.7) +
+  labs(title="Sampling Details Estimated Total by Stratum",
+       x="DE Stratum", 
+       y = "SD Estimated Total") +
+  scale_fill_tech(theme="etsy") + 
+  theme_tech(theme="airbnb")+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  theme(plot.title = element_text(color = "grey30"))+
+  labs(fill = "SD Stratum Name")
+
+ggplotly(SD_Plot)
+
+
+formattable(SD, 
+            align =c("c"), 
+            list(`Indicator Name` = 
+      formatter("span", style = ~ style(color = "grey",font.weight = "bold")), 
+                 `SD.Total`= 
+        color_tile(customGreen, customGreen0)
+))
+
+
+```
+
+### Vessel Selection
+Graph 1 shows the Vessel Selection estimated total per Vessel Selection stratum name. The error bars show the standard error of the values with smaller bars depicting higher confidence levels. <b>For the error bars with Standard Error value of NA, the confidence level is unknown.</b>
+
+Graph 2 displays the standard error by Vessel Selection stratum name coloured by Design stratum name.
+
+Graph 3 displays the standard error by Vessel Selection stratum name coloured by the Sampling Details stratum name.
+
+```{r, warning=FALSE,message=FALSE, fig.width=12,fig.height=8}
+#### Vessel Selection Plot and Table ####
+
+# estimated total with standard error bars
+
+VS <- VS %>%
+  mutate(error.min = est.total-se.total) %>%
+  mutate(error.max = est.total+se.total)
+
+VS1 <- left_join(VS, SD_DE, by = c('parentTableStratum'='parentIDandStratum'))
+
+# error bar plot
+VS_error <- ggplot(data=VS,
+  aes(x=stratumName, y=est.total, text= paste("Std Error:", se.total))) +
+  geom_errorbar(
+    aes(x=stratumName, ymin=error.min, ymax=error.max), 
+    width=0.2, colour="plum4", alpha=0.9, size=1.5) +
+  geom_point(color="plum4", alpha= 0.7, size = 2) +
+  labs(title="VS Estimated Total showing Standard Error",
+       x="VS Stratum Name",
+       y = "Estimated Total") +
+  theme_tech(theme="airbnb") +
+  theme(plot.title = element_text(color = "grey30")) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+ge<- ggplotly(VS_error)
+ge$x$data[[1]]$hoverinfo <- "none"
+
+ge
+
+# Standard error for VS by VS stratum name coloured by DE Stratum Name
+VS_scatter1 <-ggplot(data=VS1,
+                      aes(x=stratumName, y=se.total, fill = stratumName.y)) +
+  geom_point(color="cadetblue", alpha= 0.7, size=4) +
+  labs(title="VS Stand. Error by VS Stratum Name",
+       x="VS Stratum Name",
+       y = "Standard error") +
+  theme_tech(theme="airbnb") +
+  theme(plot.title = element_text(color = "grey30")) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  labs(fill = "DE Stratum Name")
+ggplotly(VS_scatter1)
+
+# Standard error for VS by VS stratum name coloured by SD Stratum Name
+VS_scatter2 <-ggplot(data=VS1,
+                     aes(x=stratumName, y=se.total, fill = stratumName.x)) +
+  geom_point(color="skyblue4", alpha= 0.7, size=4) +
+  scale_fill_tech(theme="airbnb") +
+  labs(title="VS Stand. Error by SD Stratum Name",
+       x="VS Stratum Name",
+       y = "Standard error") +
+  theme_tech(theme="airbnb") +
+  theme(plot.title = element_text(color = "grey30")) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  labs(fill = "SD Stratum Name")
+ggplotly(VS_scatter2)
+
+# tidy df for table
+VS2 <- VS %>%  
+  select(recType, stratumName, parentTableStratum, est.total, se.total)
+  #select(recType, stratumName, parentTableStratum, est.total, var.total)%>%
+  #filter(!is.na(var.total))
+
+
+
+
+# table
+formattable(VS2, align = "c", 
+            list(`Indicator Name` = 
+      formatter("span", style = ~ style(color = "grey",font.weight = "bold")), 
+                 `est.total` = 
+      color_tile(customGreen, customGreen0),
+                  `se.total` = 
+        color_tile(customRed, customRed0)
+))
+
+
+```
+
+### Fishing Trip
+This graphs shows the Fishing Trip estimated totals by Vessel Selection stratum name.
+
+```{r,warning=FALSE,message=FALSE,  fig.width=12,fig.height=8}
+# Fishing Trip
+
+FT <- df %>% filter(recType == 'FT') %>%
+  mutate(parentTableStratum = sub('.*:', '', parentTableStratum)) 
+
+
+FT_scatter <-ggplot(data=FT, aes(x=parentTableStratum, y=est.total)) +
+  geom_point(color="seagreen", alpha= 0.7, size=4) +
+  labs(title="FT Estimated Total by VS Stratum",
+       x = "VS Stratum",
+       y = "Estimated Total") +
+ theme_tech(theme="airbnb") +
+ theme(plot.title = element_text(color = "grey30")) +
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+ggplotly(FT_scatter)
+
+
+```
+### Fishing Operation
+
+Graph 1 shows the Fishing Operation estimated total per Vessel Selection stratum name. The error bars show the standard error of the values with smaller bars depicting higher confidence levels. <b>For the error bars with Standard Error value of NA, the confidence level is unknown.</b>
+
+Graph 2 displays the standard error by Vessel Selection stratum name.
+
+```{r,warning=FALSE,message=FALSE,  fig.width=12,fig.height=8}
+# Fishing Operation
+
+FO <- df %>% filter(recType == 'FO') 
+
+FO <- left_join(FO, FT, by = c('parentTableStratum'='parentIDandStratum'))
+
+FO <- FO %>%
+  mutate(error.min = est.total.x-se.total.x) %>%
+  mutate(error.max = est.total.x+se.total.x) %>%
+  rename("FO.est.total"=est.total.x)%>%
+  rename("VS.stratumName"= parentTableStratum.y)
+
+#FO <- FO %>% filter(!is.na(se.total.x))
+
+FO_error <- ggplot(data=FO,
+              aes(x=VS.stratumName, 
+                  y=FO.est.total, 
+                  text= paste("Std Error:", se.total.x))) +
+  geom_errorbar(
+      aes(x=VS.stratumName, ymin=error.min, ymax=error.max)
+          ,colour="maroon", width=0.2,  alpha=0.9, size=1.5) +
+  geom_point(color="maroon", alpha= 0.7, size = 2) +
+  labs(title="FO Estimated Total showing Standard Error",
+       x="VS Stratum Name",
+       y = "Estimated Total") +
+  theme_tech(theme="airbnb") +
+  theme(plot.title = element_text(color = "grey30")) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+gg<- ggplotly(FO_error)
+gg$x$data[[1]]$hoverinfo <- "none"
+
+gg
+
+FO_scatter1 <-ggplot(data=FO, aes(x=VS.stratumName, y=se.total.x))+
+  geom_point(color="aquamarine4", alpha= 0.7, size = 4) +
+  labs(title="FO Stand. Error by VS Stratum",
+       x="VS Stratum Name",
+       y = "Standard error") +
+ theme_tech(theme="airbnb") +
+ theme(plot.title = element_text(color = "grey30")) +
+      theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) 
+ggplotly(FO_scatter1)
+
+# FO_scatter2 <-ggplot(data=FO, aes(x=parentTableStratum.y, y=est.total.x))+
+#   geom_point(color="sandybrown", alpha= 0.7, size = 4) +
+#   labs(title="FO Estimated Total by VS Stratum",x="VS Stratum Name", y = "Estimated Total")+
+#  theme_tech(theme="airbnb")+
+#  theme(plot.title = element_text(color = "grey30"))+
+#       theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+# ggplotly(FO_scatter2)
+```
+
+### Species Selection
+
+This graphs shows the Species Selection estimated totals by Vessel Selection stratum name.
+
+```{r,warning=FALSE,message=FALSE,  fig.width=12,fig.height=8}
+# Species Selection plot (no standard error available)
+
+SS <- df %>% filter(recType == 'SS') 
+
+SS1 <- left_join(SS, FO, by = c('parentTableStratum'='parentIDandStratum'))%>%
+  select(VS.stratumName, est.total,parentIDandStratum, parentTableStratum)
+
+
+SS_scatter <-ggplot(data=SS1, aes(x=VS.stratumName, y=est.total)) +
+  geom_point(color="cadetblue", alpha= 0.7, size = 4) +
+  labs(title="SS Estimated Total by VS Stratum",
+       x="VS Stratum",
+       y = "Estimated Total") +
+ theme_tech(theme="airbnb") +
+ theme(plot.title = element_text(color = "grey30")) +
+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) 
+ggplotly(SS_scatter)
+
+
+```
+
+### Sample
+
+This graphs shows the Sample estimated totals by Vessel Selection stratum name.
+
+```{r,warning=FALSE,message=FALSE,  fig.width=12,fig.height=8}
+# Sampling plot (no standard error available)
+
+SA <- df %>% filter(recType == 'SA')
+SA <- left_join(SA, SS1, by = c('parentTableStratum'='parentIDandStratum'))
+
+
+SA_scatter <-ggplot(data=SA, aes(x=VS.stratumName, y=est.total.x))+
+  geom_point(color="deepskyblue3", alpha= 0.7, size = 4) +
+  labs(title="SA Estimated Total by VS Stratum",
+       x="VS Stratum", 
+       y = "Estimated Total") +
+ theme_tech(theme="airbnb") +
+ theme(plot.title = element_text(color = "grey30")) +
+      theme(axis.text.x = element_blank()) 
+ggplotly(SA_scatter)
+
+```
+
+## 3D Plot
+
+3D graph showing the standard error and estimated total per Year, coloured by Sampling Details stratum name.
+
+```{r}
+#3D Plot
+
+joinedUpper <- left_join(VS, 
+                         SD_DE, 
+                         by = c('parentTableStratum'='parentIDandStratum')) %>%
+  select(DE.Total, 
+         est.total,
+         var.total,
+         #var.sd, 
+         se.total,
+         Year.y, 
+         stratumName.x, 
+         se.total) %>%
+  rename('VS.Total' = est.total,
+         #'VS.sd' = var.sd,
+         'VS.se' = se.total,
+         'VS.Var.Total' = var.total)
+
+
+p <- plot_ly(joinedUpper, 
+             x = ~as.factor(Year.y), 
+             #y = ~VS.sd,  
+             y = ~VS.se, 
+             z= ~VS.Total, color = ~stratumName.x)
+p <- p %>% add_markers()
+p <- p %>% 
+  layout(title = paste0('Stand. Error and Estimated Total for',
+                          'Vessel Selection per Year by SD Stratum'),
+         scene = list(xaxis = list(tickvals= ~Year.y, title = 'Year'),
+         yaxis = list(title = 'Stand. Error VS'),
+         zaxis = list(title = 'Estimated Total VS')))
+
+p
+```
+
+
+
+```{r}
+# Histograms
+
+# p<-ggplot(joinedUpper, aes(x=DE.Total)) + 
+#   geom_histogram(color="ivory3", fill="lightblue4")+ 
+#   geom_vline(aes(xintercept=mean(DE.Total)),
+#             color="red4", linetype="dashed", size=1) +
+#     labs(title=" Details Estimated Total",x="Estimated Total", y = "Count")+
+#  theme_tech(theme="airbnb")+
+#  theme(plot.title = element_text(color = "grey30"))
+# ggplotly(p)
+# 
+# p2<-ggplot(joinedUpper, aes(x=VS.Total)) + 
+#   geom_histogram(color="ivory4", fill="lightskyblue3")+ 
+#   geom_vline(aes(xintercept=mean(VS.Total)),
+#             color="red4", linetype="dashed", size=1)+
+#     labs(title="Vessel Selection Estimated Total",x="Estimated Total", y = "Count")+
+#  theme_tech(theme="airbnb")+
+#  theme(plot.title = element_text(color = "grey30"))
+# ggplotly(p2)
+
+# p3<-ggplot(joinedUpper, aes(x=VS.Var.Total)) + 
+#  geom_histogram(aes(y=..density..), colour="ivory4", fill="lightcyan3")+
+#  geom_density(alpha=.5, fill="red4") +
+#     labs(title="Vessel Selection Variance Density of Values",x="Variance", y = "Density")+
+#  theme_tech(theme="airbnb")+
+#  theme(plot.title = element_text(color = "grey30"))+
+#     scale_x_continuous(labels = label_number_si(accuracy=0.1))
+# ggplotly(p3)
+
+```
