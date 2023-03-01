@@ -14,3 +14,5 @@ Imports:
     dplyr, 
     data.table
 VignetteBuilder: knitr
+Depends: 
+    R (>= 2.10)
