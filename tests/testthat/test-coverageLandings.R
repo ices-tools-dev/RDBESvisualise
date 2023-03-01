@@ -14,15 +14,14 @@ test_that("coverageLandings runs without errors or warnings",  {
   myYear = 1965
   myvesselFlag = "ZW"
 
-  p <-     coverageLandings(
-    dataToPlot = myH1RawObject,
-    year = myYear,
-    vesselFlag = myvesselFlag,
-    catchCat = "Lan",
-    commercialVariable = "CLoffWeight",
-    samplingVariable = "SAsampWtLive"
-  )
-  print(p[1])
+  # p <- coverageLandings(
+  #   dataToPlot = myH1RawObject,
+  #   year = myYear,
+  #   vesselFlag = myvesselFlag,
+  #   var = "gear",
+  #   catchCat = "Lan"
+  # )
+  # p[1]
 
   # Species, landings plot
   expect_warning(
@@ -42,6 +41,18 @@ test_that("coverageLandings runs without errors or warnings",  {
       year = myYear,
       vesselFlag = myvesselFlag,
       var = "species",
+      catchCat = "Lan"
+    )
+    ,NA)
+
+
+  # Gear, landings plot
+  expect_error(
+    coverageLandings(
+      dataToPlot = myH1RawObject,
+      year = myYear,
+      vesselFlag = myvesselFlag,
+      var = "gear",
       catchCat = "Lan"
     )
     ,NA)
