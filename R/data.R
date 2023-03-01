@@ -12,3 +12,20 @@
 #' }
 #' @source David Currie
 "speciesNamesAndCodes"
+#' ICES statistical rectangles
+#'
+#' A data frame containing spatial information for ICES statistical rectangles
+#'
+#' @format A data frame containing spatial information
+#' \describe{
+#'   \item{ICESNAME}{Name of the stat rectangle}...
+#' }
+#' @source ICES
+"icesRects"
+#' Shoreline spatial data
+#'
+#' A data frame containing spatial information for shorelines
+#'
+#' @format A SpatialPolygonsDataFrame
+#' @source GSHHG
+"shoreline"
