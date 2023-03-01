@@ -14,6 +14,8 @@
 #' @return
 #' @export
 #'
+#' @importFrom magrittr "%<>%"
+#'
 #' @examples
 #' \dontrun{
 #'
@@ -71,9 +73,11 @@ coverageLandings <- function(dataToPlot,
   # quarter = NA
   # vesselFlag = "ZW"
   # #var = "species"
-  # var = c("species", "gear", "Statrec")
+  # var = "Statrec"
+  # #var = c("species", "gear", "Statrec")
   # catchCat = "Lan"
-  # spatialPlot = c("Bivariate","Points")
+  # #spatialPlot = c("Bivariate","Points")
+  # spatialPlot = "Points"
   # commercialVariable = "CLoffWeight"
   # samplingVariable = "SAsampWtLive"
 
@@ -307,18 +311,19 @@ coverageLandings <- function(dataToPlot,
                                 catchCat = catchCat,
                                 commercialVariable = commercialVariable,
                                 samplingVariable = samplingVariable)
-    #stop ("Temporal plot not implemented yet")
   } else if (var == "species") {
     ###################### species #############################
     plotsToPrint <- speciesPlot(landingsData = LD1,
                 sampleData = SA1,
                 flagLabel = flagLabel,
                 catchCat = catchCat)
-    #stop ("Species plot not implemented yet")
   } else if (var == "gear") {
     ####################### gear ###############################
-    # TODO
-    stop ("Gear plot not implemented yet")
+    plotsToPrint <- gearPlot(landingsData= LD1,
+                             sampleData= SA1,
+                             flagLabel = flagLabel,
+                             catchCat = catchCat,
+                             quarter = quarter)
   ################ spatial #####################
   } else if (var == "Statrec") {
     if (spatialPlot == "Bivariate") {
@@ -562,6 +567,315 @@ temporalPlot <- function(landingsData, sampleData, flagLabel, catchCat, commerci
     }
     all_plot
     #all_plot[[i]]
+}
+
+#' Title
+#'
+#' @param landingsData
+#' @param sampleData
+#' @param flagLabel
+#' @param catchCat
+#' @param quarter
+#'
+#' @return
+#' @export
+#'
+#' @examples
+gearPlot <- function(landingsData, sampleData, flagLabel, catchCat, quarter){
+
+
+  if (is.na(quarter) == FALSE) {
+    df1 <- na.omit(
+      landingsData %>% dplyr::group_by(CLyear, CLquar) %>%
+        dplyr::add_count(CLGear, name = "CLGearCount") %>%
+        dplyr::summarise(LandingsGearCountQuar = sum(CLGearCount))
+    )
+
+    d1 <- na.omit(
+      landingsData %>% dplyr::group_by(CLyear, CLquar, CLGear) %>%
+        dplyr::add_count(CLGear, name = "CLGearCount") %>%
+        dplyr::summarise(LandingsGearCount = sum(CLGearCount))
+    )
+
+    d1 <- left_join(d1, df1, by = "CEyear", "CEquar") %>%
+      mutate(relativeValuesL = LandingsGearCount / LandingsGearCountQuar)
+
+    df2 <- na.omit(
+      sampleData %>% dplyr::group_by(SAyear, SAquar) %>%
+        dplyr::add_count(SAgear, name = "SAGearCount") %>%
+        dplyr::summarise(SamplingGearCountQuar = sum(SAGearCount))
+    )
+
+    d2 <- na.omit(
+      sampleData %>% dplyr::group_by(SAyear, SAquar, SAgear) %>%
+        dplyr::add_count(SAgear, name = "SAGearCount") %>%
+        dplyr::summarise(SamplingGearCount = sum(SAGearCount))
+    )
+
+    d2 <- left_join(d2, df2, by = "SAyear", "SAquar") %>%
+      dplyr::mutate(relativeValuesS = SamplingGearCount / SamplingGearCountQuar)
+  } else {
+    df1 <- na.omit(
+      landingsData %>% dplyr::group_by(CLyear) %>%
+        dplyr::add_count(CLGear, name = "CLGearCount") %>%
+        dplyr::summarise(totalGearYear = sum(CLGearCount))
+    )
+
+    d1 <- na.omit(
+      landingsData %>% dplyr::group_by(CLyear, CLGear) %>%
+        dplyr::add_count(CLGear, name = "CLGearCount") %>%
+        dplyr::summarise(LandingsGearCount = sum(CLGearCount))
+    )
+
+    d1 <- dplyr::left_join(d1, df1, by = "CLyear") %>%
+      dplyr::mutate(relativeValuesL = LandingsGearCount / totalGearYear)
+
+    df2 <- na.omit(
+      sampleData %>% dplyr::group_by(SAyear) %>%
+        dplyr::add_count(SAgear, name = "SAGearCount") %>%
+        dplyr::summarise(SamplingGearCountYear = sum(SAGearCount))
+    )
+
+    d2 <- na.omit(
+      sampleData %>% dplyr::group_by(SAyear, SAgear) %>%
+        dplyr::add_count(SAgear, name = "SAGearCount") %>%
+        dplyr::summarise(SamplingGearCount = sum(SAGearCount))
+    )
+
+    d2 <- dplyr::left_join(d2, df2, by = "SAyear") %>%
+      dplyr::mutate(relativeValuesS = SamplingGearCount / SamplingGearCountYear)
+  }
+
+
+  df <-
+    dplyr::left_join(d1, d2, by = c("CLyear" = "SAyear", "CLGear" = "SAgear"))
+  # df = df %>% select(-c(relativeValuesE, totalSamplingYear))
+  y <- unique(df$CLyear)
+
+  all_plot <- htmltools::tagList()
+
+  for (i in 1:length(y)) {
+    dd <- d1 %>% dplyr::filter(CLyear == y[i])
+    dd <- dd[-1]
+    ds <- d2 %>% dplyr::filter(SAyear == y[i])
+    ds <- ds[-1]
+    p1 <- plotly::plot_ly(
+      dd,
+      x = ~ as.character(CLGear),
+      y = ~relativeValuesL,
+      color = ~ as.character(CLGear),
+      type = "bar",
+      showlegend = F
+    ) %>%
+      plotly::layout(
+        title = paste0("Vessel Flag ",
+                       flagLabel,
+                       " : Top Landings Gear - Relative Values per Plot \n in",
+                       y[i]),
+        yaxis = list(title = "Landings"),
+        xaxis = list(categoryorder = "total descending"),
+        barmode = "stack"
+      )
+    p2 <- plotly::plot_ly(
+      ds,
+      x = ~ as.character(SAgear),
+      y = ~relativeValuesS,
+      color = ~ as.character(SAgear),
+      type = "bar",
+      showlegend = F
+    ) %>%
+      plotly::layout(
+        title = paste0(
+          "Vessel Flag ", flagLabel,
+          " : Top Landings and Sampling Gear (",
+          catchCat,
+          ")\n Relative Values per Plot in ",
+          y[i]
+        ),
+        yaxis = list(title = "Sampling"),
+        xaxis = list(categoryorder = "total descending"),
+        barmode = "stack"
+      )
+
+    all_plot[[i]] <- plotly::subplot(p1, p2, titleY = TRUE, nrows = 2)
+  }
+  all_plot
+
+}
+
+
+pointsPlot <- function(landingsData, sampleData, flagLabel, catchCat, commercialVariable, samplingVariable ){
+
+  # for testing
+  #landingsData <- LD1
+  #sampleData <- SA1
+
+  d1 <- na.omit(landingsData %>% dplyr::group_by(CLyear, CLstatRect) %>%
+                  dplyr::summarize(CL = sum(!!rlang::sym(
+                    commercialVariable
+                  ))))
+  d2 <- na.omit(sampleData %>% dplyr::group_by(SAyear, SAstatRect) %>%
+                  dplyr::summarize(SA = sum(!!rlang::sym(
+                    samplingVariable
+                  ))))
+
+  df <-
+    dplyr::left_join(d1,
+              d2,
+              by = c("CLyear" = "SAyear", "CLstatRect" = "SAstatRect"))
+
+  y <- unique(df$CLyear)
+
+  all_plot <- htmltools::tagList()
+
+  for (i in 1:length(y)) {
+
+    dd <- df %>% dplyr::filter(CLyear == y[i])
+
+    # get ices shp
+    #ices_rects <- sf::read_sf("Data/Maps/shapefiles/ICESrect.shp")
+    ices_rects <- RDBESvisualise::icesRects
+
+    ices_rects %<>%
+      dplyr::left_join(dd, by = c("ICESNAME" = "CLstatRect"))
+
+    # get extent of plot
+
+    No_NA <- ices_rects[ices_rects$CL != "NA", ]
+    xlim1 <- st_bbox(No_NA)[1]
+    ylim2 <- st_bbox(No_NA)[2]
+    xlim3 <- st_bbox(No_NA)[3]
+    ylim4 <- st_bbox(No_NA)[4]
+
+    # define number of classes
+    no_classes <- 6
+
+    # extract quantiles
+    quantiles <- ices_rects %>%
+      pull(CL) %>%
+      quantile(
+        probs = seq(0, 1, length.out = no_classes + 1),
+        na.rm = TRUE
+      ) %>%
+      as.vector() # to remove names of quantiles, so idx below is numeric
+    quantiles <- round(quantiles, 0)
+
+    # create custom labels
+    labels <- purrr::imap_chr(quantiles, function(., idx) {
+      return(paste0(
+        round(quantiles[idx], 10),
+        " - ",
+        round(quantiles[idx + 1], 10)
+      ))
+    })
+
+    # remove last label that includes NA
+    labels <- labels[1:length(labels) - 1]
+
+    # create new variable with quantiles - landings
+    ices_rects %<>%
+      dplyr::mutate(mean_quantiles_land = cut(
+        CL,
+        breaks = quantiles,
+        labels = labels,
+        include.lowest = T
+      ))
+
+
+    # create point on surface
+    points <- st_coordinates(st_point_on_surface(ices_rects))
+    points <- as.data.frame(points)
+    points$SA <- ices_rects$SA
+
+    # plot univariate map with points
+    gg <- ggplot2::ggplot(data = ices_rects) +
+      ggplot2::geom_polygon(
+        data = RDBESvisualise::shoreline,
+        ggplot2::aes(x = long, y = lat, group = group),
+        color = "white",
+        fill = "gray",
+        show.legend = FALSE
+      ) +
+      ggiraph::geom_sf_interactive(
+        ggplot2::aes(
+          fill = mean_quantiles_land,
+          tooltip = paste("Landings:", CL)
+        ),
+        color = "white",
+        size = 0.1
+      ) +
+      ggiraph::scale_fill_brewer_interactive(
+        type = "seq",
+        palette = "RdYlBu",
+        name = "Landings Variable",
+        direction = -1,
+        guide = ggplot2::guide_legend(
+          keyheight = ggplot2::unit(5, units = "mm"),
+          title.position = "top",
+          reverse = T
+        )
+      ) +
+      ggiraph::geom_point_interactive(
+        data = points,
+        ggplot2::aes(
+          x = X,
+          y = Y,
+          size = SA,
+          tooltip = paste("Sampling: ", SA)
+        ),
+        # color = "bisque4",
+        shape = 1,
+        color = "black",
+        alpha = 0.5
+      ) +
+      ggplot2::coord_sf(
+        xlim = c(xlim1, xlim3),
+        ylim = c(ylim2, ylim4)
+      ) +
+      # add titles
+      ggplot2::labs(
+        x = NULL,
+        y = NULL,
+        title = paste0("Vessel Flag:  ", flagLabel),
+        subtitle = paste0(
+          "Sampling - ",
+          catchCat, " (",
+          samplingVariable,
+          ")  vs Landings (",
+          commercialVariable,
+          ") in ",
+          y[i]
+        ),
+        size = "Sampling Variable"
+      ) +
+      ggplot2::theme(
+        axis.line = ggplot2::element_blank(),
+        axis.text.x = ggplot2::element_blank(),
+        axis.text.y = ggplot2::element_blank(),
+        axis.ticks = ggplot2::element_blank(),
+        axis.title.x = ggplot2::element_blank(),
+        axis.title.y = ggplot2::element_blank(),
+        legend.background = ggplot2::element_rect(color = "gray"),
+        panel.background = ggplot2::element_blank(),
+        panel.border = ggplot2::element_blank(),
+        panel.grid.major = ggplot2::element_blank(),
+        panel.grid.minor = ggplot2::element_blank(),
+        plot.background = ggplot2::element_blank()
+      )
+
+
+
+    x <- ggiraph::girafe(ggobj = gg, width_svg = 6, height_svg = 6)
+    x <- ggiraph::girafe_options(
+      x,
+      ggiraph::opts_zoom(min = .4, max = 2)
+    )
+
+    all_plot[[i]] <- x
+  }
+
+all_plot
+
 }
 
 
