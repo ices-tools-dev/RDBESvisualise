@@ -1,4 +1,4 @@
-#' Provides graphical outputs to compare sampled data against ladnings in
+#' Provides graphical outputs to compare sampled data against landings
 #' using the RDBES format.
 #'
 #' @param dataToPlot RDBES data to be plotted (as an RDBESDataObject)
@@ -10,11 +10,12 @@
 #' @param samplingVariable Sampling Variable to be assessed
 #' @param catchCat Sampling catch category - landings, catch or discards
 #' @param spatialPlot Type of Spatial plot to return - bivariate or points
+#' @param verbose (Optional) Set to TRUE to print more information. Default is
+#' FALSE
 #'
-#' @return
+#' @return A tagList of plots
 #' @export
 #'
-#' @importFrom magrittr "%<>%"
 #'
 #' @examples
 #' \dontrun{
@@ -55,7 +56,8 @@ coverageLandings <- function(dataToPlot,
                              spatialPlot = c(
                                "Bivariate",
                                "Points"
-                             )) {
+                             ),
+                             verbose = FALSE) {
 
   # For testing
   # myH1RawObject <-
@@ -63,10 +65,12 @@ coverageLandings <- function(dataToPlot,
   # # Generate some quarters for CL (test data is all Q1)
   # set.seed(1)
   # myH1RawObject[['CL']]$CLquar <- as.integer(runif(nrow(myH1RawObject[['CL']]), min = 1, max= 4.99))
-  # # Generate some values for SAsampWtLive (test data is all blank)
+  # # Generate some values for SAsampWtLive (test data value is all NA)
   # set.seed(1)
   # myH1RawObject[['SA']]$SAsampWtLive <- as.integer(runif(nrow(myH1RawObject[['SA']]), min = 1, max= 200))
-  # #View(myH1RawObject[['CL']])
+  # # Generate some stat rectagnle values (test data value is all NA)
+  # set.seed(1)
+  # myH1RawObject[['SA']]$SAstatRect <- sample(unique(myH1RawObject[['CL']]$CLstatRect), size = nrow(myH1RawObject[['SA']]), replace = TRUE)
   #
   # dataToPlot = myH1RawObject
   # year = 1965
@@ -80,13 +84,16 @@ coverageLandings <- function(dataToPlot,
   # spatialPlot = "Points"
   # commercialVariable = "CLoffWeight"
   # samplingVariable = "SAsampWtLive"
+  # verbose = TRUE
 
 
   # STEP 0) VALIDATE INPUTS
 
   # check the parameters are valid before we do anything
 
-  print("Validating input parameters")
+  if (verbose){
+    print("Validating input parameters")
+  }
 
   if (length(catchCat) == 3) {
     stop("You must provide a Catch Category")
@@ -134,12 +141,14 @@ coverageLandings <- function(dataToPlot,
   }
 
   # Check the input data is valid
-  RDBEScore::validateRDBESDataObject(dataToPlot)
+  RDBEScore::validateRDBESDataObject(dataToPlot, verbose = verbose)
 
 
   # STEP 1) PREPARE THE DATA
 
-  print("Preparing data")
+  if (verbose){
+    print("Preparing data")
+  }
 
   # 1a) Get landings data
 
@@ -162,10 +171,12 @@ coverageLandings <- function(dataToPlot,
   if (length(hierarchiesInData)!=1) {
     stop("This function will only work if there is a single hierarchy in dataToPlot")
   }
-  datatoPlot_EstOb <- RDBEScore::createRDBESEstObject(dataToPlot, hierarchiesInData)
+  datatoPlot_EstOb <- RDBEScore::createRDBESEstObject(dataToPlot,
+                                                      hierarchiesInData,
+                                                      verbose = verbose)
 
   # Check the RDBESEstObject is valid
-  RDBEScore::validateRDBESEstObject(datatoPlot_EstOb)
+  RDBEScore::validateRDBESEstObject(datatoPlot_EstOb, verbose = verbose)
 
   SA <- datatoPlot_EstOb
 
@@ -237,7 +248,9 @@ coverageLandings <- function(dataToPlot,
 
   # STEP 2) FILTER THE DATA BASED ON THE INPUT PARAMETERS
 
-  print("Filtering data")
+  if (verbose){
+    print("Filtering data")
+  }
 
   # Filter the data based on the function's input parameters
   if (is.na(year) == TRUE && is.na(quarter) == TRUE) {
@@ -299,7 +312,9 @@ coverageLandings <- function(dataToPlot,
 
   # STEP 3) PREPARE THE PLOTS
 
-  print("Preparing plots")
+  if (verbose){
+    print("Preparing plots")
+  }
 
   plotsToPrint <- NA
 
@@ -319,8 +334,8 @@ coverageLandings <- function(dataToPlot,
                 catchCat = catchCat)
   } else if (var == "gear") {
     ####################### gear ###############################
-    plotsToPrint <- gearPlot(landingsData= LD1,
-                             sampleData= SA1,
+    plotsToPrint <- gearPlot(landingsData = LD1,
+                             sampleData = SA1,
                              flagLabel = flagLabel,
                              catchCat = catchCat,
                              quarter = quarter)
@@ -332,15 +347,20 @@ coverageLandings <- function(dataToPlot,
       stop ("Bivariate plot not implemented yet")
     } else if (spatialPlot == "Points"){
     ############# points plot###############
-      # TODO
-      stop ("Points plot not implemented yet")
+      plotsToPrint <- pointsPlot(landingsData = LD1,
+                                 sampleData = SA1,
+                                 flagLabel = flagLabel,
+                                 catchCat = catchCat,
+                                 commercialVariable = commercialVariable,
+                                 samplingVariable = samplingVariable)
+      #stop ("Points plot not implemented yet")
     } else {
       stop ("Spatial plot - invalid type")
     }
   } else {
-    print(var)
-    print(spatialPlot)
-    stop ("Don't know what to do with these parameters...")
+     stop (paste0("Don't know what to do with these parameters: ",
+                 "var: ", var,
+                 "spatialPlot": spatialPlot))
   }
 
   plotsToPrint
@@ -358,9 +378,8 @@ coverageLandings <- function(dataToPlot,
 #' @param catchCat Catch category
 #' @param (Optional) Number of species to plot.  Default is 10.
 #'
-#' @return
+#' @return A tagList of plotly plots
 #'
-#' @examples
 speciesPlot <- function(landingsData, sampleData, flagLabel, catchCat, topN = 10){
 
   # for testing
@@ -485,10 +504,8 @@ speciesPlot <- function(landingsData, sampleData, flagLabel, catchCat, topN = 10
 #' @param commercialVariable Variable from CL to plot
 #' @param samplingVariable variable from SA to plot
 #'
-#' @return
-#' @export
+#' @return A tagList of plotly plots
 #'
-#' @examples
 temporalPlot <- function(landingsData, sampleData, flagLabel, catchCat, commercialVariable, samplingVariable){
 
   # for testing
@@ -569,18 +586,17 @@ temporalPlot <- function(landingsData, sampleData, flagLabel, catchCat, commerci
     #all_plot[[i]]
 }
 
-#' Title
+#' Internal function to return a list of plots which compare the fishing gears
+#' in landings to those in the sample data.
 #'
-#' @param landingsData
-#' @param sampleData
-#' @param flagLabel
-#' @param catchCat
-#' @param quarter
+#' @param landingsData Landings data
+#' @param sampleData Sample data
+#' @param flagLabel Text to use for vessel flag description
+#' @param catchCat Catch category
+#' @param quarter Quarter of year
 #'
-#' @return
-#' @export
+#' @return A tagList of plotly plots
 #'
-#' @examples
 gearPlot <- function(landingsData, sampleData, flagLabel, catchCat, quarter){
 
 
@@ -704,7 +720,20 @@ gearPlot <- function(landingsData, sampleData, flagLabel, catchCat, quarter){
 }
 
 
-pointsPlot <- function(landingsData, sampleData, flagLabel, catchCat, commercialVariable, samplingVariable ){
+#' Internal function to return a list of plots which compare the statistical
+#' rectangle where landings occured to the statitical rectangles where
+#' sampling occured
+#'
+#' @param landingsData Landings data
+#' @param sampleData Sample data
+#' @param flagLabel Text to use for vessel flag description
+#' @param catchCat Catch category
+#' @param commercialVariable The variable from the landings data to plot
+#' @param samplingVariable The variable from the sample data to plot
+#'
+#' @return A tagList of ggplot2 plots
+#'
+pointsPlot <- function(landingsData, sampleData, flagLabel, catchCat, commercialVariable, samplingVariable){
 
   # for testing
   #landingsData <- LD1
@@ -736,23 +765,26 @@ pointsPlot <- function(landingsData, sampleData, flagLabel, catchCat, commercial
     #ices_rects <- sf::read_sf("Data/Maps/shapefiles/ICESrect.shp")
     ices_rects <- RDBESvisualise::icesRects
 
-    ices_rects %<>%
+    # Note: I received an error saying that all columns in a tibble must
+    # be vectors.  This seemed to be a problem due to an old version of sf.
+    # Looked at https://github.com/r-spatial/sf/issues/1381 , ran
+    # "library(sf)", and that fixed the problem
+    ices_rects <- ices_rects %>%
       dplyr::left_join(dd, by = c("ICESNAME" = "CLstatRect"))
 
     # get extent of plot
-
     No_NA <- ices_rects[ices_rects$CL != "NA", ]
-    xlim1 <- st_bbox(No_NA)[1]
-    ylim2 <- st_bbox(No_NA)[2]
-    xlim3 <- st_bbox(No_NA)[3]
-    ylim4 <- st_bbox(No_NA)[4]
+    xlim1 <- sf::st_bbox(No_NA)[1]
+    ylim2 <- sf::st_bbox(No_NA)[2]
+    xlim3 <- sf::st_bbox(No_NA)[3]
+    ylim4 <- sf::st_bbox(No_NA)[4]
 
     # define number of classes
     no_classes <- 6
 
     # extract quantiles
     quantiles <- ices_rects %>%
-      pull(CL) %>%
+      dplyr::pull(CL) %>%
       quantile(
         probs = seq(0, 1, length.out = no_classes + 1),
         na.rm = TRUE
@@ -773,7 +805,7 @@ pointsPlot <- function(landingsData, sampleData, flagLabel, catchCat, commercial
     labels <- labels[1:length(labels) - 1]
 
     # create new variable with quantiles - landings
-    ices_rects %<>%
+    ices_rects <- ices_rects %>%
       dplyr::mutate(mean_quantiles_land = cut(
         CL,
         breaks = quantiles,
@@ -783,7 +815,7 @@ pointsPlot <- function(landingsData, sampleData, flagLabel, catchCat, commercial
 
 
     # create point on surface
-    points <- st_coordinates(st_point_on_surface(ices_rects))
+    points <- sf::st_coordinates(sf::st_point_on_surface(ices_rects))
     points <- as.data.frame(points)
     points$SA <- ices_rects$SA
 
@@ -875,6 +907,7 @@ pointsPlot <- function(landingsData, sampleData, flagLabel, catchCat, commercial
   }
 
 all_plot
+#all_plot[[i]]
 
 }
 
