@@ -1,4 +1,4 @@
-#' The tables required for each RDBES hierarchy.
+#' Species names and codes.
 #'
 #' A data frame containing the FAO code, FAO description, Aphia ID, and
 #' scientific name for a selection of species
@@ -14,14 +14,14 @@
 "speciesNamesAndCodes"
 #' ICES statistical rectangles
 #'
-#' A data frame containing spatial information for ICES statistical rectangles
+#' An sf object containing spatial information for ICES statistical rectangles
 #'
 #' @format A data frame containing spatial information
 #' \describe{
 #'   \item{ICESNAME}{Name of the stat rectangle}...
 #' }
 #' @source ICES
-"icesRects"
+"icesRectSF"
 #' Shoreline spatial data
 #'
 #' A data frame containing spatial information for shorelines
@@ -29,3 +29,11 @@
 #' @format A SpatialPolygonsDataFrame
 #' @source GSHHG
 "shoreline"
+#' Shoreline spatial data
+#'
+#' A SpatialPolygonsDataFrame data frame containing spatial information for
+#' ICES statistical rectangles
+#'
+#' @format A SpatialPolygonsDataFrame
+#' @source ICES
+"icesRectSpatialPolygon"

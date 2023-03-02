@@ -4,7 +4,9 @@
 \alias{pointsPlot}
 \title{Internal function to return a list of plots which compare the statistical
 rectangle where landings occured to the statitical rectangles where
-sampling occured}
+sampling occured. The relative amounts of landings/samples are
+shown by i) coloured rectangles for landings, and ii) circles for
+sampling.}
 \usage{
 pointsPlot(
   landingsData,
@@ -34,5 +36,7 @@ A tagList of ggplot2 plots
 \description{
 Internal function to return a list of plots which compare the statistical
 rectangle where landings occured to the statitical rectangles where
-sampling occured
+sampling occured. The relative amounts of landings/samples are
+shown by i) coloured rectangles for landings, and ii) circles for
+sampling.
 }

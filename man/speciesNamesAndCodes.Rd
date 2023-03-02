@@ -3,7 +3,7 @@
 \docType{data}
 \name{speciesNamesAndCodes}
 \alias{speciesNamesAndCodes}
-\title{The tables required for each RDBES hierarchy.}
+\title{Species names and codes.}
 \format{
 A data frame containing the species information
 \describe{
