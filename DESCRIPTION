@@ -1,16 +1,15 @@
 Package: RDBESvisualise
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Visualisation functions for the ICES Regional Database and Estimation System (RDBES)
 Version: 0.1.0
 Author: Who wrote it
 Maintainer: The package maintainer <yourself@somewhere.net>
 Description: More about what it does (maybe more than one line)
     Use four spaces when indenting paragraphs within the Description.
-License: What license is it under?
+License: GPL-3 + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Imports: 
-    RDBEScore,
     dplyr, 
     data.table,
     lubridate,
@@ -21,9 +20,10 @@ Imports:
     htmltools,
     rlang,
     purrr,
-    sf,
     biscale
 VignetteBuilder: knitr
 Depends: 
-    R (>= 2.10)
+    R (>= 2.10),
+    RDBEScore,
+    sf
 RoxygenNote: 7.2.3
