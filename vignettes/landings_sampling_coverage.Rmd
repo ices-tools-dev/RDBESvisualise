@@ -1,0 +1,182 @@
+---
+title: "Landings Sampling Coverage"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Landings Sampling Coverage}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## Introduction 
+
+The aim of this document is to provide examples of the different plots that can be produced using the coverageLandings() function.
+
+
+## Load the package
+
+```{r setup}
+library(RDBESvisualise)
+```
+
+## Prepare some test data
+
+```{r}
+
+  # Create an RDBESDataObject
+  myH1RawObject <-
+    RDBEScore::createRDBESDataObject(rdbesExtractPath = "../tests/testthat/h1_v_1_19_13")
+  
+  # Generate some quarters for CL (test data is all Q1)
+  set.seed(1)
+  myH1RawObject[['CL']]$CLquar <- as.integer(runif(nrow(myH1RawObject[['CL']]), min = 1, max= 4.99))
+  
+  # Generate some values for SAsampWtLive (test data SAsampWtLive is all NA)
+  set.seed(1)
+  myH1RawObject[['SA']]$SAsampWtLive <- as.integer(runif(nrow(myH1RawObject[['SA']]), min = 1, max= 200))
+  
+  # Generate some stat rectagnle values (test data SAstatRect is all NA)
+  set.seed(1)
+  myH1RawObject[['SA']]$SAstatRect <- sample(unique(myH1RawObject[['CL']]$CLstatRect), size = nrow(myH1RawObject[['SA']]), replace = TRUE)
+
+
+```
+
+
+## Landings coverage plots
+
+### Species
+
+This output shows the top species landings - the bars represent relative species count values per year. The bars are coloured per quarter.
+
+
+```{r,warning=FALSE,message=FALSE}
+
+  myYear = 1965
+  myvesselFlag = "ZW"
+
+  myPlots <- coverageLandings(
+      dataToPlot = myH1RawObject,
+      year = myYear,
+      vesselFlag = myvesselFlag,
+      var = "species",
+      catchCat = "Lan"
+    )
+
+  myPlots
+
+```
+
+### Gear
+
+The following output shows the top gears used in landings and sampling landings - the bars represent relative gear count values per plot.
+
+
+```{r,warning=FALSE,message=FALSE}
+
+  myYear = 1965
+  myvesselFlag = "ZW"
+
+  myPlots <- coverageLandings(
+      dataToPlot = myH1RawObject,
+      year = myYear,
+      vesselFlag = myvesselFlag,
+      var = "gear",
+      catchCat = "Lan"
+    )
+
+  myPlots
+
+```
+
+
+### Temporal
+
+The following output shows the comparison of the landings variable 'CLoffWeight' vs the sampling variable 'SAsampWtLive' for sampling landings. The values are relative per variable.
+
+
+```{r,warning=FALSE,message=FALSE}
+
+  myYear = 1965
+  myvesselFlag = "ZW"
+
+  myPlots <- coverageLandings(
+      dataToPlot = myH1RawObject,
+      year = myYear,
+      vesselFlag = myvesselFlag,
+      catchCat = "Lan",
+      commercialVariable = "CLoffWeight",
+      samplingVariable = "SAsampWtLive"
+    )
+
+  myPlots
+
+
+```
+
+
+### Spatial - points plot
+
+The below output shows the spatial location of the landings variable 'CLoffWeight' and sampling variable 'SAsampWtLive' for sampling landings per statistical rectangle. The rectangles are coloured by the landings variable with red representing a higher value and blue representing a lower value. The circles show the sampling variable with higher values representing a larger circle. 
+
+
+```{r,warning=FALSE,message=FALSE}
+
+  myYear = 1965
+  myvesselFlag = "ZW"
+
+  myPlots <- coverageLandings(
+      dataToPlot = myH1RawObject,
+      year = myYear,
+      vesselFlag = myvesselFlag,
+      var = "Statrec",
+      catchCat = "Lan",
+      commercialVariable = "CLoffWeight",
+      samplingVariable = "SAsampWtLive",
+      spatialPlot = "Points"
+    )
+
+  myPlots
+
+```
+
+
+### Spatial - bivariate plot
+
+This bivariate plot shows the spatial location of the landings variable 'CLoffWeight' and sampling variable 'SAsampWtLive' for sampling landings per statistical rectangle. The areas in blue represent higher values for the landings variable. The areas in red represent higher values for the sampling variable. Beige colours show low values for both landings and sampling. Purple shows high values for the landings variable and high values for the sampling variable.
+
+
+```{r,warning=FALSE,message=FALSE}
+
+  myYear = 1965
+  myvesselFlag = "ZW"
+
+  myPlots <- coverageLandings(
+      dataToPlot = myH1RawObject,
+      year = myYear,
+      vesselFlag = myvesselFlag,
+      var = "Statrec",
+      catchCat = "Lan",
+      commercialVariable = "CLoffWeight",
+      samplingVariable = "SAsampWtLive",
+      spatialPlot = "Bivariate"
+    )
+
+  myPlots
+  
+  
+```
+
+
+
+```{r}
+#END
+```
+
+
