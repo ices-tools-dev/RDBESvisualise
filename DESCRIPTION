@@ -21,7 +21,8 @@ Imports:
     htmltools,
     rlang,
     purrr,
-    sf
+    sf,
+    biscale
 VignetteBuilder: knitr
 Depends: 
     R (>= 2.10)
