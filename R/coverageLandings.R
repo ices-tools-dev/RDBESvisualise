@@ -81,10 +81,10 @@ coverageLandings <- function(dataToPlot,
   # #var = c("species", "gear", "Statrec")
   # catchCat = "Lan"
   # #spatialPlot = c("Bivariate","Points")
-  # spatialPlot = "Points"
+  # spatialPlot = "Bivariate"
   # commercialVariable = "CLoffWeight"
   # samplingVariable = "SAsampWtLive"
-  # verbose = TRUE
+  # verbose = FALSE
 
 
   # STEP 0) VALIDATE INPUTS
@@ -142,7 +142,6 @@ coverageLandings <- function(dataToPlot,
 
   # Check the input data is valid
   RDBEScore::validateRDBESDataObject(dataToPlot, verbose = verbose)
-
 
   # STEP 1) PREPARE THE DATA
 
@@ -319,7 +318,7 @@ coverageLandings <- function(dataToPlot,
   plotsToPrint <- NA
 
   if (length(var) > 1) {
-    ########################## TEMPORAL ########################
+    # TEMPORAL PLOT
     plotsToPrint <- temporalPlot(landingsData = LD1,
                                 sampleData = SA1,
                                 flagLabel = flagLabel,
@@ -327,44 +326,46 @@ coverageLandings <- function(dataToPlot,
                                 commercialVariable = commercialVariable,
                                 samplingVariable = samplingVariable)
   } else if (var == "species") {
-    ###################### species #############################
+    # SPECIES PLOT
     plotsToPrint <- speciesPlot(landingsData = LD1,
                 sampleData = SA1,
                 flagLabel = flagLabel,
                 catchCat = catchCat)
   } else if (var == "gear") {
-    ####################### gear ###############################
+    # GEAR PLOT
     plotsToPrint <- gearPlot(landingsData = LD1,
                              sampleData = SA1,
                              flagLabel = flagLabel,
                              catchCat = catchCat,
                              quarter = quarter)
-  ################ spatial #####################
   } else if (var == "Statrec") {
     if (spatialPlot == "Bivariate") {
-    ############## bivariate plot###########
-      # TODO
-      stop ("Bivariate plot not implemented yet")
+      # BIVARIATE SPATIAL PLOT
+      # (Inconsistent with pattern - because needs to be printed)
+      plotsToPrint <- bivariatePlot(landingsData = LD1,
+                                 sampleData = SA1,
+                                 flagLabel = flagLabel,
+                                 catchCat = catchCat,
+                                 commercialVariable = commercialVariable,
+                                 samplingVariable = samplingVariable)
     } else if (spatialPlot == "Points"){
-    ############# points plot###############
+      # POINTS SPATIAL PLOT
       plotsToPrint <- pointsPlot(landingsData = LD1,
                                  sampleData = SA1,
                                  flagLabel = flagLabel,
                                  catchCat = catchCat,
                                  commercialVariable = commercialVariable,
                                  samplingVariable = samplingVariable)
-      #stop ("Points plot not implemented yet")
     } else {
-      stop ("Spatial plot - invalid type")
+      stop ("Spatial plot - invalid type requested")
     }
   } else {
-     stop (paste0("Don't know what to do with these parameters: ",
+     stop (paste0("Don't know what to plot based on these parameters: ",
                  "var: ", var,
                  "spatialPlot": spatialPlot))
   }
 
   plotsToPrint
-  # TODO - everything else :-)
 
 }
 
@@ -722,7 +723,9 @@ gearPlot <- function(landingsData, sampleData, flagLabel, catchCat, quarter){
 
 #' Internal function to return a list of plots which compare the statistical
 #' rectangle where landings occured to the statitical rectangles where
-#' sampling occured
+#' sampling occured. The relative amounts of landings/samples are
+#' shown by i) coloured rectangles for landings, and ii) circles for
+#' sampling.
 #'
 #' @param landingsData Landings data
 #' @param sampleData Sample data
@@ -763,12 +766,13 @@ pointsPlot <- function(landingsData, sampleData, flagLabel, catchCat, commercial
 
     # get ices shp
     #ices_rects <- sf::read_sf("Data/Maps/shapefiles/ICESrect.shp")
-    ices_rects <- RDBESvisualise::icesRects
+    ices_rects <- RDBESvisualise::icesRectSF
 
-    # Note: I received an error saying that all columns in a tibble must
-    # be vectors.  This seemed to be a problem due to an old version of sf.
-    # Looked at https://github.com/r-spatial/sf/issues/1381 , ran
-    # "library(sf)", and that fixed the problem
+    # Note: I received an error saying "all columns in a tibble must
+    # be vectors".  This seemed to be a problem due to an old version of sf.
+    # Looked at https://github.com/r-spatial/sf/issues/1381 , then added
+    # sf to the "Depends" list for the package so that library(sf) gets
+    # called when the package is loaded and that fixed the problem.
     ices_rects <- ices_rects %>%
       dplyr::left_join(dd, by = c("ICESNAME" = "CLstatRect"))
 
@@ -908,6 +912,154 @@ pointsPlot <- function(landingsData, sampleData, flagLabel, catchCat, commercial
 
 all_plot
 #all_plot[[i]]
+
+}
+
+#' Internal function to return a list of plots which compare the statistical
+#' rectangle where landings occured to the statistical rectangles where
+#' sampling occured.  The relative amounts of landings/samples are
+#' shown by the use of different colours for the rectangle.
+#'
+#' @param landingsData Landings data
+#' @param sampleData Sample data
+#' @param flagLabel Text to use for vessel flag description
+#' @param catchCat Catch category
+#' @param commercialVariable The variable from the landings data to plot
+#' @param samplingVariable The variable from the sample data to plot
+#'
+#' @return A tagList of ggplot2 plots
+#'
+bivariatePlot <- function(landingsData, sampleData, flagLabel, catchCat, commercialVariable, samplingVariable){
+
+  # for testing
+  #landingsData <- LD1
+  #sampleData <- SA1
+
+  d1 <- na.omit(landingsData %>% dplyr::group_by(CLyear, CLstatRect) %>%
+                  dplyr::summarize(CL = sum(!!rlang::sym(
+                    commercialVariable
+                  ))))
+  d2 <- na.omit(sampleData %>% dplyr::group_by(SAyear, SAstatRect) %>%
+                  dplyr::summarize(SA = sum(!!rlang::sym(
+                    samplingVariable
+                  ))))
+
+  df <-
+    dplyr::left_join(d1,
+                     d2,
+                     by = c("CLyear" = "SAyear", "CLstatRect" = "SAstatRect"))
+
+  y <- unique(df$CLyear)
+
+  ices_rect <- RDBESvisualise::icesRectSpatialPolygon
+  ices_rect_df <- ices_rect@data
+
+  all_plot <- htmltools::tagList()
+
+  for (i in 1:length(y)) {
+
+    dd <- df %>% dplyr::filter(CLyear == y[i])
+
+    # create classes
+    biToPlot <-
+      biscale::bi_class(
+        dd,
+        x = SA,
+        y = CL,
+        style = "fisher",
+        dim = 3
+      )
+    # join to our data
+    bi_ices <-
+      dplyr::left_join(ices_rect_df, biToPlot, by = c("ICESNAME" = "CLstatRect"))
+
+    # assign back to ices rectangles
+    ices_rect@data <- bi_ices
+
+    # get ICES rectangles feature collection
+    bi_fc <- sf::st_as_sf(ices_rect)
+
+    # ICES rectangles feature collection without NAs for bounding box
+    bi_fc_No_NA <- na.omit(bi_fc)
+
+
+    # create map
+    map <- ggplot2::ggplot() +
+      ggplot2::geom_polygon(
+        data = shoreline,
+        ggplot2::aes(x = long, y = lat, group = group),
+        color = "azure2",
+        fill = "azure4",
+        show.legend = FALSE
+      ) +
+      ggplot2::geom_sf(
+        data = bi_fc,
+        mapping = ggplot2::aes(fill = bi_class),
+        color = "transparent",
+        size = 0.1,
+        show.legend = FALSE
+      ) +
+      biscale::bi_scale_fill(
+        pal = "GrPink",
+        dim = 3,
+        na.value = "transparent"
+      ) +
+      ggplot2::labs(
+        title = paste0("Vessel Flag: ", flagLabel),
+        subtitle = paste0(
+          "Sampling - ",
+          catchCat, " (",
+          samplingVariable,
+          ")  vs Landings (",
+          commercialVariable,
+          ") in ",
+          y[i]
+        )
+      ) +
+      ggplot2::coord_sf(
+        xlim = c(sf::st_bbox(bi_fc_No_NA)[1], sf::st_bbox(bi_fc_No_NA)[3]),
+        ylim = c(sf::st_bbox(bi_fc_No_NA)[2], sf::st_bbox(bi_fc_No_NA)[4]),
+        expand = FALSE
+      ) +
+      ggplot2::theme(
+        axis.line = ggplot2::element_blank(),
+        axis.text.x = ggplot2::element_blank(),
+        axis.text.y = ggplot2::element_blank(),
+        axis.ticks = ggplot2::element_blank(),
+        axis.title.x = ggplot2::element_blank(),
+        axis.title.y = ggplot2::element_blank(),
+        legend.position = "none",
+        panel.background = ggplot2::element_blank(),
+        panel.border = ggplot2::element_blank(),
+        panel.grid.major = ggplot2::element_blank(),
+        panel.grid.minor = ggplot2::element_blank(),
+        plot.background = ggplot2::element_blank()
+      )
+
+
+    # legend
+    legend <- biscale::bi_legend(
+      pal = "GrPink",
+      dim = 3,
+      xlab = "Higher Sampling",
+      ylab = "Higher Landings",
+      size = 9
+    )
+
+    # combine map with legend
+    finalPlot <- cowplot::plot_grid(map, legend, labels = NULL, rel_widths = c(2.5, 1), rel_heights = c(2.5,1))
+    x <- ggiraph::girafe(ggobj = finalPlot, width_svg = 6, height_svg = 6)
+    x <- ggiraph::girafe_options(
+     x,
+     ggiraph::opts_zoom(min = .4, max = 2)
+    )
+
+    all_plot[[i]] <- x
+
+  }
+
+  all_plot
+
 
 }
 
