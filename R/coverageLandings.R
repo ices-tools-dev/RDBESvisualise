@@ -22,17 +22,15 @@
 #'
 #' myH1RawObject <-
 #'   createRDBESDataObject(rdbesExtractPath = "tests/testthat/h1_v_1_19_13")
-#' myH1EstObj <- createRDBESEstObject(myH1RawObject, 1)
 #'
 #' # Example 1:
 #' coverageLandings(
-#'   dataToPlot = myH1EstObj,
+#'   dataToPlot = myH1RawObject,
 #'   year = 2018,
 #'   vesselFlag = "FR",
 #'   var = "species",
 #'   catchCat = "Lan"
 #' )
-#'
 #' }
 coverageLandings <- function(dataToPlot,
                              year = NA,
@@ -59,39 +57,12 @@ coverageLandings <- function(dataToPlot,
                              ),
                              verbose = FALSE) {
 
-  # For testing
-  # myH1RawObject <-
-  # RDBEScore::createRDBESDataObject(rdbesExtractPath = "tests/testthat/h1_v_1_19_13")
-  # # Generate some quarters for CL (test data is all Q1)
-  # set.seed(1)
-  # myH1RawObject[['CL']]$CLquar <- as.integer(runif(nrow(myH1RawObject[['CL']]), min = 1, max= 4.99))
-  # # Generate some values for SAsampWtLive (test data value is all NA)
-  # set.seed(1)
-  # myH1RawObject[['SA']]$SAsampWtLive <- as.integer(runif(nrow(myH1RawObject[['SA']]), min = 1, max= 200))
-  # # Generate some stat rectagnle values (test data value is all NA)
-  # set.seed(1)
-  # myH1RawObject[['SA']]$SAstatRect <- sample(unique(myH1RawObject[['CL']]$CLstatRect), size = nrow(myH1RawObject[['SA']]), replace = TRUE)
-  #
-  # dataToPlot = myH1RawObject
-  # year = 1965
-  # quarter = NA
-  # vesselFlag = "ZW"
-  # #var = "species"
-  # var = "Statrec"
-  # #var = c("species", "gear", "Statrec")
-  # catchCat = "Lan"
-  # #spatialPlot = c("Bivariate","Points")
-  # spatialPlot = "Bivariate"
-  # commercialVariable = "CLoffWeight"
-  # samplingVariable = "SAsampWtLive"
-  # verbose = FALSE
-
 
   # STEP 0) VALIDATE INPUTS
 
   # check the parameters are valid before we do anything
 
-  if (verbose){
+  if (verbose) {
     print("Validating input parameters")
   }
 
@@ -105,9 +76,9 @@ coverageLandings <- function(dataToPlot,
     stop("Only one vessel flag country can be provided")
   }
 
-  if (length(var) > 1 || var == "Statrec" ) {
+  if (length(var) > 1 || var == "Statrec") {
     if (length(commercialVariable) > 1 ||
-        length(samplingVariable) > 1) {
+      length(samplingVariable) > 1) {
       stop("You must provide  commercialVariable and  samplingVariable")
     }
   }
@@ -128,16 +99,16 @@ coverageLandings <- function(dataToPlot,
     stop("Unused argument, no quarters available for  var gear")
   }
 
-  if (length(spatialPlot)==1 && !spatialPlot %in% c("Bivariate","Points")){
-    stop(paste0("Invalid spatialPlot value:",spatialPlot))
+  if (length(spatialPlot) == 1 && !spatialPlot %in% c("Bivariate", "Points")) {
+    stop(paste0("Invalid spatialPlot value:", spatialPlot))
   }
 
-  if (length(catchCat)==1 && !catchCat %in% c("Lan","Dis","Catch")){
-    stop(paste0("Invalid catchCat value:",catchCat))
+  if (length(catchCat) == 1 && !catchCat %in% c("Lan", "Dis", "Catch")) {
+    stop(paste0("Invalid catchCat value:", catchCat))
   }
 
-  if (length(var)==1 && !var %in% c("species", "gear", "Statrec")){
-    stop(paste0("Invalid var value:",var))
+  if (length(var) == 1 && !var %in% c("species", "gear", "Statrec")) {
+    stop(paste0("Invalid var value:", var))
   }
 
   # Check the input data is valid
@@ -145,13 +116,13 @@ coverageLandings <- function(dataToPlot,
 
   # STEP 1) PREPARE THE DATA
 
-  if (verbose){
+  if (verbose) {
     print("Preparing data")
   }
 
   # 1a) Get landings data
 
-  LD <- dataToPlot[["CL"]] %>%
+  ld <- dataToPlot[["CL"]] %>%
     dplyr::select(
       CLlanCou:CLmonth,
       CLstatRect,
@@ -159,7 +130,7 @@ coverageLandings <- function(dataToPlot,
       CLmetier6,
       CLoffWeight:CLsciWeight
     )
-  LD$CLGear <- substr(LD$CLmetier6, 0, 3)
+  ld$CLGear <- substr(ld$CLmetier6, 0, 3)
 
   # 1b) Get sample data
 
@@ -167,45 +138,46 @@ coverageLandings <- function(dataToPlot,
   # make it easier to handle here
 
   hierarchiesInData <- unique(dataToPlot[["DE"]]$DEhierarchy)
-  if (length(hierarchiesInData)!=1) {
-    stop("This function will only work if there is a single hierarchy in dataToPlot")
+  if (length(hierarchiesInData) != 1) {
+    stop(paste0("This function will only work if there is a single hierarchy",
+    "in dataToPlot"))
   }
   datatoPlot_EstOb <- RDBEScore::createRDBESEstObject(dataToPlot,
-                                                      hierarchiesInData,
-                                                      verbose = verbose)
+    hierarchiesInData,
+    verbose = verbose
+  )
 
   # Check the RDBESEstObject is valid
   RDBEScore::validateRDBESEstObject(datatoPlot_EstOb, verbose = verbose)
 
-  SA <- datatoPlot_EstOb
+  sa <- datatoPlot_EstOb
 
   # Join to VD to get Vessel flag country
-  SA <- dplyr::left_join(SA, dataToPlot[["VD"]], by = "VDid")
+  sa <- dplyr::left_join(sa, dataToPlot[["VD"]], by = "VDid")
 
   # Get the year and quarter of the sample from FO
-  SA$SAyear <-
-    as.integer(format(as.Date(SA$FOendDate, format = "%Y-%m-%d"), "%Y"))
-  SA$SAquar <-
-    as.integer(lubridate::quarter(as.Date(SA$FOendDate, format = "%Y-%m-%d")))
-  SA$SAmonth <-
-    as.integer(lubridate::month(as.Date(SA$FOendDate, format = "%Y-%m-%d")))
+  sa$SAyear <-
+    as.integer(format(as.Date(sa$FOendDate, format = "%Y-%m-%d"), "%Y"))
+  sa$SAquar <-
+    as.integer(lubridate::quarter(as.Date(sa$FOendDate, format = "%Y-%m-%d")))
+  sa$SAmonth <-
+    as.integer(lubridate::month(as.Date(sa$FOendDate, format = "%Y-%m-%d")))
 
   # Get only necessary columns from the sample data
 
   # Find the first SA columns - we are only dealing with the top level SA data
   # TODO - should we be able to plot sub-samples as well?
   colsToCheck <-
-    names(datatoPlot_EstOb)[grep("^su.table$",names(datatoPlot_EstOb))]
+    names(datatoPlot_EstOb)[grep("^su.table$", names(datatoPlot_EstOb))]
   correctCol <- NA
   suNumber <- NA
-  for (myCol in colsToCheck){
-    #myColValues <- unique(datatoPlot_EstOb[,..myCol])[[1]]
-    myColValues <- unique(datatoPlot_EstOb[,myCol, with = FALSE])[[1]]
+  for (myCol in colsToCheck) {
+    myColValues <- unique(datatoPlot_EstOb[, myCol, with = FALSE])[[1]]
     myColValues <- myColValues[!is.na(myColValues)]
-    if (myColValues == "SA"){
+    if (myColValues == "SA") {
       correctCol <- myCol
-      suNumber <- gsub("su","",correctCol)
-      suNumber <- gsub("table","",suNumber)
+      suNumber <- gsub("su", "", correctCol)
+      suNumber <- gsub("table", "", suNumber)
       suNumber <- as.integer(suNumber)
       break
     }
@@ -215,91 +187,93 @@ coverageLandings <- function(dataToPlot,
   }
 
   # Rename the suXnumTotal and suXnumSamp columns to SAnumTotal and SAnumSamp
-  SA <- SA %>% dplyr::rename("SAnumTotal" = paste0("su",suNumber,"numTotal"))
-  SA <- SA %>% dplyr::rename("SAnumSamp" = paste0("su",suNumber,"numSamp"))
+  sa <- sa %>% dplyr::rename("SAnumTotal" = paste0("su", suNumber, "numTotal"))
+  sa <- sa %>% dplyr::rename("SAnumSamp" = paste0("su", suNumber, "numSamp"))
 
   # Get the columns we want
-  SA <- SA %>%
+  sa <- sa %>%
     dplyr::select(
-      c("SAmetier5", "SAmetier6", "SAgear", "SAtotalWtLive",
+      c(
+        "SAmetier5", "SAmetier6", "SAgear", "SAtotalWtLive",
         "SAsampWtLive",
-        "SAnumTotal","SAnumSamp",
+        "SAnumTotal", "SAnumSamp",
         "SAtotalWtMes", "SAsampWtMes", "SAyear", "SAquar", "SAmonth",
         "SAcatchCat", "SAspeCode", "SAspeCodeFAO", "SAstatRect",
         "VDflgCtry",
-        "SAid")
-    )%>%
+        "SAid"
+      )
+    ) %>%
     dplyr::relocate(SAstatRect, SAyear, SAquar, SAmonth)
 
   # remove any duplicates (could be present because we have removed the FM
   # and BV data)
-  if (length(which(duplicated(SA))) > 0) {
-    SA <- SA[-which(duplicated(SA)), ]
+  if (length(which(duplicated(sa))) > 0) {
+    sa <- sa[-which(duplicated(sa)), ]
   }
 
   # Remove any rows with SAid = NA, then get rid of the SAid column
-  SA <- SA[!is.na(SA$SAid),]
-  SA <- dplyr::select(SA,-SAid)
+  sa <- sa[!is.na(sa$SAid), ]
+  sa <- dplyr::select(sa, -SAid)
 
   # Ensure specode is an integer
-  SA$SAspeCode <- as.integer(SA$SAspeCode)
+  sa$SAspeCode <- as.integer(sa$SAspeCode)
 
 
   # STEP 2) FILTER THE DATA BASED ON THE INPUT PARAMETERS
 
-  if (verbose){
+  if (verbose) {
     print("Filtering data")
   }
 
   # Filter the data based on the function's input parameters
   if (is.na(year) == TRUE && is.na(quarter) == TRUE) {
     if (is.na(vesselFlag) == TRUE) {
-      LD1 <- LD
-      SA1 <- SA %>% dplyr::filter(SAcatchCat %in% catchCat)
+      ld1 <- ld
+      sa1 <- sa %>% dplyr::filter(SAcatchCat %in% catchCat)
     } else {
-      LD1 <- LD %>% dplyr::filter(CLvesFlagCou %in% vesselFlag)
-      SA1 <- SA %>% dplyr::filter(VDflgCtry %in% vesselFlag)
-      SA1 <- SA1 %>% dplyr::filter(SAcatchCat %in% catchCat)
+      ld1 <- ld %>% dplyr::filter(CLvesFlagCou %in% vesselFlag)
+      sa1 <- sa %>% dplyr::filter(VDflgCtry %in% vesselFlag)
+      sa1 <- sa1 %>% dplyr::filter(SAcatchCat %in% catchCat)
     }
   } else if (is.na(year) == FALSE && is.na(quarter) == TRUE) {
     if (is.na(vesselFlag) == TRUE) {
-      LD1 <- LD %>% dplyr::filter(CLyear %in% year)
-      SA1 <- SA %>% dplyr::filter(SAyear %in% year)
-      SA1 <- SA1 %>% dplyr::filter(SAcatchCat %in% catchCat)
+      ld1 <- ld %>% dplyr::filter(CLyear %in% year)
+      sa1 <- sa %>% dplyr::filter(SAyear %in% year)
+      sa1 <- sa1 %>% dplyr::filter(SAcatchCat %in% catchCat)
     } else {
-      LD1 <- LD %>% dplyr::filter(CLyear %in% year)
-      SA1 <- SA %>% dplyr::filter(SAyear %in% year)
-      LD1 <- LD1 %>% dplyr::filter(CLvesFlagCou %in% vesselFlag)
-      SA1 <- SA1 %>% dplyr::filter(VDflgCtry %in% vesselFlag)
-      SA1 <- SA1 %>% dplyr::filter(SAcatchCat %in% catchCat)
+      ld1 <- ld %>% dplyr::filter(CLyear %in% year)
+      sa1 <- sa %>% dplyr::filter(SAyear %in% year)
+      ld1 <- ld1 %>% dplyr::filter(CLvesFlagCou %in% vesselFlag)
+      sa1 <- sa1 %>% dplyr::filter(VDflgCtry %in% vesselFlag)
+      sa1 <- sa1 %>% dplyr::filter(SAcatchCat %in% catchCat)
     }
   } else if (is.na(year) == TRUE && is.na(quarter) == FALSE) {
     if (is.na(vesselFlag) == TRUE) {
-      LD1 <- LD %>% dplyr::filter(CLquar %in% quarter)
-      SA1 <- SA %>% dplyr::filter(SAquar %in% quarter)
-      SA1 <- SA1 %>% dplyr::filter(SAcatchCat %in% catchCat)
+      ld1 <- ld %>% dplyr::filter(CLquar %in% quarter)
+      sa1 <- sa %>% dplyr::filter(SAquar %in% quarter)
+      sa1 <- sa1 %>% dplyr::filter(SAcatchCat %in% catchCat)
     } else {
-      LD1 <- LD %>% dplyr::filter(CLquar %in% quarter)
-      SA1 <- SA %>% dplyr::filter(SAquar %in% quarter)
-      LD1 <- LD1 %>% dplyr::filter(CLvesFlagCou %in% vesselFlag)
-      SA1 <- SA1 %>% dplyr::filter(VDflgCtry %in% vesselFlag)
-      SA1 <- SA1 %>% dplyr::filter(SAcatchCat %in% catchCat)
+      ld1 <- ld %>% dplyr::filter(CLquar %in% quarter)
+      sa1 <- sa %>% dplyr::filter(SAquar %in% quarter)
+      ld1 <- ld1 %>% dplyr::filter(CLvesFlagCou %in% vesselFlag)
+      sa1 <- sa1 %>% dplyr::filter(VDflgCtry %in% vesselFlag)
+      sa1 <- sa1 %>% dplyr::filter(SAcatchCat %in% catchCat)
     }
   } else if (is.na(year) == FALSE && is.na(quarter) == FALSE) {
     if (is.na(vesselFlag) == TRUE) {
-      LD1 <- LD %>% dplyr::filter(CLyear %in% year)
-      SA1 <- SA %>% dplyr::filter(SAyear %in% year)
-      LD1 <- LD1 %>% dplyr::filter(CLquar %in% quarter)
-      SA1 <- SA1 %>% dplyr::filter(SAquar %in% quarter)
-      SA1 <- SA1 %>% dplyr::filter(SAcatchCat %in% catchCat)
+      ld1 <- ld %>% dplyr::filter(CLyear %in% year)
+      sa1 <- sa %>% dplyr::filter(SAyear %in% year)
+      ld1 <- ld1 %>% dplyr::filter(CLquar %in% quarter)
+      sa1 <- sa1 %>% dplyr::filter(SAquar %in% quarter)
+      sa1 <- sa1 %>% dplyr::filter(SAcatchCat %in% catchCat)
     } else {
-      LD1 <- LD %>% dplyr::filter(CLyear %in% year)
-      SA1 <- SA %>% dplyr::filter(SAyear %in% year)
-      LD1 <- LD1 %>% dplyr::filter(CLquar %in% quarter)
-      SA1 <- SA1 %>% dplyr::filter(SAquar %in% quarter)
-      LD1 <- LD1 %>% dplyr::filter(CLvesFlagCou %in% vesselFlag)
-      SA1 <- SA1 %>% dplyr::filter(VDflgCtry %in% vesselFlag)
-      SA1 <- SA1 %>% dplyr::filter(SAcatchCat %in% catchCat)
+      ld1 <- ld %>% dplyr::filter(CLyear %in% year)
+      sa1 <- sa %>% dplyr::filter(SAyear %in% year)
+      ld1 <- ld1 %>% dplyr::filter(CLquar %in% quarter)
+      sa1 <- sa1 %>% dplyr::filter(SAquar %in% quarter)
+      ld1 <- ld1 %>% dplyr::filter(CLvesFlagCou %in% vesselFlag)
+      sa1 <- sa1 %>% dplyr::filter(VDflgCtry %in% vesselFlag)
+      sa1 <- sa1 %>% dplyr::filter(SAcatchCat %in% catchCat)
     }
   }
 
@@ -311,7 +285,7 @@ coverageLandings <- function(dataToPlot,
 
   # STEP 3) PREPARE THE PLOTS
 
-  if (verbose){
+  if (verbose) {
     print("Preparing plots")
   }
 
@@ -319,54 +293,65 @@ coverageLandings <- function(dataToPlot,
 
   if (length(var) > 1) {
     # TEMPORAL PLOT
-    plotsToPrint <- temporalPlot(landingsData = LD1,
-                                sampleData = SA1,
-                                flagLabel = flagLabel,
-                                catchCat = catchCat,
-                                commercialVariable = commercialVariable,
-                                samplingVariable = samplingVariable)
+    plotsToPrint <- temporalPlot(
+      landingsData = ld1,
+      sampleData = sa1,
+      flagLabel = flagLabel,
+      catchCat = catchCat,
+      commercialVariable = commercialVariable,
+      samplingVariable = samplingVariable
+    )
   } else if (var == "species") {
     # SPECIES PLOT
-    plotsToPrint <- speciesPlot(landingsData = LD1,
-                sampleData = SA1,
-                flagLabel = flagLabel,
-                catchCat = catchCat)
+    plotsToPrint <- speciesPlot(
+      landingsData = ld1,
+      sampleData = sa1,
+      flagLabel = flagLabel,
+      catchCat = catchCat
+    )
   } else if (var == "gear") {
     # GEAR PLOT
-    plotsToPrint <- gearPlot(landingsData = LD1,
-                             sampleData = SA1,
-                             flagLabel = flagLabel,
-                             catchCat = catchCat,
-                             quarter = quarter)
+    plotsToPrint <- gearPlot(
+      landingsData = ld1,
+      sampleData = sa1,
+      flagLabel = flagLabel,
+      catchCat = catchCat,
+      quarter = quarter
+    )
   } else if (var == "Statrec") {
     if (spatialPlot == "Bivariate") {
       # BIVARIATE SPATIAL PLOT
       # (Inconsistent with pattern - because needs to be printed)
-      plotsToPrint <- bivariatePlot(landingsData = LD1,
-                                 sampleData = SA1,
-                                 flagLabel = flagLabel,
-                                 catchCat = catchCat,
-                                 commercialVariable = commercialVariable,
-                                 samplingVariable = samplingVariable)
-    } else if (spatialPlot == "Points"){
+      plotsToPrint <- bivariatePlot(
+        landingsData = ld1,
+        sampleData = sa1,
+        flagLabel = flagLabel,
+        catchCat = catchCat,
+        commercialVariable = commercialVariable,
+        samplingVariable = samplingVariable
+      )
+    } else if (spatialPlot == "Points") {
       # POINTS SPATIAL PLOT
-      plotsToPrint <- pointsPlot(landingsData = LD1,
-                                 sampleData = SA1,
-                                 flagLabel = flagLabel,
-                                 catchCat = catchCat,
-                                 commercialVariable = commercialVariable,
-                                 samplingVariable = samplingVariable)
+      plotsToPrint <- pointsPlot(
+        landingsData = ld1,
+        sampleData = sa1,
+        flagLabel = flagLabel,
+        catchCat = catchCat,
+        commercialVariable = commercialVariable,
+        samplingVariable = samplingVariable
+      )
     } else {
-      stop ("Spatial plot - invalid type requested")
+      stop("Spatial plot - invalid type requested")
     }
   } else {
-     stop (paste0("Don't know what to plot based on these parameters: ",
-                 "var: ", var,
-                 "spatialPlot": spatialPlot))
+    stop(paste0(
+      "Don't know what to plot based on these parameters: ",
+      "var: ", var,
+      "spatialPlot":spatialPlot
+    ))
   }
 
   plotsToPrint
-
 }
 
 
@@ -381,11 +366,11 @@ coverageLandings <- function(dataToPlot,
 #'
 #' @return A tagList of plotly plots
 #'
-speciesPlot <- function(landingsData, sampleData, flagLabel, catchCat, topN = 10){
-
-  # for testing
-  #landingsData <- LD1
-  #sampleData <- SA1
+speciesPlot <- function(landingsData,
+                        sampleData,
+                        flagLabel,
+                        catchCat,
+                        topN = 10) {
 
   # Get the species names
   full_name <- RDBESvisualise::speciesNamesAndCodes
@@ -394,20 +379,22 @@ speciesPlot <- function(landingsData, sampleData, flagLabel, catchCat, topN = 10
   # Landings data
   # Group by year, and year and quarter, and count the number of species
   df1 <- na.omit(
-    landingsData %>% dplyr::group_by(CLyear) %>%
+    landingsData %>%
+      dplyr::group_by(CLyear) %>%
       dplyr::add_count(CLspecCode, name = "CLSpeCount") %>%
       dplyr::summarise(LandingCountYear = sum(CLSpeCount))
   ) %>%
     dplyr::mutate(totalSpeCountAll = sum(LandingCountYear))
   d1 <- na.omit(
-    landingsData %>% dplyr::group_by(CLyear, CLquar, CLspecCode) %>%
+      landingsData %>%
+      dplyr::group_by(CLyear, CLquar, CLspecCode) %>%
       dplyr::add_count(CLspecCode, name = "CLSpeCount") %>%
       dplyr::summarise(LandingCount = sum(CLSpeCount))
   )
-  d1_species <-
+  d1Species <-
     dplyr::left_join(d1, full_name, by = c("CLspecCode" = "AphiaID"))
 
-  d1_species <- dplyr::left_join(d1_species, df1, by = "CLyear") %>%
+  d1Species <- dplyr::left_join(d1Species, df1, by = "CLyear") %>%
     dplyr::mutate(relativeValuesYear = LandingCount / LandingCountYear) %>%
     dplyr::mutate(relativeValuesAll = LandingCount / totalSpeCountAll) %>%
     dplyr::top_n(topN)
@@ -417,33 +404,35 @@ speciesPlot <- function(landingsData, sampleData, flagLabel, catchCat, topN = 10
 
   # add df to calculate total species for year
   df2 <- na.omit(
-    sampleData %>% dplyr::group_by(SAyear) %>%
+    sampleData %>%
+      dplyr::group_by(SAyear) %>%
       dplyr::add_count(SAspeCode, name = "SASpeCount") %>%
       dplyr::summarise(SamplingCountYear = sum(SASpeCount))
   ) %>%
     dplyr::mutate(totalSpeCountAll = sum(SamplingCountYear))
 
   d2 <- na.omit(
-    sampleData %>% dplyr::group_by(SAyear, SAquar, SAspeCode) %>%
+      sampleData %>%
+      dplyr::group_by(SAyear, SAquar, SAspeCode) %>%
       dplyr::add_count(SAspeCode, name = "SASpeCount") %>%
       dplyr::summarise(SamplingCount = sum(SASpeCount))
   )
-  d2_species <-
+  d2Species <-
     dplyr::left_join(d2, full_name, by = c("SAspeCode" = "AphiaID"))
 
-  d2_species <- dplyr::left_join(d2_species, df2, by = "SAyear") %>%
+  d2Species <- dplyr::left_join(d2Species, df2, by = "SAyear") %>%
     dplyr::mutate(relSamplingYear = SamplingCount / SamplingCountYear) %>%
     dplyr::mutate(relSamplingAll = SamplingCount / totalSpeCountAll) %>%
     dplyr::top_n(topN)
 
-  y <- unique(d1_species$CLyear)
+  y <- unique(d1Species$CLyear)
 
   # Generate plots for the data
 
   all_plot <- htmltools::tagList()
-  for (i in 1:length(y)) {
-    t1 <- d1_species %>% dplyr::filter(CLyear == y[i])
-    t2 <- d2_species %>% dplyr::filter(SAyear == y[i])
+  for (i in  seq_along(length(y))) {
+    t1 <- d1Species %>% dplyr::filter(CLyear == y[i])
+    t2 <- d2Species %>% dplyr::filter(SAyear == y[i])
     # Landings plot
     p1 <- plotly::plot_ly(
       t1,
@@ -451,13 +440,15 @@ speciesPlot <- function(landingsData, sampleData, flagLabel, catchCat, topN = 10
       y = ~relativeValuesYear,
       color = ~ as.character(CLquar),
       type = "bar",
-      showlegend = F
+      showlegend = FALSE
     ) %>%
       plotly::layout(
-        title = paste0("Vessel Flag ",
-                       flagLabel,
-                       ": Top Landings Species in",
-                       y[i]),
+        title = paste0(
+          "Vessel Flag ",
+          flagLabel,
+          ": Top Landings Species in",
+          y[i]
+        ),
         yaxis = list(title = "Landings"),
         xaxis = list(categoryorder = "total descending"),
         barmode = "stack"
@@ -469,7 +460,7 @@ speciesPlot <- function(landingsData, sampleData, flagLabel, catchCat, topN = 10
       y = ~relSamplingYear,
       color = ~ as.character(SAquar),
       type = "bar",
-      showlegend = T
+      showlegend = TRUE
     ) %>%
       plotly::layout(
         title = paste0(
@@ -490,7 +481,6 @@ speciesPlot <- function(landingsData, sampleData, flagLabel, catchCat, topN = 10
     all_plot[[i]] <- plotly::subplot(p1, p2, titleY = TRUE, nrows = 2)
   }
   all_plot
-  #all_plot[[1]]
 }
 
 
@@ -507,84 +497,85 @@ speciesPlot <- function(landingsData, sampleData, flagLabel, catchCat, topN = 10
 #'
 #' @return A tagList of plotly plots
 #'
-temporalPlot <- function(landingsData, sampleData, flagLabel, catchCat, commercialVariable, samplingVariable){
+temporalPlot <- function(landingsData,
+                         sampleData,
+                         flagLabel,
+                         catchCat,
+                         commercialVariable,
+                         samplingVariable) {
 
-  # for testing
-  # landingsData <- LD1
-  # sampleData <- SA1
+  d1 <- na.omit(landingsData %>%
+                  dplyr::group_by(CLyear, CLquar) %>%
+                  dplyr::summarize(CL = sum(!!rlang::sym(
+                    commercialVariable
+    )))) %>%
+    dplyr::mutate(relCL = CL / sum(CL))
+  d2 <- na.omit(sampleData %>%
+                  dplyr::group_by(SAyear, SAquar) %>%
+                  dplyr::summarize(sa = sum(!!rlang::sym(
+                    samplingVariable
+    )))) %>%
+    dplyr::mutate(relSA = sa / sum(sa))
 
-    d1 <- na.omit(landingsData %>% dplyr::group_by(CLyear, CLquar) %>%
-                    dplyr::summarize(CL = sum(!!rlang::sym(
-                      commercialVariable
-                    )))) %>%
-      dplyr::mutate(relCL = CL / sum(CL))
-    d2 <- na.omit(sampleData %>% dplyr::group_by(SAyear, SAquar) %>%
-                    dplyr::summarize(SA = sum(!!rlang::sym(
-                      samplingVariable
-                    )))) %>%
-      dplyr::mutate(relSA = SA / sum(SA))
+  df <-
+    dplyr::left_join(d1, d2, by = c("CLyear" = "SAyear", "CLquar" = "SAquar"))
 
-    df <-
-      dplyr::left_join(d1, d2, by = c("CLyear" = "SAyear", "CLquar" = "SAquar"))
-
-    y <- unique(df$CLyear)
+  y <- unique(df$CLyear)
 
 
-    all_plot <- htmltools::tagList()
-    # all_plot<-list()
-    for (i in 1:length(y)) {
-      set <- df %>% dplyr::filter(CLyear == y[i])
-      show_legend <- if (i == 1) {
-        TRUE
-      } else {
-        FALSE
-      }
-      all_plot[[i]] <- plotly::plot_ly(
-        set,
-        x = ~CLquar,
-        y = ~relCL,
-        type = "bar",
+  all_plot <- htmltools::tagList()
+  for (i in seq_along(length(y))) {
+    set <- df %>% dplyr::filter(CLyear == y[i])
+    show_legend <- if (i == 1) {
+      TRUE
+    } else {
+      FALSE
+    }
+    all_plot[[i]] <- plotly::plot_ly(
+      set,
+      x = ~CLquar,
+      y = ~relCL,
+      type = "bar",
+      alpha = 0.7,
+      name = "Landings",
+      hovertemplate = paste(
+        "%{yaxis.title.text}:  %{y}<br>",
+        "%{xaxis.title.text}: %{x}<br>"
+      ),
+      showlegend = show_legend,
+      marker = list(
+        color = "rgb(168, 74, 50)",
+        line = list(color = "rgb(8,48,107)", width = 1.5)
+      )
+    ) %>%
+      plotly::add_trace(
+        y = ~relSA,
+        name = "Sampling",
         alpha = 0.7,
-        name = "Landings",
-        hovertemplate = paste(
-          "%{yaxis.title.text}:  %{y}<br>",
-          "%{xaxis.title.text}: %{x}<br>"
-        ),
         showlegend = show_legend,
         marker = list(
-          color = "rgb(168, 74, 50)",
-          line = list(color = "rgb(8,48,107)", width = 1.5)
+          color = "rgb(158,202,225)",
+          line = list(color = "rgb(15,48,107)", width = 1.5)
         )
       ) %>%
-        plotly::add_trace(
-          y = ~relSA,
-          name = "Sampling",
-          alpha = 0.7,
-          showlegend = show_legend,
-          marker = list(
-            color = "rgb(158,202,225)",
-            line = list(color = "rgb(15,48,107)", width = 1.5)
-          )
-        ) %>%
-        plotly::layout(
-          title = paste0(
-            "Vessel Flag ",
-            flagLabel,
-            " | Landings: ",
-            commercialVariable,
-            " vs Sampling: ",
-            samplingVariable,
-            " - (",
-            catchCat,
-            ") in ",
-            y[i]
-          ),
-          xaxis = list(title = "Quarter"),
-          yaxis = list(title = "Relative Values")
-        )
-    }
-    all_plot
-    #all_plot[[i]]
+      plotly::layout(
+        title = paste0(
+          "Vessel Flag ",
+          flagLabel,
+          " | Landings: ",
+          commercialVariable,
+          " vs Sampling: ",
+          samplingVariable,
+          " - (",
+          catchCat,
+          ") in ",
+          y[i]
+        ),
+        xaxis = list(title = "Quarter"),
+        yaxis = list(title = "Relative Values")
+      )
+  }
+  all_plot
 }
 
 #' Internal function to return a list of plots which compare the fishing gears
@@ -598,48 +589,52 @@ temporalPlot <- function(landingsData, sampleData, flagLabel, catchCat, commerci
 #'
 #' @return A tagList of plotly plots
 #'
-gearPlot <- function(landingsData, sampleData, flagLabel, catchCat, quarter){
-
-
+gearPlot <- function(landingsData, sampleData, flagLabel, catchCat, quarter) {
   if (is.na(quarter) == FALSE) {
     df1 <- na.omit(
-      landingsData %>% dplyr::group_by(CLyear, CLquar) %>%
+        landingsData %>%
+        dplyr::group_by(CLyear, CLquar) %>%
         dplyr::add_count(CLGear, name = "CLGearCount") %>%
         dplyr::summarise(LandingsGearCountQuar = sum(CLGearCount))
     )
 
     d1 <- na.omit(
-      landingsData %>% dplyr::group_by(CLyear, CLquar, CLGear) %>%
+        landingsData %>%
+        dplyr::group_by(CLyear, CLquar, CLGear) %>%
         dplyr::add_count(CLGear, name = "CLGearCount") %>%
         dplyr::summarise(LandingsGearCount = sum(CLGearCount))
     )
 
-    d1 <- left_join(d1, df1, by = "CEyear", "CEquar") %>%
-      mutate(relativeValuesL = LandingsGearCount / LandingsGearCountQuar)
+    d1 <- dplyr::left_join(d1, df1, by = "CEyear", "CEquar") %>%
+      dplyr::mutate(relativeValuesL = LandingsGearCount / LandingsGearCountQuar)
 
     df2 <- na.omit(
-      sampleData %>% dplyr::group_by(SAyear, SAquar) %>%
+        sampleData %>%
+        dplyr::group_by(SAyear, SAquar) %>%
         dplyr::add_count(SAgear, name = "SAGearCount") %>%
         dplyr::summarise(SamplingGearCountQuar = sum(SAGearCount))
     )
 
     d2 <- na.omit(
-      sampleData %>% dplyr::group_by(SAyear, SAquar, SAgear) %>%
+        sampleData %>%
+        dplyr::group_by(SAyear, SAquar, SAgear) %>%
         dplyr::add_count(SAgear, name = "SAGearCount") %>%
         dplyr::summarise(SamplingGearCount = sum(SAGearCount))
     )
 
-    d2 <- left_join(d2, df2, by = "SAyear", "SAquar") %>%
+    d2 <- dplyr::left_join(d2, df2, by = "SAyear", "SAquar") %>%
       dplyr::mutate(relativeValuesS = SamplingGearCount / SamplingGearCountQuar)
   } else {
     df1 <- na.omit(
-      landingsData %>% dplyr::group_by(CLyear) %>%
+        landingsData %>%
+        dplyr::group_by(CLyear) %>%
         dplyr::add_count(CLGear, name = "CLGearCount") %>%
         dplyr::summarise(totalGearYear = sum(CLGearCount))
     )
 
     d1 <- na.omit(
-      landingsData %>% dplyr::group_by(CLyear, CLGear) %>%
+        landingsData %>%
+        dplyr::group_by(CLyear, CLGear) %>%
         dplyr::add_count(CLGear, name = "CLGearCount") %>%
         dplyr::summarise(LandingsGearCount = sum(CLGearCount))
     )
@@ -648,13 +643,15 @@ gearPlot <- function(landingsData, sampleData, flagLabel, catchCat, quarter){
       dplyr::mutate(relativeValuesL = LandingsGearCount / totalGearYear)
 
     df2 <- na.omit(
-      sampleData %>% dplyr::group_by(SAyear) %>%
+        sampleData %>%
+        dplyr::group_by(SAyear) %>%
         dplyr::add_count(SAgear, name = "SAGearCount") %>%
         dplyr::summarise(SamplingGearCountYear = sum(SAGearCount))
     )
 
     d2 <- na.omit(
-      sampleData %>% dplyr::group_by(SAyear, SAgear) %>%
+        sampleData %>%
+        dplyr::group_by(SAyear, SAgear) %>%
         dplyr::add_count(SAgear, name = "SAGearCount") %>%
         dplyr::summarise(SamplingGearCount = sum(SAGearCount))
     )
@@ -666,12 +663,12 @@ gearPlot <- function(landingsData, sampleData, flagLabel, catchCat, quarter){
 
   df <-
     dplyr::left_join(d1, d2, by = c("CLyear" = "SAyear", "CLGear" = "SAgear"))
-  # df = df %>% select(-c(relativeValuesE, totalSamplingYear))
+
   y <- unique(df$CLyear)
 
   all_plot <- htmltools::tagList()
 
-  for (i in 1:length(y)) {
+  for (i in seq_along(length(y))) {
     dd <- d1 %>% dplyr::filter(CLyear == y[i])
     dd <- dd[-1]
     ds <- d2 %>% dplyr::filter(SAyear == y[i])
@@ -682,13 +679,15 @@ gearPlot <- function(landingsData, sampleData, flagLabel, catchCat, quarter){
       y = ~relativeValuesL,
       color = ~ as.character(CLGear),
       type = "bar",
-      showlegend = F
+      showlegend = FALSE
     ) %>%
       plotly::layout(
-        title = paste0("Vessel Flag ",
-                       flagLabel,
-                       " : Top Landings Gear - Relative Values per Plot \n in",
-                       y[i]),
+        title = paste0(
+          "Vessel Flag ",
+          flagLabel,
+          " : Top Landings Gear - Relative Values per Plot \n in",
+          y[i]
+        ),
         yaxis = list(title = "Landings"),
         xaxis = list(categoryorder = "total descending"),
         barmode = "stack"
@@ -699,7 +698,7 @@ gearPlot <- function(landingsData, sampleData, flagLabel, catchCat, quarter){
       y = ~relativeValuesS,
       color = ~ as.character(SAgear),
       type = "bar",
-      showlegend = F
+      showlegend = FALSE
     ) %>%
       plotly::layout(
         title = paste0(
@@ -717,7 +716,6 @@ gearPlot <- function(landingsData, sampleData, flagLabel, catchCat, quarter){
     all_plot[[i]] <- plotly::subplot(p1, p2, titleY = TRUE, nrows = 2)
   }
   all_plot
-
 }
 
 
@@ -736,36 +734,39 @@ gearPlot <- function(landingsData, sampleData, flagLabel, catchCat, quarter){
 #'
 #' @return A tagList of ggplot2 plots
 #'
-pointsPlot <- function(landingsData, sampleData, flagLabel, catchCat, commercialVariable, samplingVariable){
+pointsPlot <- function(landingsData,
+                       sampleData,
+                       flagLabel,
+                       catchCat,
+                       commercialVariable,
+                       samplingVariable) {
 
-  # for testing
-  #landingsData <- LD1
-  #sampleData <- SA1
-
-  d1 <- na.omit(landingsData %>% dplyr::group_by(CLyear, CLstatRect) %>%
-                  dplyr::summarize(CL = sum(!!rlang::sym(
+  d1 <- na.omit(landingsData %>%
+                  dplyr::group_by(CLyear, CLstatRect) %>%
+                  dplyr::summarize(cl = sum(!!rlang::sym(
                     commercialVariable
-                  ))))
-  d2 <- na.omit(sampleData %>% dplyr::group_by(SAyear, SAstatRect) %>%
-                  dplyr::summarize(SA = sum(!!rlang::sym(
+    ))))
+  d2 <- na.omit(sampleData %>%
+                  dplyr::group_by(SAyear, SAstatRect) %>%
+                  dplyr::summarize(sa = sum(!!rlang::sym(
                     samplingVariable
-                  ))))
+    ))))
 
   df <-
     dplyr::left_join(d1,
-              d2,
-              by = c("CLyear" = "SAyear", "CLstatRect" = "SAstatRect"))
+      d2,
+      by = c("CLyear" = "SAyear", "CLstatRect" = "SAstatRect")
+    )
 
   y <- unique(df$CLyear)
 
   all_plot <- htmltools::tagList()
 
-  for (i in 1:length(y)) {
+  for (i in seq_along(length(y))) {
 
     dd <- df %>% dplyr::filter(CLyear == y[i])
 
     # get ices shp
-    #ices_rects <- sf::read_sf("Data/Maps/shapefiles/ICESrect.shp")
     ices_rects <- RDBESvisualise::icesRectSF
 
     # Note: I received an error saying "all columns in a tibble must
@@ -777,7 +778,7 @@ pointsPlot <- function(landingsData, sampleData, flagLabel, catchCat, commercial
       dplyr::left_join(dd, by = c("ICESNAME" = "CLstatRect"))
 
     # get extent of plot
-    No_NA <- ices_rects[ices_rects$CL != "NA", ]
+    No_NA <- ices_rects[ices_rects$cl != "NA", ]
     xlim1 <- sf::st_bbox(No_NA)[1]
     ylim2 <- sf::st_bbox(No_NA)[2]
     xlim3 <- sf::st_bbox(No_NA)[3]
@@ -788,7 +789,7 @@ pointsPlot <- function(landingsData, sampleData, flagLabel, catchCat, commercial
 
     # extract quantiles
     quantiles <- ices_rects %>%
-      dplyr::pull(CL) %>%
+      dplyr::pull(cl) %>%
       quantile(
         probs = seq(0, 1, length.out = no_classes + 1),
         na.rm = TRUE
@@ -806,22 +807,23 @@ pointsPlot <- function(landingsData, sampleData, flagLabel, catchCat, commercial
     })
 
     # remove last label that includes NA
-    labels <- labels[1:length(labels) - 1]
+    labels <- head(labels, -1)
 
     # create new variable with quantiles - landings
     ices_rects <- ices_rects %>%
       dplyr::mutate(mean_quantiles_land = cut(
-        CL,
+        #CL,
+        cl,
         breaks = quantiles,
         labels = labels,
-        include.lowest = T
+        include.lowest = TRUE
       ))
 
 
     # create point on surface
     points <- sf::st_coordinates(sf::st_point_on_surface(ices_rects))
     points <- as.data.frame(points)
-    points$SA <- ices_rects$SA
+    points$sa <- ices_rects$sa
 
     # plot univariate map with points
     gg <- ggplot2::ggplot(data = ices_rects) +
@@ -835,7 +837,7 @@ pointsPlot <- function(landingsData, sampleData, flagLabel, catchCat, commercial
       ggiraph::geom_sf_interactive(
         ggplot2::aes(
           fill = mean_quantiles_land,
-          tooltip = paste("Landings:", CL)
+          tooltip = paste("Landings:", cl)
         ),
         color = "white",
         size = 0.1
@@ -848,7 +850,7 @@ pointsPlot <- function(landingsData, sampleData, flagLabel, catchCat, commercial
         guide = ggplot2::guide_legend(
           keyheight = ggplot2::unit(5, units = "mm"),
           title.position = "top",
-          reverse = T
+          reverse = TRUE
         )
       ) +
       ggiraph::geom_point_interactive(
@@ -856,10 +858,9 @@ pointsPlot <- function(landingsData, sampleData, flagLabel, catchCat, commercial
         ggplot2::aes(
           x = X,
           y = Y,
-          size = SA,
-          tooltip = paste("Sampling: ", SA)
+          size = sa,
+          tooltip = paste("Sampling: ", sa)
         ),
-        # color = "bisque4",
         shape = 1,
         color = "black",
         alpha = 0.5
@@ -910,9 +911,7 @@ pointsPlot <- function(landingsData, sampleData, flagLabel, catchCat, commercial
     all_plot[[i]] <- x
   }
 
-all_plot
-#all_plot[[i]]
-
+  all_plot
 }
 
 #' Internal function to return a list of plots which compare the statistical
@@ -929,25 +928,29 @@ all_plot
 #'
 #' @return A tagList of ggplot2 plots
 #'
-bivariatePlot <- function(landingsData, sampleData, flagLabel, catchCat, commercialVariable, samplingVariable){
+bivariatePlot <- function(landingsData,
+                          sampleData,
+                          flagLabel,
+                          catchCat,
+                          commercialVariable,
+                          samplingVariable) {
 
-  # for testing
-  #landingsData <- LD1
-  #sampleData <- SA1
-
-  d1 <- na.omit(landingsData %>% dplyr::group_by(CLyear, CLstatRect) %>%
+  d1 <- na.omit(landingsData %>%
+                  dplyr::group_by(CLyear, CLstatRect) %>%
                   dplyr::summarize(CL = sum(!!rlang::sym(
                     commercialVariable
-                  ))))
-  d2 <- na.omit(sampleData %>% dplyr::group_by(SAyear, SAstatRect) %>%
-                  dplyr::summarize(SA = sum(!!rlang::sym(
+    ))))
+  d2 <- na.omit(sampleData %>%
+                  dplyr::group_by(SAyear, SAstatRect) %>%
+                  dplyr::summarize(sa = sum(!!rlang::sym(
                     samplingVariable
-                  ))))
+    ))))
 
   df <-
     dplyr::left_join(d1,
-                     d2,
-                     by = c("CLyear" = "SAyear", "CLstatRect" = "SAstatRect"))
+      d2,
+      by = c("CLyear" = "SAyear", "CLstatRect" = "SAstatRect")
+    )
 
   y <- unique(df$CLyear)
 
@@ -956,22 +959,23 @@ bivariatePlot <- function(landingsData, sampleData, flagLabel, catchCat, commerc
 
   all_plot <- htmltools::tagList()
 
-  for (i in 1:length(y)) {
-
+  for (i in seq_along(length(y))) {
     dd <- df %>% dplyr::filter(CLyear == y[i])
 
     # create classes
     biToPlot <-
       biscale::bi_class(
         dd,
-        x = SA,
+        x = sa,
         y = CL,
         style = "fisher",
         dim = 3
       )
     # join to our data
     bi_ices <-
-      dplyr::left_join(ices_rect_df, biToPlot, by = c("ICESNAME" = "CLstatRect"))
+      dplyr::left_join(ices_rect_df,
+                       biToPlot,
+                       by = c("ICESNAME" = "CLstatRect"))
 
     # assign back to ices rectangles
     ices_rect@data <- bi_ices
@@ -986,7 +990,7 @@ bivariatePlot <- function(landingsData, sampleData, flagLabel, catchCat, commerc
     # create map
     map <- ggplot2::ggplot() +
       ggplot2::geom_polygon(
-        data = shoreline,
+        data = RDBESvisualise::shoreline,
         ggplot2::aes(x = long, y = lat, group = group),
         color = "azure2",
         fill = "azure4",
@@ -1047,20 +1051,19 @@ bivariatePlot <- function(landingsData, sampleData, flagLabel, catchCat, commerc
     )
 
     # combine map with legend
-    finalPlot <- cowplot::plot_grid(map, legend, labels = NULL, rel_widths = c(2.5, 1), rel_heights = c(2.5,1))
+    finalPlot <- cowplot::plot_grid(map,
+                                    legend,
+                                    labels = NULL,
+                                    rel_widths = c(2.5, 1),
+                                    rel_heights = c(2.5, 1))
     x <- ggiraph::girafe(ggobj = finalPlot, width_svg = 6, height_svg = 6)
     x <- ggiraph::girafe_options(
-     x,
-     ggiraph::opts_zoom(min = .4, max = 2)
+      x,
+      ggiraph::opts_zoom(min = .4, max = 2)
     )
 
     all_plot[[i]] <- x
-
   }
 
   all_plot
-
-
 }
-
-
