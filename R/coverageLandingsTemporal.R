@@ -24,7 +24,7 @@
 #'   myYear = 1965
 #'   myvesselFlag = "ZW"
 #'
-#'   coverageLandingsTemporal(
+#'   myPlots <- coverageLandingsTemporal(
 #'     dataToPlot = myH1RawObject,
 #'     year = myYear,
 #'     vesselFlag = myvesselFlag,
@@ -32,6 +32,8 @@
 #'     commercialVariable = "CLoffWeight",
 #'     samplingVariable = "SAsampWtLive"
 #'     )
+#'
+#'   myPlots[1]
 #'
 #' }
 coverageLandingsTemporal <- function(dataToPlot,

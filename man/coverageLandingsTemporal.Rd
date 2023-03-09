@@ -52,7 +52,7 @@ landings to those in the sample data.
   myYear = 1965
   myvesselFlag = "ZW"
 
-  coverageLandingsTemporal(
+  myPlots <- coverageLandingsTemporal(
     dataToPlot = myH1RawObject,
     year = myYear,
     vesselFlag = myvesselFlag,
@@ -60,6 +60,8 @@ landings to those in the sample data.
     commercialVariable = "CLoffWeight",
     samplingVariable = "SAsampWtLive"
     )
+
+  myPlots[1]
 
 }
 }

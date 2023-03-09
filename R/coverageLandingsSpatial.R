@@ -26,7 +26,7 @@
 #'   myYear = 1965
 #'   myvesselFlag = "ZW"
 #'
-#'   coverageLandingsSpatial(
+#'   myPlots <- coverageLandingsSpatial(
 #'     dataToPlot = myH1RawObject,
 #'     year = myYear,
 #'     vesselFlag = myvesselFlag,
@@ -34,6 +34,8 @@
 #'     commercialVariable = "CLoffWeight",
 #'     samplingVariable = "SAsampWtLive"
 #'   )
+#'
+#'   myPlots[1]
 #'
 #' }
 coverageLandingsSpatial <- function(dataToPlot,

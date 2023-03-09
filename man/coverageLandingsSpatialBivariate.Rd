@@ -51,7 +51,7 @@ shown by the use of different colours for the rectangle.
   myYear = 1965
   myvesselFlag = "ZW"
 
-  coverageLandingsSpatialBivariate(
+  myPlots <- coverageLandingsSpatialBivariate(
     dataToPlot = myH1RawObject,
     year = myYear,
     vesselFlag = myvesselFlag,
@@ -59,6 +59,8 @@ shown by the use of different colours for the rectangle.
     commercialVariable = "CLoffWeight",
     samplingVariable = "SAsampWtLive"
     )
+
+  myPlots[1]
 
 }
 }

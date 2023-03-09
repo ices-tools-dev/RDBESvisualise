@@ -53,7 +53,7 @@ sampling.
   myYear = 1965
   myvesselFlag = "ZW"
 
-  coverageLandingsSpatial(
+  myPlots <- coverageLandingsSpatial(
     dataToPlot = myH1RawObject,
     year = myYear,
     vesselFlag = myvesselFlag,
@@ -61,6 +61,8 @@ sampling.
     commercialVariable = "CLoffWeight",
     samplingVariable = "SAsampWtLive"
   )
+
+  myPlots[1]
 
 }
 }

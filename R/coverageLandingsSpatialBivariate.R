@@ -25,7 +25,7 @@
 #'   myYear = 1965
 #'   myvesselFlag = "ZW"
 #'
-#'   coverageLandingsSpatialBivariate(
+#'   myPlots <- coverageLandingsSpatialBivariate(
 #'     dataToPlot = myH1RawObject,
 #'     year = myYear,
 #'     vesselFlag = myvesselFlag,
@@ -33,6 +33,8 @@
 #'     commercialVariable = "CLoffWeight",
 #'     samplingVariable = "SAsampWtLive"
 #'     )
+#'
+#'   myPlots[1]
 #'
 #' }
 coverageLandingsSpatialBivariate <- function(dataToPlot,

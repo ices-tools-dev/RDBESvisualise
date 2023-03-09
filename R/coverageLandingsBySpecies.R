@@ -20,12 +20,15 @@
 #'   myYear = 1965
 #'   myvesselFlag = "ZW"
 #'
-#'   coverageLandingsByGear(
+#'   myPlots <- coverageLandingsByGear(
 #'     dataToPlot = myH1RawObject,
 #'     year = myYear,
 #'     vesselFlag = myvesselFlag,
 #'     catchCat = "Lan"
 #'   )
+#'
+#'   myPlots[1]
+#'
 #' }
 coverageLandingsBySpecies <- function(dataToPlot,
                              year = NA,
