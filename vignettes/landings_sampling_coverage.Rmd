@@ -37,6 +37,11 @@ library(RDBESvisualise)
   set.seed(1)
   myH1RawObject[['CL']]$CLquar <- as.integer(runif(nrow(myH1RawObject[['CL']]), min = 1, max= 4.99))
   
+  # Generate some quarters for CE (test data is all Q1)
+  set.seed(1)
+  myH1RawObject[['CE']]$CEquar <-
+    as.integer(runif(nrow(myH1RawObject[['CE']]), min = 1, max= 4.99))
+  
   # Generate some values for SAsampWtLive (test data SAsampWtLive is all NA)
   set.seed(1)
   myH1RawObject[['SA']]$SAsampWtLive <- as.integer(runif(nrow(myH1RawObject[['SA']]), min = 1, max= 200))
@@ -93,6 +98,28 @@ The following output shows the top gears used in landings and sampling landings 
 
 ```
 
+The following output shows the top gears used in effort and sampling landings - the bars represent relative gear count values per plot.
+
+
+
+```{r,warning=FALSE,message=FALSE}
+
+  myYear = 1965
+  myvesselFlag = "ZW"
+
+  myPlots <- coverageByGear(
+      dataToPlot = myH1RawObject,
+      year = myYear,
+      vesselFlag = myvesselFlag,
+      catchCat = "Lan",
+      includeLandings = TRUE,
+      includeEffort = TRUE,
+      includeSamples = TRUE
+    )
+
+  myPlots
+
+```
 
 ### Temporal
 

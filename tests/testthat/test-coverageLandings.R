@@ -9,6 +9,10 @@ prepareTestData <- function(){
   set.seed(1)
   myH1RawObject[['CL']]$CLquar <-
     as.integer(runif(nrow(myH1RawObject[['CL']]), min = 1, max= 4.99))
+  # Generate some quarters for CE (test data is all Q1)
+  set.seed(1)
+  myH1RawObject[['CE']]$CEquar <-
+    as.integer(runif(nrow(myH1RawObject[['CE']]), min = 1, max= 4.99))
   # Generate some values for SAsampWtLive (test data is all blank)
   set.seed(1)
   myH1RawObject[['SA']]$SAsampWtLive <-
@@ -51,6 +55,24 @@ test_that("Gear landings plot runs without errors",  {
   # Gear, landings plot
   expect_error(
     coverageLandingsByGear(
+      dataToPlot = myH1RawObject,
+      year = myYear,
+      vesselFlag = myvesselFlag,
+      catchCat = "Lan"
+    )
+    ,NA)
+})
+
+
+test_that("Effort landings plot runs without errors",  {
+
+  myH1RawObject <- prepareTestData()
+  myYear <- 1965
+  myvesselFlag <- "ZW"
+
+  # Gear, landings plot
+  expect_error(
+    coverageEffortByGear(
       dataToPlot = myH1RawObject,
       year = myYear,
       vesselFlag = myvesselFlag,

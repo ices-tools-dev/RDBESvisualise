@@ -301,7 +301,10 @@ gearPlot <- function(landingsData,
     flagLabel <- vesselFlag
   }
 
+
   if (is.na(quarter) == FALSE) {
+
+    # Landings
     df1 <- na.omit(
       landingsData %>%
         dplyr::group_by(CLyear, CLquar) %>%
@@ -319,6 +322,7 @@ gearPlot <- function(landingsData,
     d1 <- dplyr::left_join(d1, df1, by = "CEyear", "CEquar") %>%
       dplyr::mutate(relativeValuesL = LandingsGearCount / LandingsGearCountQuar)
 
+    # Samples
     df2 <- na.omit(
       sampleData %>%
         dplyr::group_by(SAyear, SAquar) %>%
@@ -336,6 +340,8 @@ gearPlot <- function(landingsData,
     d2 <- dplyr::left_join(d2, df2, by = "SAyear", "SAquar") %>%
       dplyr::mutate(relativeValuesS = SamplingGearCount / SamplingGearCountQuar)
   } else {
+
+    # Landings
     df1 <- na.omit(
       landingsData %>%
         dplyr::group_by(CLyear) %>%
@@ -353,6 +359,7 @@ gearPlot <- function(landingsData,
     d1 <- dplyr::left_join(d1, df1, by = "CLyear") %>%
       dplyr::mutate(relativeValuesL = LandingsGearCount / totalGearYear)
 
+    # Samples
     df2 <- na.omit(
       sampleData %>%
         dplyr::group_by(SAyear) %>%
@@ -372,6 +379,7 @@ gearPlot <- function(landingsData,
   }
 
 
+  # Join data together
   df <-
     dplyr::left_join(d1, d2, by = c("CLyear" = "SAyear", "CLGear" = "SAgear"))
 
@@ -429,6 +437,445 @@ gearPlot <- function(landingsData,
   all_plot
 }
 
+#' Internal function to return a list of plots which compare the fishing gears
+#' in effort to those in the sample data.
+#'
+#' @param effortData Effort data
+#' @param sampleData Sample data
+#' @param vesselFlag Registered Country of Vessel - e.g "IE", "ES" or "FR".
+#' @param catchCat Catch category
+#' @param quarter Quarter of year
+#'
+#' @return A tagList of plotly plots
+#'
+effortGearPlot <- function(effortData,
+                     sampleData,
+                     vesselFlag,
+                     catchCat,
+                     quarter) {
+
+  if (is.na(vesselFlag)) {
+    flagLabel <- "All"
+  } else {
+    flagLabel <- vesselFlag
+  }
+
+  if (is.na(quarter) == FALSE) {
+    df1 <- na.omit(
+      effortData %>%
+        dplyr::group_by(CEyear, CEquar) %>%
+        dplyr::add_count(CEGear, name = "CEGearCount") %>%
+        dplyr::summarise(EffortGearCountQuar = sum(CEGearCount))
+    )
+
+    d1 <- na.omit(
+      effortData %>%
+        dplyr::group_by(CEyear, CEquar, CEGear) %>%
+        dplyr::add_count(CEGear, name = "CEGearCount") %>%
+        dplyr::summarise(EffortGearCount = sum(CEGearCount))
+    )
+
+    d1 <- dplyr::left_join(d1, df1, by = "CEyear", "CEquar") %>%
+      dplyr::mutate(relativeValuesE = EffortGearCount / EffortsGearCountQuar)
+
+    df2 <- na.omit(
+      sampleData %>%
+        dplyr::group_by(SAyear, SAquar) %>%
+        dplyr::add_count(SAgear, name = "SAGearCount") %>%
+        dplyr::summarise(SamplingGearCountQuar = sum(SAGearCount))
+    )
+
+    d2 <- na.omit(
+      sampleData %>%
+        dplyr::group_by(SAyear, SAquar, SAgear) %>%
+        dplyr::add_count(SAgear, name = "SAGearCount") %>%
+        dplyr::summarise(SamplingGearCount = sum(SAGearCount))
+    )
+
+    d2 <- dplyr::left_join(d2, df2, by = "SAyear", "SAquar") %>%
+      dplyr::mutate(relativeValuesS = SamplingGearCount / SamplingGearCountQuar)
+  } else {
+    df1 <- na.omit(
+      effortData %>%
+        dplyr::group_by(CEyear) %>%
+        dplyr::add_count(CEGear, name = "CEGearCount") %>%
+        dplyr::summarise(totalGearYear = sum(CEGearCount))
+    )
+
+    d1 <- na.omit(
+      effortData %>%
+        dplyr::group_by(CEyear, CEGear) %>%
+        dplyr::add_count(CEGear, name = "CEGearCount") %>%
+        dplyr::summarise(EffortGearCount = sum(CEGearCount))
+    )
+
+    d1 <- dplyr::left_join(d1, df1, by = "CEyear") %>%
+      dplyr::mutate(relativeValuesE = EffortGearCount / totalGearYear)
+
+    df2 <- na.omit(
+      sampleData %>%
+        dplyr::group_by(SAyear) %>%
+        dplyr::add_count(SAgear, name = "SAGearCount") %>%
+        dplyr::summarise(SamplingGearCountYear = sum(SAGearCount))
+    )
+
+    d2 <- na.omit(
+      sampleData %>%
+        dplyr::group_by(SAyear, SAgear) %>%
+        dplyr::add_count(SAgear, name = "SAGearCount") %>%
+        dplyr::summarise(SamplingGearCount = sum(SAGearCount))
+    )
+
+    d2 <- dplyr::left_join(d2, df2, by = "SAyear") %>%
+      dplyr::mutate(relativeValuesS = SamplingGearCount / SamplingGearCountYear)
+  }
+
+
+  df <-
+    dplyr::left_join(d1, d2, by = c("CEyear" = "SAyear", "CEGear" = "SAgear"))
+
+  y <- unique(df$CEyear)
+
+  all_plot <- htmltools::tagList()
+
+  for (i in seq_along(length(y))) {
+    dd <- d1 %>% dplyr::filter(CEyear == y[i])
+    dd <- dd[-1]
+    ds <- d2 %>% dplyr::filter(SAyear == y[i])
+    ds <- ds[-1]
+    p1 <- plotly::plot_ly(
+      dd,
+      x = ~ as.character(CEGear),
+      y = ~relativeValuesE,
+      color = ~ as.character(CEGear),
+      type = "bar",
+      showlegend = FALSE
+    ) %>%
+      plotly::layout(
+        title = paste0(
+          "Vessel Flag ",
+          flagLabel,
+          " : Top Effort Gear - Relative Values per Plot \n in",
+          y[i]
+        ),
+        yaxis = list(title = "Effort"),
+        xaxis = list(categoryorder = "total descending"),
+        barmode = "stack"
+      )
+    p2 <- plotly::plot_ly(
+      ds,
+      x = ~ as.character(SAgear),
+      y = ~relativeValuesS,
+      color = ~ as.character(SAgear),
+      type = "bar",
+      showlegend = FALSE
+    ) %>%
+      plotly::layout(
+        title = paste0(
+          "Vessel Flag ", flagLabel,
+          " : Top Landings and Sampling Gear (",
+          catchCat,
+          ")\n Relative Values per Plot in ",
+          y[i]
+        ),
+        yaxis = list(title = "Sampling"),
+        xaxis = list(categoryorder = "total descending"),
+        barmode = "stack"
+      )
+
+    all_plot[[i]] <- plotly::subplot(p1, p2, titleY = TRUE, nrows = 2)
+  }
+  all_plot
+}
+
+
+#' Internal function to return a list of plots which compare the fishing gears
+#' in landings to those in the sample data.
+#'
+#' @param landingsData Landings data
+#' @param sampleData Sample data
+#' @param vesselFlag Registered Country of Vessel - e.g "IE", "ES" or "FR".
+#' @param catchCat Catch category
+#' @param quarter Quarter of year
+#'
+#' @return A tagList of plotly plots
+#'
+gearPlotAll <- function(landingsData = NA,
+                        effortData = NA,
+                        sampleData = NA,
+                        vesselFlag,
+                        catchCat,
+                        quarter) {
+
+  # see what data we've been given
+  if (length(landingsData) == 1 && is.na(landingsData)){
+    landings <- FALSE
+  } else {
+    landings <- TRUE
+  }
+  if (length(effortData) == 1 && is.na(effortData)){
+    effort <- FALSE
+  } else {
+    effort <- TRUE
+  }
+  if (length(sampleData) == 1 && is.na(sampleData)){
+    samples <- FALSE
+  } else {
+    samples <- TRUE
+  }
+
+
+  if (is.na(vesselFlag)) {
+    flagLabel <- "All"
+  } else {
+    flagLabel <- vesselFlag
+  }
+
+
+  if (is.na(quarter) == FALSE) {
+
+    # Landings
+    if (landings) {
+
+      df1 <- na.omit(
+        landingsData %>%
+          dplyr::group_by(CLyear, CLquar) %>%
+          dplyr::add_count(CLGear, name = "CLGearCount") %>%
+          dplyr::summarise(LandingsGearCountQuar = sum(CLGearCount))
+      )
+
+      d1 <- na.omit(
+        landingsData %>%
+          dplyr::group_by(CLyear, CLquar, CLGear) %>%
+          dplyr::add_count(CLGear, name = "CLGearCount") %>%
+          dplyr::summarise(LandingsGearCount = sum(CLGearCount))
+      )
+
+      d1 <- dplyr::left_join(d1, df1, by = "CEyear", "CEquar") %>%
+        dplyr::mutate(relativeValuesL =
+                        LandingsGearCount / LandingsGearCountQuar)
+    }
+
+    # Samples
+    if (samples){
+
+      df2 <- na.omit(
+        sampleData %>%
+          dplyr::group_by(SAyear, SAquar) %>%
+          dplyr::add_count(SAgear, name = "SAGearCount") %>%
+          dplyr::summarise(SamplingGearCountQuar = sum(SAGearCount))
+      )
+
+      d2 <- na.omit(
+        sampleData %>%
+          dplyr::group_by(SAyear, SAquar, SAgear) %>%
+          dplyr::add_count(SAgear, name = "SAGearCount") %>%
+          dplyr::summarise(SamplingGearCount = sum(SAGearCount))
+      )
+
+      d2 <- dplyr::left_join(d2, df2, by = "SAyear", "SAquar") %>%
+        dplyr::mutate(relativeValuesS =
+                        SamplingGearCount / SamplingGearCountQuar)
+    }
+
+
+    # Effort
+    if (effort){
+      df3 <- na.omit(
+        effortData %>%
+          dplyr::group_by(CEyear, CEquar) %>%
+          dplyr::add_count(CEGear, name = "CEGearCount") %>%
+          dplyr::summarise(EffortGearCountQuar = sum(CEGearCount))
+      )
+
+      d3 <- na.omit(
+        effortData %>%
+          dplyr::group_by(CEyear, CEquar, CEGear) %>%
+          dplyr::add_count(CEGear, name = "CEGearCount") %>%
+          dplyr::summarise(EffortGearCount = sum(CEGearCount))
+      )
+
+      d3 <- dplyr::left_join(d3, df3, by = "CEyear", "CEquar") %>%
+        dplyr::mutate(relativeValuesE =
+                        EffortGearCount / EffortsGearCountQuar)
+    }
+
+
+  } else {
+
+    # Landings
+    if (landings){
+      df1 <- na.omit(
+        landingsData %>%
+          dplyr::group_by(CLyear) %>%
+          dplyr::add_count(CLGear, name = "CLGearCount") %>%
+          dplyr::summarise(totalGearYear = sum(CLGearCount))
+      )
+
+      d1 <- na.omit(
+        landingsData %>%
+          dplyr::group_by(CLyear, CLGear) %>%
+          dplyr::add_count(CLGear, name = "CLGearCount") %>%
+          dplyr::summarise(LandingsGearCount = sum(CLGearCount))
+      )
+
+      d1 <- dplyr::left_join(d1, df1, by = "CLyear") %>%
+        dplyr::mutate(relativeValuesL = LandingsGearCount / totalGearYear)
+    }
+
+    # Samples
+    if (samples){
+      df2 <- na.omit(
+        sampleData %>%
+          dplyr::group_by(SAyear) %>%
+          dplyr::add_count(SAgear, name = "SAGearCount") %>%
+          dplyr::summarise(SamplingGearCountYear = sum(SAGearCount))
+      )
+
+      d2 <- na.omit(
+        sampleData %>%
+          dplyr::group_by(SAyear, SAgear) %>%
+          dplyr::add_count(SAgear, name = "SAGearCount") %>%
+          dplyr::summarise(SamplingGearCount = sum(SAGearCount))
+      )
+
+      d2 <- dplyr::left_join(d2, df2, by = "SAyear") %>%
+        dplyr::mutate(relativeValuesS =
+                        SamplingGearCount / SamplingGearCountYear)
+    }
+
+    # Effort
+    if (effort){
+      df3 <- na.omit(
+        effortData %>%
+          dplyr::group_by(CEyear) %>%
+          dplyr::add_count(CEGear, name = "CEGearCount") %>%
+          dplyr::summarise(totalGearYear = sum(CEGearCount))
+      )
+
+      d3 <- na.omit(
+        effortData %>%
+          dplyr::group_by(CEyear, CEGear) %>%
+          dplyr::add_count(CEGear, name = "CEGearCount") %>%
+          dplyr::summarise(EffortGearCount = sum(CEGearCount))
+      )
+
+      d3 <- dplyr::left_join(d3, df3, by = "CEyear") %>%
+        dplyr::mutate(relativeValuesE = EffortGearCount / totalGearYear)
+    }
+  }
+
+
+  # Join data together
+  #df <-
+  #  dplyr::left_join(d1, d2, by = c("CLyear" = "SAyear", "CLGear" = "SAgear"))
+  #y <- unique(df$CLyear)
+
+  # Get the years we want plot
+  y <- c()
+  if (landings){
+    y <- c(y,unique(d1$CLyear))
+  }
+  if (samples){
+    y <- c(y,unique(d2$SAyear))
+  }
+  if (effort){
+    y <- c(y,unique(d3$CLyear))
+  }
+  y <- sort(unique(y))
+
+
+  all_plot <- htmltools::tagList()
+
+  for (i in seq_along(length(y))) {
+    # Landings
+    if (landings){
+      dd <- d1 %>% dplyr::filter(CLyear == y[i])
+      dd <- dd[-1]
+      p1 <- plotly::plot_ly(
+        dd,
+        x = ~ as.character(CLGear),
+        y = ~relativeValuesL,
+        color = ~ as.character(CLGear),
+        type = "bar",
+        showlegend = FALSE
+      ) %>%
+        plotly::layout(
+          title = paste0(
+            "Vessel Flag ",
+            flagLabel,
+            " : Top Landings Gear - Relative Values per Plot \n in",
+            y[i]
+          ),
+          yaxis = list(title = "Landings"),
+          xaxis = list(categoryorder = "total descending"),
+          barmode = "stack"
+        )
+    } else {
+      p1 <- plotly::plotly_empty()
+    }
+
+    # Samples
+    if (samples){
+      ds <- d2 %>% dplyr::filter(SAyear == y[i])
+      ds <- ds[-1]
+      p2 <- plotly::plot_ly(
+        ds,
+        x = ~ as.character(SAgear),
+        y = ~relativeValuesS,
+        color = ~ as.character(SAgear),
+        type = "bar",
+        showlegend = FALSE
+      ) %>%
+        plotly::layout(
+          title = paste0(
+            "Vessel Flag ", flagLabel,
+            " : Top Landings and Sampling Gear (",
+            catchCat,
+            ")\n Relative Values per Plot in ",
+            y[i]
+          ),
+          yaxis = list(title = "Sampling"),
+          xaxis = list(categoryorder = "total descending"),
+          barmode = "stack"
+        )
+    } else {
+      p2 <- plotly::plotly_empty()
+    }
+
+    # Effort
+    if (effort){
+      dde <- d3 %>% dplyr::filter(CEyear == y[i])
+      dde <- dde[-1]
+      p3 <- plotly::plot_ly(
+        dde,
+        x = ~ as.character(CEGear),
+        y = ~relativeValuesE,
+        color = ~ as.character(CEGear),
+        type = "bar",
+        showlegend = FALSE
+      ) %>%
+        plotly::layout(
+          title = paste0(
+            "Vessel Flag ",
+            flagLabel,
+            " : Top Effort Gear - Relative Values per Plot \n in",
+            y[i]
+          ),
+          yaxis = list(title = "Effort"),
+          xaxis = list(categoryorder = "total descending"),
+          barmode = "stack"
+        )
+    } else {
+      p3 <- plotly::plotly_empty()
+    }
+
+
+    #all_plot[[i]] <- plotly::subplot(p1, p2, titleY = TRUE, nrows = 2)
+    all_plot[[i]] <- plotly::subplot(p1, p3, p2, titleY = TRUE, nrows = 3)
+  }
+  all_plot
+}
 
 #' Internal function to return a list of plots which compare the statistical
 #' rectangle where landings occured to the statistical rectangles where
@@ -919,6 +1366,66 @@ filterSampleDataForCoverage <- function(sampleData,
   sa1
 
 }
+
+#' Internal function to filter landings data for coverageLandingsXXX functions
+#'
+#' @param landingsData A data table of landings data ("CL")
+#' @param year Year to be assessed e.g 2021
+#' @param quarter Quarter to be assessed - possible choices 1,2,3 or 4
+#' @param vesselFlag Registered Country of Vessel - e.g "IE", "ES" or "FR"
+#' @param verbose (Optional) Set to TRUE to print more information. Default is
+#' FALSE
+#'
+#' @return A data table of effort data ("CE")
+#'
+filterEffortDataForCoverage <- function(effortData,
+                                          year,
+                                          quarter,
+                                          vesselFlag,
+                                          verbose){
+
+  if (verbose) {
+    print("Filtering effort data")
+  }
+
+  ef <- effortData
+
+  if (is.na(year) == TRUE && is.na(quarter) == TRUE) {
+    if (is.na(vesselFlag) == TRUE) {
+      ef1 <- ef
+    } else {
+      ef1 <- ef %>% dplyr::filter(CEvesFlagCou %in% vesselFlag)
+    }
+  } else if (is.na(year) == FALSE && is.na(quarter) == TRUE) {
+    if (is.na(vesselFlag) == TRUE) {
+      ef1 <- ef %>% dplyr::filter(CEyear %in% year)
+    } else {
+      ef1 <- ef %>% dplyr::filter(CEyear %in% year)
+      ef1 <- ef1 %>% dplyr::filter(CEvesFlagCou %in% vesselFlag)
+    }
+  } else if (is.na(year) == TRUE && is.na(quarter) == FALSE) {
+    if (is.na(vesselFlag) == TRUE) {
+      ef1 <- ef %>% dplyr::filter(CEquar %in% quarter)
+    } else {
+      ef1 <- ef %>% dplyr::filter(CEquar %in% quarter)
+      ef1 <- ef1 %>% dplyr::filter(CEvesFlagCou %in% vesselFlag)
+    }
+  } else if (is.na(year) == FALSE && is.na(quarter) == FALSE) {
+    if (is.na(vesselFlag) == TRUE) {
+      ef1 <- ef %>% dplyr::filter(CEyear %in% year)
+      ef1 <- ef1 %>% dplyr::filter(CEquar %in% quarter)
+    } else {
+      ef1 <- ef %>% dplyr::filter(CEyear %in% year)
+      ef1 <- ef1 %>% dplyr::filter(CEquar %in% quarter)
+      ef1 <- ef1 %>% dplyr::filter(CEvesFlagCou %in% vesselFlag)
+    }
+  }
+
+  # Return filtered data
+  ef1
+
+}
+
 #' Internal function to prepare sample data for coverageLandingsXXX functions
 #'
 #' @param dataToPlot An RDBESDataObject
@@ -1046,6 +1553,28 @@ preprocessLandingsDataForCoverage <- function(dataToPlot, verbose){
 
   # return our landings data
   ld
+
+}
+
+preprocessEffortDataForCoverage <- function(dataToPlot, verbose){
+
+  if (verbose) {
+    print("Preparing effort data")
+  }
+
+  # get effort
+  ef <- dataToPlot[["CE"]] %>%
+    dplyr::select(
+      CEvesFlagCou:CEMonth,
+      CEstatRect,
+      CEmetier6,
+      CEvesLenCat,
+      CEnumFracTrips:CEnumUniqVes
+    )
+  ef$CEGear <- substr(ef$CEmetier6, 0, 3)
+
+  # return our effort data
+  ef
 
 }
 
