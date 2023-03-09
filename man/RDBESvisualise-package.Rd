@@ -4,7 +4,7 @@
 \name{RDBESvisualise-package}
 \alias{RDBESvisualise}
 \alias{RDBESvisualise-package}
-\title{RDBESvisualise: What the Package Does (Title Case)}
+\title{RDBESvisualise: Visualisation functions for the ICES Regional Database and Estimation System (RDBES)}
 \description{
 More about what it does (maybe more than one line) Use four spaces when indenting paragraphs within the Description.
 }

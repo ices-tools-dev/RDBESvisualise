@@ -32,11 +32,10 @@ test_that("Species landings plot runs without errors",  {
 
   # Species, landings plot
   expect_error(
-    coverageLandings(
+    coverageLandingsBySpecies(
       dataToPlot = myH1RawObject,
       year = myYear,
       vesselFlag = myvesselFlag,
-      var = "species",
       catchCat = "Lan"
     )
     ,NA)
@@ -51,11 +50,10 @@ test_that("Gear landings plot runs without errors",  {
 
   # Gear, landings plot
   expect_error(
-    coverageLandings(
+    coverageLandingsByGear(
       dataToPlot = myH1RawObject,
       year = myYear,
       vesselFlag = myvesselFlag,
-      var = "gear",
       catchCat = "Lan"
     )
     ,NA)
@@ -69,7 +67,7 @@ test_that("Temporal landings plot runs without errors",  {
 
   # Temporal, landings plot
   expect_error(
-    coverageLandings(
+    coverageLandingsTemporal(
       dataToPlot = myH1RawObject,
       year = myYear,
       vesselFlag = myvesselFlag,
@@ -89,15 +87,14 @@ test_that("Stat rectangles points landings runs without errors",  {
 
   # Stat rectangles, points, landings plot
   expect_error(
-    coverageLandings(
+    coverageLandingsSpatial(
       dataToPlot = myH1RawObject,
       year = myYear,
       vesselFlag = myvesselFlag,
       var = "Statrec",
       catchCat = "Lan",
       commercialVariable = "CLoffWeight",
-      samplingVariable = "SAsampWtLive",
-      spatialPlot = "Points"
+      samplingVariable = "SAsampWtLive"
     )
     ,NA)
 
@@ -111,15 +108,13 @@ test_that("Stat rectangles bivariate landings runs without errors",  {
 
   # Stat rectangles, bivariate, landings plot
   expect_error(
-    coverageLandings(
+    coverageLandingsSpatialBivariate(
       dataToPlot = myH1RawObject,
       year = myYear,
       vesselFlag = myvesselFlag,
-      var = "Statrec",
       catchCat = "Lan",
       commercialVariable = "CLoffWeight",
       samplingVariable = "SAsampWtLive",
-      spatialPlot = "Bivariate"
     )
     ,NA)
 

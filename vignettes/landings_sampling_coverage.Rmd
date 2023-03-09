@@ -61,11 +61,10 @@ This output shows the top species landings - the bars represent relative species
   myYear = 1965
   myvesselFlag = "ZW"
 
-  myPlots <- coverageLandings(
+  myPlots <- coverageLandingsBySpecies(
       dataToPlot = myH1RawObject,
       year = myYear,
       vesselFlag = myvesselFlag,
-      var = "species",
       catchCat = "Lan"
     )
 
@@ -83,11 +82,10 @@ The following output shows the top gears used in landings and sampling landings 
   myYear = 1965
   myvesselFlag = "ZW"
 
-  myPlots <- coverageLandings(
+  myPlots <- coverageLandingsByGear(
       dataToPlot = myH1RawObject,
       year = myYear,
       vesselFlag = myvesselFlag,
-      var = "gear",
       catchCat = "Lan"
     )
 
@@ -106,7 +104,7 @@ The following output shows the comparison of the landings variable 'CLoffWeight'
   myYear = 1965
   myvesselFlag = "ZW"
 
-  myPlots <- coverageLandings(
+  myPlots <- coverageLandingsTemporal(
       dataToPlot = myH1RawObject,
       year = myYear,
       vesselFlag = myvesselFlag,
@@ -131,15 +129,13 @@ The below output shows the spatial location of the landings variable 'CLoffWeigh
   myYear = 1965
   myvesselFlag = "ZW"
 
-  myPlots <- coverageLandings(
+  myPlots <- coverageLandingsSpatial(
       dataToPlot = myH1RawObject,
       year = myYear,
       vesselFlag = myvesselFlag,
-      var = "Statrec",
       catchCat = "Lan",
       commercialVariable = "CLoffWeight",
-      samplingVariable = "SAsampWtLive",
-      spatialPlot = "Points"
+      samplingVariable = "SAsampWtLive"
     )
 
   myPlots
@@ -157,15 +153,13 @@ This bivariate plot shows the spatial location of the landings variable 'CLoffWe
   myYear = 1965
   myvesselFlag = "ZW"
 
-  myPlots <- coverageLandings(
+  myPlots <- coverageLandingsSpatialBivariate(
       dataToPlot = myH1RawObject,
       year = myYear,
       vesselFlag = myvesselFlag,
-      var = "Statrec",
       catchCat = "Lan",
       commercialVariable = "CLoffWeight",
-      samplingVariable = "SAsampWtLive",
-      spatialPlot = "Bivariate"
+      samplingVariable = "SAsampWtLive"
     )
 
   myPlots
