@@ -37,3 +37,31 @@
 #' @format A SpatialPolygonsDataFrame
 #' @source ICES
 "icesRectSpatialPolygon"
+#' Allowed CatchCat variable names
+#'
+#' A vector containing the allowed names
+#'
+#' @format A character vector
+#' @source WGRDBES-EST
+"allowedCatchCat"
+#' Allowed effortVariable names
+#'
+#' A vector containing the allowed effortVariable names
+#'
+#' @format A character vector
+#' @source WGRDBES-EST
+"allowedEffortVariable"
+#' Allowed landingsVariable names
+#'
+#' A vector containing the allowed landingVariable names
+#'
+#' @format A character vector
+#' @source WGRDBES-EST
+"allowedLandingsVariable"
+#' Allowed samplingVariable names
+#'
+#' A vector containing the allowed samplingVariable names
+#'
+#' @format A character vector
+#' @source WGRDBES-EST
+"allowedSamplingVariable"
