@@ -28,142 +28,163 @@ prepareTestData <- function(){
 
 }
 
-test_that("Gear plot runs without errors for landings only",  {
+test_that("Temporal plot runs without errors for landings only",  {
 
   myH1RawObject <- prepareTestData()
   myYear <- 1965
   myvesselFlag <- "ZW"
 
-  # Gear plot
+  # Temporal plot
   expect_error(
-    coverageByGear(
+    coverageTemporal(
       dataToPlot = myH1RawObject,
       year = myYear,
       vesselFlag = myvesselFlag,
       catchCat = "Lan",
+      landingsVariable = "CLoffWeight",
+      effortVariable = "CEnumFracTrips",
+      samplingVariable = "SAsampWtLive",
       includeLandings = TRUE,
       includeEffort = FALSE,
-      includeSamples = FALSE,
+      includeSamples = FALSE
     )
     ,NA)
 })
 
-test_that("Gear plot runs without errors for effort only",  {
+test_that("Temporal plot runs without errors for effort only",  {
 
   myH1RawObject <- prepareTestData()
   myYear <- 1965
   myvesselFlag <- "ZW"
 
-  # Gear plot
+  # Temporal plot
   expect_error(
-    coverageByGear(
+    coverageTemporal(
       dataToPlot = myH1RawObject,
       year = myYear,
       vesselFlag = myvesselFlag,
       catchCat = "Lan",
+      landingsVariable = "CLoffWeight",
+      effortVariable = "CEnumFracTrips",
+      samplingVariable = "SAsampWtLive",
       includeLandings = FALSE,
       includeEffort = TRUE,
-      includeSamples = FALSE,
+      includeSamples = FALSE
     )
     ,NA)
 })
 
-test_that("Gear plot runs without errors for samples only",  {
+test_that("Temporal plot runs without errors for samples only",  {
 
   myH1RawObject <- prepareTestData()
   myYear <- 1965
   myvesselFlag <- "ZW"
 
-  # Gear plot
+  # Temporal plot
   expect_error(
-    coverageByGear(
+    coverageTemporal(
       dataToPlot = myH1RawObject,
       year = myYear,
       vesselFlag = myvesselFlag,
       catchCat = "Lan",
+      landingsVariable = "CLoffWeight",
+      effortVariable = "CEnumFracTrips",
+      samplingVariable = "SAsampWtLive",
       includeLandings = FALSE,
       includeEffort = FALSE,
-      includeSamples = TRUE,
+      includeSamples = TRUE
     )
     ,NA)
 })
 
-test_that("Gear plot runs without errors for landing and samples",  {
+test_that("Temporal plot runs without errors for landing and samples",  {
 
   myH1RawObject <- prepareTestData()
   myYear <- 1965
   myvesselFlag <- "ZW"
 
-  # Gear plot
+  # Temporal plot
   expect_error(
-    coverageByGear(
+    coverageTemporal(
       dataToPlot = myH1RawObject,
       year = myYear,
       vesselFlag = myvesselFlag,
       catchCat = "Lan",
+      landingsVariable = "CLoffWeight",
+      effortVariable = "CEnumFracTrips",
+      samplingVariable = "SAsampWtLive",
       includeLandings = TRUE,
       includeEffort = FALSE,
-      includeSamples = TRUE,
+      includeSamples = TRUE
     )
     ,NA)
 })
 
-test_that("Gear plot runs without errors for effort and samples",  {
+test_that("Temporal plot runs without errors for effort and samples",  {
 
   myH1RawObject <- prepareTestData()
   myYear <- 1965
   myvesselFlag <- "ZW"
 
-  # Gear plot
+  # Temporal plot
   expect_error(
-    coverageByGear(
+    coverageTemporal(
       dataToPlot = myH1RawObject,
       year = myYear,
       vesselFlag = myvesselFlag,
       catchCat = "Lan",
+      landingsVariable = "CLoffWeight",
+      effortVariable = "CEnumFracTrips",
+      samplingVariable = "SAsampWtLive",
       includeLandings = FALSE,
       includeEffort = TRUE,
-      includeSamples = TRUE,
+      includeSamples = TRUE
     )
     ,NA)
 })
 
-test_that("Gear plot runs without errors for landinsg and effort",  {
+test_that("Temporal plot runs without errors for landinsg and effort",  {
 
   myH1RawObject <- prepareTestData()
   myYear <- 1965
   myvesselFlag <- "ZW"
 
-  # Gear plot
+  # Temporal plot
   expect_error(
-    coverageByGear(
+    coverageTemporal(
       dataToPlot = myH1RawObject,
       year = myYear,
       vesselFlag = myvesselFlag,
       catchCat = "Lan",
+      landingsVariable = "CLoffWeight",
+      effortVariable = "CEnumFracTrips",
+      samplingVariable = "SAsampWtLive",
       includeLandings = TRUE,
       includeEffort = TRUE,
-      includeSamples = FALSE,
+      includeSamples = FALSE
     )
     ,NA)
 })
 
-test_that("Gear plot runs without errors for landings, effort, and samples",  {
+test_that("Temporal plot runs without errors for landings, effort, and samples",  {
 
   myH1RawObject <- prepareTestData()
   myYear <- 1965
   myvesselFlag <- "ZW"
 
-  # Gear plot
+  # Temporal plot
   expect_error(
-    coverageByGear(
+    coverageTemporal(
       dataToPlot = myH1RawObject,
       year = myYear,
       vesselFlag = myvesselFlag,
       catchCat = "Lan",
+      landingsVariable = "CLoffWeight",
+      effortVariable = "CEnumFracTrips",
+      samplingVariable = "SAsampWtLive",
       includeLandings = TRUE,
       includeEffort = TRUE,
-      includeSamples = TRUE,
+      includeSamples = TRUE
     )
     ,NA)
 })

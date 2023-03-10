@@ -3,15 +3,17 @@
 \name{temporalPlot}
 \alias{temporalPlot}
 \title{Internal function to return a list of plots which compare the relative
-amount of the values of commercialVariable and samplingVariable by quarter
-landings to those in the sample data.}
+amount of the values of landingVariable, effortVariable and samplingVariable
+by quarter.}
 \usage{
 temporalPlot(
-  landingsData,
-  sampleData,
+  landingsData = NA,
+  effortData = NA,
+  sampleData = NA,
   vesselFlag,
   catchCat,
-  commercialVariable,
+  landingsVariable,
+  effortVariable,
   samplingVariable
 )
 }
@@ -24,15 +26,15 @@ temporalPlot(
 
 \item{catchCat}{Catch category}
 
-\item{commercialVariable}{Variable from CL to plot}
-
 \item{samplingVariable}{variable from SA to plot}
+
+\item{commercialVariable}{Variable from CL to plot}
 }
 \value{
 A tagList of plotly plots
 }
 \description{
 Internal function to return a list of plots which compare the relative
-amount of the values of commercialVariable and samplingVariable by quarter
-landings to those in the sample data.
+amount of the values of landingVariable, effortVariable and samplingVariable
+by quarter.
 }

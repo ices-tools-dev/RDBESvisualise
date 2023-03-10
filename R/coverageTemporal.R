@@ -164,7 +164,7 @@ coverageTemporal <- function(dataToPlot,
     print("Preparing plots")
   }
 
-  plotsToPrint <- temporalPlotAll(
+  plotsToPrint <- temporalPlot(
     landingsData = ld1,
     effortData = ef1,
     sampleData = sa1,

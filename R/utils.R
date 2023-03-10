@@ -179,8 +179,8 @@ speciesPlot <- function(landingsData,
 
 
 #' Internal function to return a list of plots which compare the relative
-#' amount of the values of commercialVariable and samplingVariable by quarter
-#' landings to those in the sample data.
+#' amount of the values of landingVariable, effortVariable and samplingVariable
+#' by quarter.
 #'
 #' @param landingsData Landings data
 #' @param sampleData Sample data
@@ -191,107 +191,7 @@ speciesPlot <- function(landingsData,
 #'
 #' @return A tagList of plotly plots
 #'
-temporalPlot <- function(landingsData,
-                         sampleData,
-                         vesselFlag,
-                         catchCat,
-                         commercialVariable,
-                         samplingVariable) {
-
-  if (is.na(vesselFlag)) {
-    flagLabel <- "All"
-  } else {
-    flagLabel <- vesselFlag
-  }
-
-  d1 <- na.omit(landingsData %>%
-                  dplyr::group_by(CLyear, CLquar) %>%
-                  dplyr::summarize(CL = sum(!!rlang::sym(
-                    commercialVariable
-                  )))) %>%
-    dplyr::mutate(relCL = CL / sum(CL))
-  d2 <- na.omit(sampleData %>%
-                  dplyr::group_by(SAyear, SAquar) %>%
-                  dplyr::summarize(sa = sum(!!rlang::sym(
-                    samplingVariable
-                  )))) %>%
-    dplyr::mutate(relSA = sa / sum(sa))
-
-  df <-
-    dplyr::left_join(d1, d2, by = c("CLyear" = "SAyear", "CLquar" = "SAquar"))
-
-  y <- unique(df$CLyear)
-
-
-  all_plot <- htmltools::tagList()
-  for (i in seq_along(length(y))) {
-    set <- df %>% dplyr::filter(CLyear == y[i])
-    show_legend <- if (i == 1) {
-      TRUE
-    } else {
-      FALSE
-    }
-    all_plot[[i]] <- plotly::plot_ly(
-      set,
-      x = ~CLquar,
-      y = ~relCL,
-      type = "bar",
-      alpha = 0.7,
-      name = "Landings",
-      hovertemplate = paste(
-        "%{yaxis.title.text}:  %{y}<br>",
-        "%{xaxis.title.text}: %{x}<br>"
-      ),
-      showlegend = show_legend,
-      marker = list(
-        color = "rgb(168, 74, 50)",
-        line = list(color = "rgb(8,48,107)", width = 1.5)
-      )
-    ) %>%
-      plotly::add_trace(
-        y = ~relSA,
-        name = "Sampling",
-        alpha = 0.7,
-        showlegend = show_legend,
-        marker = list(
-          color = "rgb(158,202,225)",
-          line = list(color = "rgb(15,48,107)", width = 1.5)
-        )
-      ) %>%
-      plotly::layout(
-        title = paste0(
-          "Vessel Flag ",
-          flagLabel,
-          " | Landings: ",
-          commercialVariable,
-          " vs Sampling: ",
-          samplingVariable,
-          " - (",
-          catchCat,
-          ") in ",
-          y[i]
-        ),
-        xaxis = list(title = "Quarter"),
-        yaxis = list(title = "Relative Values")
-      )
-  }
-  all_plot
-}
-
-#' Internal function to return a list of plots which compare the relative
-#' amount of the values of commercialVariable and samplingVariable by quarter
-#' landings to those in the sample data.
-#'
-#' @param landingsData Landings data
-#' @param sampleData Sample data
-#' @param vesselFlag Registered Country of Vessel - e.g "IE", "ES" or "FR".
-#' @param catchCat Catch category
-#' @param commercialVariable Variable from CL to plot
-#' @param samplingVariable variable from SA to plot
-#'
-#' @return A tagList of plotly plots
-#'
-temporalPlotAll <- function(landingsData = NA,
+temporalPlot <- function(landingsData = NA,
                          effortData = NA,
                          sampleData = NA,
                          vesselFlag,

@@ -131,13 +131,16 @@ The following output shows the comparison of the landings variable 'CLoffWeight'
   myYear = 1965
   myvesselFlag = "ZW"
 
-  myPlots <- coverageLandingsTemporal(
+  myPlots <- coverageTemporal(
       dataToPlot = myH1RawObject,
       year = myYear,
       vesselFlag = myvesselFlag,
       catchCat = "Lan",
-      commercialVariable = "CLoffWeight",
-      samplingVariable = "SAsampWtLive"
+      landingsVariable = "CLoffWeight",
+      samplingVariable = "SAsampWtLive",
+      includeLandings = TRUE,
+      includeEffort = FALSE,
+      includeSamples = TRUE
     )
 
   myPlots
@@ -145,7 +148,7 @@ The following output shows the comparison of the landings variable 'CLoffWeight'
 
 ```
 
-The following output shows the comparison of the landings variable 'CLoffWeight' vs the sampling variable 'SAsampWtLive' for sampling landings. The values are relative per variable.
+The following output shows the comparison of the landings variable 'CLoffWeight', the effort variable 'CEnumFracTrips' and the sampling variable 'SAsampWtLive' for sampling landings. The values are relative per variable.
 
 
 ```{r,warning=FALSE,message=FALSE}
