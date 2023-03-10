@@ -46,40 +46,6 @@ test_that("Species landings plot runs without errors",  {
 })
 
 
-test_that("Gear landings plot runs without errors",  {
-
-  myH1RawObject <- prepareTestData()
-  myYear <- 1965
-  myvesselFlag <- "ZW"
-
-  # Gear, landings plot
-  expect_error(
-    coverageLandingsByGear(
-      dataToPlot = myH1RawObject,
-      year = myYear,
-      vesselFlag = myvesselFlag,
-      catchCat = "Lan"
-    )
-    ,NA)
-})
-
-
-test_that("Effort landings plot runs without errors",  {
-
-  myH1RawObject <- prepareTestData()
-  myYear <- 1965
-  myvesselFlag <- "ZW"
-
-  # Gear, landings plot
-  expect_error(
-    coverageEffortByGear(
-      dataToPlot = myH1RawObject,
-      year = myYear,
-      vesselFlag = myvesselFlag,
-      catchCat = "Lan"
-    )
-    ,NA)
-})
 
 test_that("Temporal landings plot runs without errors",  {
 

@@ -3,9 +3,16 @@
 \name{gearPlot}
 \alias{gearPlot}
 \title{Internal function to return a list of plots which compare the fishing gears
-in landings to those in the sample data.}
+in landings, effort, and sample data.}
 \usage{
-gearPlot(landingsData, sampleData, vesselFlag, catchCat, quarter)
+gearPlot(
+  landingsData = NA,
+  effortData = NA,
+  sampleData = NA,
+  vesselFlag,
+  catchCat,
+  quarter
+)
 }
 \arguments{
 \item{landingsData}{Landings data}
@@ -23,5 +30,5 @@ A tagList of plotly plots
 }
 \description{
 Internal function to return a list of plots which compare the fishing gears
-in landings to those in the sample data.
+in landings, effort, and sample data.
 }

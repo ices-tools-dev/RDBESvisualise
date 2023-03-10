@@ -121,7 +121,7 @@ coverageByGear <- function(dataToPlot,
     print("Preparing plots")
   }
 
-  plotsToPrint <- gearPlotAll(
+  plotsToPrint <- gearPlot(
     landingsData = ld1,
     effortData = ef1,
     sampleData = sa1,

@@ -87,7 +87,7 @@ The following output shows the top gears used in landings and sampling landings 
   myYear = 1965
   myvesselFlag = "ZW"
 
-  myPlots <- coverageLandingsByGear(
+  myPlots <- coverageByGear(
       dataToPlot = myH1RawObject,
       year = myYear,
       vesselFlag = myvesselFlag,
@@ -112,7 +112,7 @@ The following output shows the top gears used in effort and sampling landings - 
       year = myYear,
       vesselFlag = myvesselFlag,
       catchCat = "Lan",
-      includeLandings = TRUE,
+      includeLandings = FALSE,
       includeEffort = TRUE,
       includeSamples = TRUE
     )
