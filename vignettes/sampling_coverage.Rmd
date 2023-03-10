@@ -54,7 +54,7 @@ library(RDBESvisualise)
 ```
 
 
-## Landings coverage plots
+## Coverage plots
 
 ### Species
 
@@ -145,6 +145,31 @@ The following output shows the comparison of the landings variable 'CLoffWeight'
 
 ```
 
+The following output shows the comparison of the landings variable 'CLoffWeight' vs the sampling variable 'SAsampWtLive' for sampling landings. The values are relative per variable.
+
+
+```{r,warning=FALSE,message=FALSE}
+
+  myYear = 1965
+  myvesselFlag = "ZW"
+
+  myPlots <- coverageTemporal(
+      dataToPlot = myH1RawObject,
+      year = myYear,
+      vesselFlag = myvesselFlag,
+      catchCat = "Lan",
+      landingsVariable = "CLoffWeight",
+      effortVariable = "CEnumFracTrips",
+      samplingVariable = "SAsampWtLive",
+      includeLandings = TRUE,
+      includeEffort = TRUE,
+      includeSamples = TRUE
+    )
+
+  myPlots
+
+
+```
 
 ### Spatial - points plot
 

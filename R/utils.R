@@ -278,6 +278,211 @@ temporalPlot <- function(landingsData,
   all_plot
 }
 
+#' Internal function to return a list of plots which compare the relative
+#' amount of the values of commercialVariable and samplingVariable by quarter
+#' landings to those in the sample data.
+#'
+#' @param landingsData Landings data
+#' @param sampleData Sample data
+#' @param vesselFlag Registered Country of Vessel - e.g "IE", "ES" or "FR".
+#' @param catchCat Catch category
+#' @param commercialVariable Variable from CL to plot
+#' @param samplingVariable variable from SA to plot
+#'
+#' @return A tagList of plotly plots
+#'
+temporalPlotAll <- function(landingsData = NA,
+                         effortData = NA,
+                         sampleData = NA,
+                         vesselFlag,
+                         catchCat,
+                         landingsVariable,
+                         effortVariable,
+                         samplingVariable) {
+
+  # see what data we've been given
+  if (length(landingsData) == 1 && is.na(landingsData)){
+    landings <- FALSE
+  } else {
+    landings <- TRUE
+  }
+  if (length(effortData) == 1 && is.na(effortData)){
+    effort <- FALSE
+  } else {
+    effort <- TRUE
+  }
+  if (length(sampleData) == 1 && is.na(sampleData)){
+    samples <- FALSE
+  } else {
+    samples <- TRUE
+  }
+
+  if (is.na(vesselFlag)) {
+    flagLabel <- "All"
+  } else {
+    flagLabel <- vesselFlag
+  }
+
+  # Landings
+  if (landings) {
+    d1 <- na.omit(landingsData %>%
+                    dplyr::group_by(CLyear, CLquar) %>%
+                    dplyr::summarize(CL = sum(!!rlang::sym(
+                      landingsVariable
+                    )))) %>%
+      dplyr::mutate(relCL = CL / sum(CL))
+  }
+
+  # Samples
+  if (samples){
+    d2 <- na.omit(sampleData %>%
+                    dplyr::group_by(SAyear, SAquar) %>%
+                    dplyr::summarize(sa = sum(!!rlang::sym(
+                      samplingVariable
+                    )))) %>%
+      dplyr::mutate(relSA = sa / sum(sa))
+  }
+
+  # Effort
+  if (effort) {
+    d3 <- na.omit(effortData %>%
+                    dplyr::group_by(CEyear, CEquar) %>%
+                    dplyr::summarize(CE = sum(!!rlang::sym(
+                      effortVariable
+                    )))) %>%
+      dplyr::mutate(relCE = CE / sum(CE))
+  }
+
+  # Get the years we want plot
+  y <- c()
+  if (landings){
+    y <- c(y,unique(d1$CLyear))
+  }
+  if (samples){
+    y <- c(y,unique(d2$SAyear))
+  }
+  if (effort){
+    y <- c(y,unique(d3$CEyear))
+  }
+  y <- sort(unique(y))
+
+
+  all_plot <- htmltools::tagList()
+
+
+
+  for (i in seq_along(length(y))) {
+
+    show_legend <- if (i == 1) {
+      TRUE
+    } else {
+      FALSE
+    }
+
+    plotTitle = paste0("Vessel Flag ", flagLabel)
+
+    # Create an empty data set to use as a base for our plots
+     emptyData <- data.frame(quarters = c(1,2,3,4),values =c(NA,NA,NA,NA))
+     p0 <- plotly::plot_ly(
+       emptyData,
+       x = ~quarters,
+       y = ~values,
+       type = "bar",
+       alpha = 0.7
+     )
+    #p0 <- plotly::plotly_empty()
+
+    # Landings
+    if (landings){
+      dd <- d1 %>% dplyr::filter(CLyear == y[i])
+      dd <- dd[-1]
+
+      p0 <- p0 %>%
+          plotly::add_trace(
+            data = dd,
+            x = ~CLquar,
+            y = ~relCL,
+            type = "bar",
+            alpha = 0.7,
+            name = "Landings",
+            showlegend = show_legend,
+            marker = list(
+              color = "rgb(158,202,225)",
+              line = list(color = "rgb(15,48,107)", width = 1.5)
+            )
+          )
+
+      plotTitle = paste0(plotTitle, " | Landings: ", landingsVariable)
+    }
+
+    # Effort
+    if (effort){
+      dde <- d3 %>% dplyr::filter(CEyear == y[i])
+      dde <- dde[-1]
+
+      p0 <- p0 %>%
+        plotly::add_trace(
+          data = dde,
+          x = ~CEquar,
+          y = ~relCE,
+          type = "bar",
+          alpha = 0.7,
+          name = "Effort",
+          showlegend = show_legend,
+          marker = list(
+            color = "rgb(79, 164, 64)",
+            line = list(color = "rgb(8,48,107)", width = 1.5)
+          )
+        )
+
+      plotTitle = paste0(plotTitle, " | Effort: ", effortVariable)
+    }
+
+    # Samples
+    if (samples){
+      ds <- d2 %>% dplyr::filter(SAyear == y[i])
+      ds <- ds[-1]
+
+      p0 <- p0 %>%
+        plotly::add_trace(
+          data = ds,
+          x = ~SAquar,
+          y = ~relSA,
+          type = "bar",
+          alpha = 0.7,
+          name = "Samples",
+          showlegend = show_legend,
+          marker = list(
+            color = "rgb(168, 74, 50)",
+            line = list(color = "rgb(8,48,107)", width = 1.5)
+          )
+        )
+
+      plotTitle = paste0(plotTitle,
+                         " | Sampling: ",
+                         samplingVariable,
+                         " (",
+                         catchCat,
+                         ") "
+                         )
+    }
+
+    plotTitle = paste0(plotTitle, " in ",y[i])
+
+    # Add a title
+    p0 <- p0 %>%
+      plotly::layout(
+        title = list(text = plotTitle,font = list(size = 12)),
+        xaxis = list(title = "Quarter"),
+        yaxis = list(title = "Relative Values")
+      )
+    all_plot[[i]] <- p0
+
+  }
+  all_plot
+}
+
+
 
 #' Internal function to return a list of plots which compare the fishing gears
 #' in landings, effort, and sample data.
