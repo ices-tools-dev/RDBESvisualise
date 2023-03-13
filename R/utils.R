@@ -870,6 +870,564 @@ pointsPlot <- function(landingsData,
 
 #' Internal function to return a list of plots which compare the statistical
 #' rectangle where landings occured to the statistical rectangles where
+#' sampling occured. The relative amounts of landings/samples are
+#' shown by i) coloured rectangles for landings, and ii) circles for
+#' sampling.
+#'
+#' @param landingsData Landings data
+#' @param effortData Effort data
+#' @param sampleData Sample data
+#' @param vesselFlag Registered Country of Vessel - e.g "IE", "ES" or "FR".
+#' @param catchCat Catch category
+#' @param landingsVariable The variable from the landings data to plot
+#' @param effortVariable The variable from the effort data to plot
+#' @param samplingVariable The variable from the sample data to plot
+#'
+#' @return A tagList of ggplot2 plots
+#'
+pointsPlotAll <- function(landingsData = NA,
+                          effortData = NA,
+                          sampleData = NA,
+                          vesselFlag,
+                          catchCat,
+                          landingsVariable,
+                          effortVariable,
+                          samplingVariable) {
+
+  # see what data we've been given
+  if (length(landingsData) == 1 && is.na(landingsData)){
+    landings <- FALSE
+  } else {
+    landings <- TRUE
+  }
+  if (length(effortData) == 1 && is.na(effortData)){
+    effort <- FALSE
+  } else {
+    effort <- TRUE
+  }
+  if (length(sampleData) == 1 && is.na(sampleData)){
+    samples <- FALSE
+  } else {
+    samples <- TRUE
+  }
+
+  if (is.na(vesselFlag)) {
+    flagLabel <- "All"
+  } else {
+    flagLabel <- vesselFlag
+  }
+
+  if (landings){
+    d1 <- na.omit(landingsData %>%
+                    dplyr::group_by(CLyear, CLstatRect) %>%
+                    dplyr::summarize(cl = sum(!!rlang::sym(
+                      landingsVariable
+                    ))))
+  }
+
+  if (samples){
+    d2 <- na.omit(sampleData %>%
+                    dplyr::group_by(SAyear, SAstatRect) %>%
+                    dplyr::summarize(sa = sum(!!rlang::sym(
+                      samplingVariable
+                    ))))
+  }
+
+  if (effort) {
+    d3 <- na.omit(effortData %>%
+                    dplyr::group_by(CEyear, CEstatRect) %>%
+                    dplyr::summarize(ce = sum(!!rlang::sym(
+                      effortVariable
+                    ))))
+  }
+
+  # Get the years we want plot
+  y <- c()
+  if (landings){
+    y <- c(y,unique(d1$CLyear))
+  }
+  if (samples){
+    y <- c(y,unique(d2$SAyear))
+  }
+  if (effort){
+    y <- c(y,unique(d3$CEyear))
+  }
+  y <- sort(unique(y))
+
+
+  # get ices shp
+  ices_rects <- RDBESvisualise::icesRectSF
+  # define number of classes
+  no_classes <- 6
+
+  all_plot <- htmltools::tagList()
+
+  for (i in seq_along(length(y))) {
+
+
+    if (landings){
+      dd <- d1 %>% dplyr::filter(CLyear == y[i])
+
+      # Note: I received an error saying "all columns in a tibble must
+      # be vectors".  This seemed to be a problem due to an old version of sf.
+      # Looked at https://github.com/r-spatial/sf/issues/1381 , then added
+      # sf to the "Depends" list for the package so that library(sf) gets
+      # called when the package is loaded and that fixed the problem.
+      ices_rects_l <- ices_rects %>%
+        dplyr::left_join(dd, by = c("ICESNAME" = "CLstatRect"))
+
+      # get extent of plot
+      No_NA_l <- ices_rects_l[ices_rects_l$cl != "NA", ]
+      xlim1_l <- sf::st_bbox(No_NA_l)[1]
+      ylim2_l <- sf::st_bbox(No_NA_l)[2]
+      xlim3_l <- sf::st_bbox(No_NA_l)[3]
+      ylim4_l <- sf::st_bbox(No_NA_l)[4]
+
+      # extract quantiles
+      quantiles_l <- ices_rects_l %>%
+        dplyr::pull(cl) %>%
+        quantile(
+          probs = seq(0, 1, length.out = no_classes + 1),
+          na.rm = TRUE
+        ) %>%
+        as.vector() # to remove names of quantiles, so idx below is numeric
+      quantiles_l <- round(quantiles_l, 0)
+
+      # create custom labels
+      labels_l <- purrr::imap_chr(quantiles_l, function(., idx) {
+        return(paste0(
+          round(quantiles_l[idx], 10),
+          " - ",
+          round(quantiles_l[idx + 1], 10)
+        ))
+      })
+
+      # remove last label that includes NA
+      labels_l <- head(labels_l, -1)
+
+      # create new variable with quantiles - landings
+      ices_rects_l <- ices_rects_l %>%
+        dplyr::mutate(mean_quantiles_land = cut(
+          #CL,
+          cl,
+          breaks = quantiles_l,
+          labels = labels_l,
+          include.lowest = TRUE
+        ))
+
+    }
+
+
+    if (effort){
+      de <- d3 %>% dplyr::filter(CEyear == y[i])
+
+      ices_rects_e <- ices_rects %>%
+        dplyr::left_join(de, by = c("ICESNAME" = "CEstatRect"))
+
+      # get extent of plot
+      No_NA_e <- ices_rects_e[ices_rects_e$ce != "NA", ]
+      xlim1_e <- sf::st_bbox(No_NA_e)[1]
+      ylim2_e <- sf::st_bbox(No_NA_e)[2]
+      xlim3_e <- sf::st_bbox(No_NA_e)[3]
+      ylim4_e <- sf::st_bbox(No_NA_e)[4]
+
+      # extract quantiles
+      quantiles_e <- ices_rects_e %>%
+        dplyr::pull(ce) %>%
+        quantile(
+          probs = seq(0, 1, length.out = no_classes + 1),
+          na.rm = TRUE
+        ) %>%
+        as.vector() # to remove names of quantiles, so idx below is numeric
+      quantiles_e <- round(quantiles_e, 0)
+
+      # create custom labels
+      labels_e <- purrr::imap_chr(quantiles_e, function(., idx) {
+        return(paste0(
+          round(quantiles_e[idx], 10),
+          " - ",
+          round(quantiles_e[idx + 1], 10)
+        ))
+      })
+
+      # remove last label that includes NA
+      labels_e <- head(labels_e, -1)
+
+      # create new variable with quantiles - landings
+      ices_rects_e <- ices_rects_e %>%
+        dplyr::mutate(mean_quantiles_effort = cut(
+          #CL,
+          ce,
+          breaks = quantiles_e,
+          labels = labels_e,
+          include.lowest = TRUE
+        ))
+
+    }
+
+
+    if (samples){
+      ds <- d2 %>% dplyr::filter(SAyear == y[i])
+
+      ices_rects_s <- ices_rects %>%
+        dplyr::left_join(ds, by = c("ICESNAME" = "SAstatRect"))
+
+      # get extent of plot
+      No_NA_s <- ices_rects_s[ices_rects_s$sa != "NA", ]
+      xlim1_s <- sf::st_bbox(No_NA_s)[1]
+      ylim2_s <- sf::st_bbox(No_NA_s)[2]
+      xlim3_s <- sf::st_bbox(No_NA_s)[3]
+      ylim4_s <- sf::st_bbox(No_NA_s)[4]
+
+      # create point on surface
+      points <- sf::st_coordinates(sf::st_point_on_surface(ices_rects_s))
+      points <- as.data.frame(points)
+      points$sa <- ices_rects_s$sa
+
+      # extract quantiles
+      quantiles_s <- ices_rects_s %>%
+        dplyr::pull(sa) %>%
+        quantile(
+          probs = seq(0, 1, length.out = no_classes + 1),
+          na.rm = TRUE
+        ) %>%
+        as.vector() # to remove names of quantiles, so idx below is numeric
+      quantiles_s <- round(quantiles_s, 0)
+
+      # create custom labels
+      labels_s <- purrr::imap_chr(quantiles_s, function(., idx) {
+        return(paste0(
+          round(quantiles_s[idx], 10),
+          " - ",
+          round(quantiles_s[idx + 1], 10)
+        ))
+      })
+
+      # remove last label that includes NA
+      labels_s <- head(labels_s, -1)
+
+      # create new variable with quantiles - landings
+      ices_rects_s <- ices_rects_s %>%
+        dplyr::mutate(mean_quantiles_samples = cut(
+          #CL,
+          sa,
+          breaks = quantiles_s,
+          labels = labels_s,
+          include.lowest = TRUE
+        ))
+
+    }
+
+
+    myPlots <- htmltools::tagList()
+
+    if (landings){
+
+      # plot univariate map with points
+
+      gg <- ggplot2::ggplot(data = ices_rects_l) +
+        ggplot2::geom_polygon(
+          data = RDBESvisualise::shoreline,
+          ggplot2::aes(x = long, y = lat, group = group),
+          color = "white",
+          fill = "gray",
+          show.legend = FALSE
+        ) +
+        ggiraph::geom_sf_interactive(
+          ggplot2::aes(
+            fill = mean_quantiles_land,
+            tooltip = paste("Landings:", cl)
+          ),
+          color = "white",
+          size = 0.1
+        ) +
+        ggiraph::scale_fill_brewer_interactive(
+          type = "seq",
+          palette = "RdYlBu",
+          name = "Landings Variable",
+          direction = -1,
+          guide = ggplot2::guide_legend(
+            keyheight = ggplot2::unit(5, units = "mm"),
+            title.position = "top",
+            reverse = TRUE
+          )
+        ) +
+           ggplot2::coord_sf(
+             xlim = c(xlim1_l, xlim3_l),
+             ylim = c(ylim2_l, ylim4_l)
+        )
+
+
+      # See if we need to add the samples data to the plot
+      subtitle = ""
+      if (samples){
+        subtitle = paste0(
+                "Sampling - ",
+                catchCat, " (",
+                samplingVariable,
+                ")  vs Landings (",
+                landingsVariable,
+                ") in ",
+                y[i]
+              )
+        gg <- gg +
+          ggiraph::geom_point_interactive(
+            data = points,
+            ggplot2::aes(
+              x = X,
+              y = Y,
+              size = sa,
+              tooltip = paste("Sampling: ", sa)
+            ),
+            shape = 1,
+            color = "black",
+            alpha = 0.5
+          )
+      } else {
+        subtitle = paste0(
+          "Landings (",
+          landingsVariable,
+          ") in ",
+          y[i]
+        )
+      }
+
+
+      gg <- gg +
+        # add titles
+        ggplot2::labs(
+          x = NULL,
+          y = NULL,
+          title = paste0("Vessel Flag:  ", flagLabel),
+          subtitle = subtitle,
+          size = "Sampling Variable"
+        ) +
+      ggplot2::theme(
+        axis.line = ggplot2::element_blank(),
+        axis.text.x = ggplot2::element_blank(),
+        axis.text.y = ggplot2::element_blank(),
+        axis.ticks = ggplot2::element_blank(),
+        axis.title.x = ggplot2::element_blank(),
+        axis.title.y = ggplot2::element_blank(),
+        legend.background = ggplot2::element_rect(color = "gray"),
+        panel.background = ggplot2::element_blank(),
+        panel.border = ggplot2::element_blank(),
+        panel.grid.major = ggplot2::element_blank(),
+        panel.grid.minor = ggplot2::element_blank(),
+        plot.background = ggplot2::element_blank()
+      )
+
+      x_l <- ggiraph::girafe(ggobj = gg, width_svg = 6, height_svg = 6)
+      x_l <- ggiraph::girafe_options(
+        x_l,
+        ggiraph::opts_zoom(min = .4, max = 2)
+      )
+
+      # Add our plot to the output list
+      currentPlotCount <- length(all_plot)
+      all_plot[[currentPlotCount + i]] <- x_l
+
+    }
+
+
+    if (effort){
+
+      # plot univariate map with points
+
+      gg <- ggplot2::ggplot(data = ices_rects_e) +
+        ggplot2::geom_polygon(
+          data = RDBESvisualise::shoreline,
+          ggplot2::aes(x = long, y = lat, group = group),
+          color = "white",
+          fill = "gray",
+          show.legend = FALSE
+        ) +
+        ggiraph::geom_sf_interactive(
+          ggplot2::aes(
+            fill = mean_quantiles_effort,
+            tooltip = paste("Effort:", ce)
+          ),
+          color = "white",
+          size = 0.1
+        ) +
+        ggiraph::scale_fill_brewer_interactive(
+          type = "seq",
+          palette = "RdYlBu",
+          name = "Effort Variable",
+          direction = -1,
+          guide = ggplot2::guide_legend(
+            keyheight = ggplot2::unit(5, units = "mm"),
+            title.position = "top",
+            reverse = TRUE
+          )
+        ) +
+        ggplot2::coord_sf(
+          xlim = c(xlim1_e, xlim3_e),
+          ylim = c(ylim2_e, ylim4_e)
+        )
+
+
+      # See if we need to add the samples data to the plot
+      subtitle = ""
+      if (samples){
+        subtitle = paste0(
+          "Sampling - ",
+          catchCat, " (",
+          samplingVariable,
+          ")  vs Effort (",
+          effortVariable,
+          ") in ",
+          y[i]
+        )
+        gg <- gg +
+          ggiraph::geom_point_interactive(
+            data = points,
+            ggplot2::aes(
+              x = X,
+              y = Y,
+              size = sa,
+              tooltip = paste("Sampling: ", sa)
+            ),
+            shape = 1,
+            color = "black",
+            alpha = 0.5
+          )
+      } else {
+        subtitle = paste0(
+          "Effort (",
+          effortVariable,
+          ") in ",
+          y[i]
+        )
+      }
+
+
+      gg <- gg +
+        # add titles
+        ggplot2::labs(
+          x = NULL,
+          y = NULL,
+          title = paste0("Vessel Flag:  ", flagLabel),
+          subtitle = subtitle,
+          size = "Sampling Variable"
+        ) +
+        ggplot2::theme(
+          axis.line = ggplot2::element_blank(),
+          axis.text.x = ggplot2::element_blank(),
+          axis.text.y = ggplot2::element_blank(),
+          axis.ticks = ggplot2::element_blank(),
+          axis.title.x = ggplot2::element_blank(),
+          axis.title.y = ggplot2::element_blank(),
+          legend.background = ggplot2::element_rect(color = "gray"),
+          panel.background = ggplot2::element_blank(),
+          panel.border = ggplot2::element_blank(),
+          panel.grid.major = ggplot2::element_blank(),
+          panel.grid.minor = ggplot2::element_blank(),
+          plot.background = ggplot2::element_blank()
+        )
+
+      x_e <- ggiraph::girafe(ggobj = gg, width_svg = 6, height_svg = 6)
+      x_e <- ggiraph::girafe_options(
+        x_e,
+        ggiraph::opts_zoom(min = .4, max = 2)
+      )
+
+      # Add our plot to the output list
+      currentPlotCount <- length(all_plot)
+      all_plot[[currentPlotCount + i]] <- x_e
+    }
+
+
+      if (samples){
+
+        # plot univariate map with points
+
+        gg <- ggplot2::ggplot(data = ices_rects_s) +
+          ggplot2::geom_polygon(
+            data = RDBESvisualise::shoreline,
+            ggplot2::aes(x = long, y = lat, group = group),
+            color = "white",
+            fill = "gray",
+            show.legend = FALSE
+          ) +
+          ggiraph::geom_sf_interactive(
+            ggplot2::aes(
+              fill = mean_quantiles_samples,
+              tooltip = paste("Samples:", sa)
+            ),
+            color = "white",
+            size = 0.1
+          ) +
+          ggiraph::scale_fill_brewer_interactive(
+            type = "seq",
+            palette = "RdYlBu",
+            name = "Sampling Variable",
+            direction = -1,
+            guide = ggplot2::guide_legend(
+              keyheight = ggplot2::unit(5, units = "mm"),
+              title.position = "top",
+              reverse = TRUE
+            )
+          ) +
+          ggplot2::coord_sf(
+            xlim = c(xlim1_s, xlim3_s),
+            ylim = c(ylim2_s, ylim4_s)
+          )
+
+
+        # See if we need to add the samples data to the plot - we do - this
+        # is just sample data
+        subtitle = paste0(
+          "Sampling - ",
+          catchCat, " (",
+          samplingVariable,
+          ") in ",
+          y[i]
+        )
+
+        gg <- gg +
+          # add titles
+          ggplot2::labs(
+            x = NULL,
+            y = NULL,
+            title = paste0("Vessel Flag:  ", flagLabel),
+            subtitle = subtitle,
+            size = "Sampling Variable"
+          ) +
+          ggplot2::theme(
+            axis.line = ggplot2::element_blank(),
+            axis.text.x = ggplot2::element_blank(),
+            axis.text.y = ggplot2::element_blank(),
+            axis.ticks = ggplot2::element_blank(),
+            axis.title.x = ggplot2::element_blank(),
+            axis.title.y = ggplot2::element_blank(),
+            legend.background = ggplot2::element_rect(color = "gray"),
+            panel.background = ggplot2::element_blank(),
+            panel.border = ggplot2::element_blank(),
+            panel.grid.major = ggplot2::element_blank(),
+            panel.grid.minor = ggplot2::element_blank(),
+            plot.background = ggplot2::element_blank()
+          )
+
+        x_s <- ggiraph::girafe(ggobj = gg, width_svg = 6, height_svg = 6)
+        x_s <- ggiraph::girafe_options(
+          x_s,
+          ggiraph::opts_zoom(min = .4, max = 2)
+        )
+
+        # Add our plot to the output list
+        currentPlotCount <- length(all_plot)
+        all_plot[[currentPlotCount + i]] <- x_s
+
+    }
+
+  }
+
+  all_plot
+}
+
+#' Internal function to return a list of plots which compare the statistical
+#' rectangle where landings occured to the statistical rectangles where
 #' sampling occured.  The relative amounts of landings/samples are
 #' shown by the use of different colours for the rectangle.
 #'

@@ -38,12 +38,16 @@
 #'   myPlots[1]
 #'
 #' }
-coverageLandingsSpatial <- function(dataToPlot,
+coverageSpatial <- function(dataToPlot,
                                     year = NA,
                                     vesselFlag = NA,
-                                    commercialVariable = c(
+                                    landingsVariable = c(
                                       "CLoffWeight",
                                       "CLsciWeight"
+                                    ),
+                                    effortVariable = c(
+                                      "CEnumFracTrips",
+                                      "CEnumDomTrip"
                                     ),
                                     samplingVariable = c(
                                       "SAsampWtLive",
@@ -55,6 +59,9 @@ coverageLandingsSpatial <- function(dataToPlot,
                                       "Dis",
                                       "Catch"
                                     ),
+                                    includeLandings = TRUE,
+                                    includeEffort = TRUE,
+                                    includeSamples = TRUE,
                                     verbose = FALSE){
 
   # STEP 0) VALIDATE INPUTS
@@ -74,9 +81,38 @@ coverageLandingsSpatial <- function(dataToPlot,
     stop("Only one vessel flag country can be provided")
   }
 
-  if (length(commercialVariable) > 1 ||
-      length(samplingVariable) > 1) {
-    stop("You must provide  commercialVariable and  samplingVariable")
+  if (includeLandings && length(landingsVariable) > 1){
+    stop("You must provide landingsVariable if you want to include landings data")
+  }
+
+  if (includeEffort && length(effortVariable) > 1){
+    stop("You must provide effortVariable if you want to include effort data")
+  }
+
+  if (includeSamples && length(samplingVariable) > 1){
+    stop("You must provide samplingVariable if you want to include sample data")
+  }
+
+  if (includeLandings &&
+      length(landingsVariable) == 1 &&
+      !landingsVariable %in% RDBESvisualise::allowedLandingsVariable ) {
+    stop(paste0("Invalid landingsVariable value:", landingsVariable))
+  }
+
+  if (includeEffort &&
+      length(effortVariable) == 1 &&
+      !effortVariable %in% RDBESvisualise::allowedEffortVariable) {
+    stop(paste0("Invalid effortVariable value:", effortVariable))
+  }
+
+  if (includeSamples &&
+      length(samplingVariable) == 1 &&
+      !samplingVariable %in% RDBESvisualise::allowedSamplingVariable) {
+    stop(paste0("Invalid samplingVariable value:", samplingVariable))
+  }
+
+  if (length(catchCat) == 1 && !catchCat %in% RDBESvisualise::allowedCatchCat) {
+    stop(paste0("Invalid catchCat value:", catchCat))
   }
 
   if (is.na(year) == TRUE) {
@@ -90,38 +126,61 @@ coverageLandingsSpatial <- function(dataToPlot,
   # Check the input data is valid
   RDBEScore::validateRDBESDataObject(dataToPlot, verbose = verbose)
 
-  # STEP 1) PREPARE THE DATA
+  # STEP 1) PREPARE AND FILTER THE DATA
 
-  ld <- preprocessLandingsDataForCoverage(dataToPlot, verbose = verbose)
-  sa <- preprocessSampleDataForCoverage(dataToPlot, verbose = verbose)
+  # Landings
+  if (includeLandings){
+    ld <- preprocessLandingsDataForCoverage(dataToPlot, verbose = verbose)
+    ld1 <- filterLandingsDataForCoverage(ld,
+                                         year = year,
+                                         quarter = NA,
+                                         vesselFlag = vesselFlag,
+                                         verbose = verbose)
+  } else {
+    ld1 <- NA
+  }
 
-  # STEP 2) FILTER THE DATA BASED ON THE INPUT PARAMETERS
-
-  ld1 <- filterLandingsDataForCoverage(ld,
+  # Effort
+  if (includeEffort){
+    ef <- preprocessEffortDataForCoverage(dataToPlot, verbose = verbose)
+    ef1 <- filterEffortDataForCoverage(ef,
                                        year = year,
                                        quarter = NA,
                                        vesselFlag = vesselFlag,
                                        verbose = verbose)
-  sa1 <- filterSampleDataForCoverage(sa,
-                                     year = year,
-                                     quarter = NA,
-                                     vesselFlag = vesselFlag,
-                                     catchCat = catchCat,
-                                     verbose = verbose)
+  } else {
+    ef1 <- NA
+  }
+
+  # Samples
+  if (includeSamples){
+    sa <- preprocessSampleDataForCoverage(dataToPlot, verbose = verbose)
+    sa1 <- filterSampleDataForCoverage(sa,
+                                       year = year,
+                                       quarter = NA,
+                                       vesselFlag = vesselFlag,
+                                       catchCat = catchCat,
+                                       verbose = verbose)
+  } else {
+    sa1 <- NA
+  }
 
 
-  # STEP 3) Plot the data
+
+  # STEP 2) Plot the data
 
   if (verbose) {
     print("Preparing plots")
   }
 
-  plotsToPrint <- pointsPlot(
+  plotsToPrint <- pointsPlotAll(
     landingsData = ld1,
+    effortData = ef1,
     sampleData = sa1,
     vesselFlag = vesselFlag,
     catchCat = catchCat,
-    commercialVariable = commercialVariable,
+    landingsVariable = landingsVariable,
+    effortVariable = effortVariable,
     samplingVariable = samplingVariable
   )
 
