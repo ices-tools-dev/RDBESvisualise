@@ -9,16 +9,20 @@ shown by i) coloured rectangles for landings, and ii) circles for
 sampling.}
 \usage{
 pointsPlot(
-  landingsData,
-  sampleData,
+  landingsData = NA,
+  effortData = NA,
+  sampleData = NA,
   vesselFlag,
   catchCat,
-  commercialVariable,
+  landingsVariable,
+  effortVariable,
   samplingVariable
 )
 }
 \arguments{
 \item{landingsData}{Landings data}
+
+\item{effortData}{Effort data}
 
 \item{sampleData}{Sample data}
 
@@ -26,7 +30,9 @@ pointsPlot(
 
 \item{catchCat}{Catch category}
 
-\item{commercialVariable}{The variable from the landings data to plot}
+\item{landingsVariable}{The variable from the landings data to plot}
+
+\item{effortVariable}{The variable from the effort data to plot}
 
 \item{samplingVariable}{The variable from the sample data to plot}
 }

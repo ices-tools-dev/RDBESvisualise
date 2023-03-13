@@ -173,7 +173,7 @@ coverageSpatial <- function(dataToPlot,
     print("Preparing plots")
   }
 
-  plotsToPrint <- pointsPlotAll(
+  plotsToPrint <- pointsPlot(
     landingsData = ld1,
     effortData = ef1,
     sampleData = sa1,
