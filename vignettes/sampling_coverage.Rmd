@@ -184,14 +184,18 @@ The below output shows the spatial location of the landings variable 'CLoffWeigh
   myYear = 1965
   myvesselFlag = "ZW"
 
-  myPlots <- coverageLandingsSpatial(
-      dataToPlot = myH1RawObject,
-      year = myYear,
-      vesselFlag = myvesselFlag,
-      catchCat = "Lan",
-      commercialVariable = "CLoffWeight",
-      samplingVariable = "SAsampWtLive"
-    )
+  myPlots <- coverageSpatial(
+    dataToPlot = myH1RawObject,
+    year = myYear,
+    vesselFlag = myvesselFlag,
+    catchCat = "Lan",
+    landingsVariable = "CLoffWeight",
+    effortVariable = "CEnumFracTrips",
+    samplingVariable = "SAsampWtLive",
+    includeLandings = TRUE,
+    includeEffort = TRUE,
+    includeSamples = TRUE
+  )
 
   myPlots
 
