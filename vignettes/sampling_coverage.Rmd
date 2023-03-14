@@ -218,8 +218,10 @@ This bivariate plot shows the spatial location of the landings variable 'CLoffWe
       vesselFlag = myvesselFlag,
       catchCat = "Lan",
       landingsVariable = "CLoffWeight",
+      effortVariable = "CEnumFracTrips",
       samplingVariable = "SAsampWtLive",
-      includeEffort = FALSE
+      includeLandings = TRUE,
+      includeEffort = TRUE
     )
 
   myPlots

@@ -10,6 +10,8 @@ coverageBySpecies(
   year = NA,
   vesselFlag = NA,
   catchCat = c("Lan", "Dis", "Catch"),
+  includeLandings = TRUE,
+  includeSamples = TRUE,
   verbose = FALSE
 )
 }

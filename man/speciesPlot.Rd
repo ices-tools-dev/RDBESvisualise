@@ -5,7 +5,13 @@
 \title{Internal function to return a list of plots which compare the species in
 landings to those in the sample data.}
 \usage{
-speciesPlot(landingsData, sampleData, vesselFlag, catchCat, topN = 10)
+speciesPlot(
+  landingsData = NA,
+  sampleData = NA,
+  vesselFlag,
+  catchCat,
+  topN = 10
+)
 }
 \arguments{
 \item{landingsData}{Landings data}

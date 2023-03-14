@@ -20,15 +20,17 @@ temporalPlot(
 \arguments{
 \item{landingsData}{Landings data}
 
+\item{effortData}{Effort data}
+
 \item{sampleData}{Sample data}
 
 \item{vesselFlag}{Registered Country of Vessel - e.g "IE", "ES" or "FR".}
 
 \item{catchCat}{Catch category}
 
-\item{samplingVariable}{variable from SA to plot}
+\item{landingsVariable}{Variable from CE to plot}
 
-\item{commercialVariable}{Variable from CL to plot}
+\item{samplingVariable}{variable from SA to plot}
 }
 \value{
 A tagList of plotly plots
