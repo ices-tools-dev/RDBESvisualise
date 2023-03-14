@@ -36,7 +36,7 @@ test_that("Species landings plot runs without errors",  {
 
   # Species, landings plot
   expect_error(
-    coverageLandingsBySpecies(
+    coverageBySpecies(
       dataToPlot = myH1RawObject,
       year = myYear,
       vesselFlag = myvesselFlag,
@@ -46,50 +46,6 @@ test_that("Species landings plot runs without errors",  {
 })
 
 
-
-test_that("Stat rectangles points landings runs without errors",  {
-
-  myH1RawObject <- prepareTestData()
-  myYear <- 1965
-  myvesselFlag <- "ZW"
-
-
-  # Stat rectangles, points, landings plot
-  expect_error(
-    coverageLandingsSpatial(
-      dataToPlot = myH1RawObject,
-      year = myYear,
-      vesselFlag = myvesselFlag,
-      var = "Statrec",
-      catchCat = "Lan",
-      commercialVariable = "CLoffWeight",
-      samplingVariable = "SAsampWtLive"
-    )
-    ,NA)
-
-})
-
-
-test_that("Stat rectangles bivariate landings runs without errors",  {
-
-  myH1RawObject <- prepareTestData()
-  myYear <- 1965
-  myvesselFlag <- "ZW"
-
-
-  # Stat rectangles, bivariate, landings plot
-  expect_error(
-    coverageLandingsSpatialBivariate(
-      dataToPlot = myH1RawObject,
-      year = myYear,
-      vesselFlag = myvesselFlag,
-      catchCat = "Lan",
-      commercialVariable = "CLoffWeight",
-      samplingVariable = "SAsampWtLive",
-    )
-    ,NA)
-
-})
 
 
 #}) ## end capture.output

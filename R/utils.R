@@ -1235,12 +1235,13 @@ pointsPlot <- function(landingsData = NA,
 #' @param sampleData Sample data
 #' @param vesselFlag Registered Country of Vessel - e.g "IE", "ES" or "FR".
 #' @param catchCat Catch category
-#' @param commercialVariable The variable from the landings data to plot
+#' @param landingsVariable The variable from the landings data to plot
+#' @param effortVariable The variable from the effort data to plot
 #' @param samplingVariable The variable from the sample data to plot
 #'
 #' @return A tagList of ggplot2 plots
 #'
-bivariatePlotAll <- function(landingsData = NA,
+bivariatePlot <- function(landingsData = NA,
                           effortData = NA,
                           sampleData,
                           vesselFlag,
@@ -1310,21 +1311,12 @@ bivariatePlotAll <- function(landingsData = NA,
   if (landings){
     y <- c(y,unique(d1$CLyear))
   }
-
   y <- c(y,unique(d2$SAyear))
-
   if (effort){
     y <- c(y,unique(d3$CEyear))
   }
   y <- sort(unique(y))
 
-  #df <-
-  #  dplyr::left_join(d1,
-  #                   d2,
-  #                   by = c("CLyear" = "SAyear", "CLstatRect" = "SAstatRect")
-  #  )
-
-  #y <- unique(df$CLyear)
 
   ices_rect <- RDBESvisualise::icesRectSpatialPolygon
   ices_rect_df <- ices_rect@data
@@ -1548,272 +1540,11 @@ bivariatePlotAll <- function(landingsData = NA,
       all_plot[[currentPlotCount + i]] <- x_e
     }
 
-
-    # create classes
-    # biToPlot <-
-    #   biscale::bi_class(
-    #     dd,
-    #     x = sa,
-    #     y = CL,
-    #     style = "fisher",
-    #     dim = 3
-    #   )
-    # # join to our data
-    # bi_ices <-
-    #   dplyr::left_join(ices_rect_df,
-    #                    biToPlot,
-    #                    by = c("ICESNAME" = "CLstatRect"))
-    #
-    # # assign back to ices rectangles
-    # ices_rect@data <- bi_ices
-    #
-    # # get ICES rectangles feature collection
-    # bi_fc <- sf::st_as_sf(ices_rect)
-    #
-    # # ICES rectangles feature collection without NAs for bounding box
-    # bi_fc_No_NA <- na.omit(bi_fc)
-
-
-    # create map
-    # map <- ggplot2::ggplot() +
-    #   ggplot2::geom_polygon(
-    #     data = RDBESvisualise::shoreline,
-    #     ggplot2::aes(x = long, y = lat, group = group),
-    #     color = "azure2",
-    #     fill = "azure4",
-    #     show.legend = FALSE
-    #   ) +
-    #   ggplot2::geom_sf(
-    #     data = bi_fc,
-    #     mapping = ggplot2::aes(fill = bi_class),
-    #     color = "transparent",
-    #     size = 0.1,
-    #     show.legend = FALSE
-    #   ) +
-    #   biscale::bi_scale_fill(
-    #     pal = "GrPink",
-    #     dim = 3,
-    #     na.value = "transparent"
-    #   ) +
-    #   ggplot2::labs(
-    #     title = paste0("Vessel Flag: ", flagLabel),
-    #     subtitle = paste0(
-    #       "Sampling - ",
-    #       catchCat, " (",
-    #       samplingVariable,
-    #       ")  vs Landings (",
-    #       commercialVariable,
-    #       ") in ",
-    #       y[i]
-    #     )
-    #   ) +
-    #   ggplot2::coord_sf(
-    #     xlim = c(sf::st_bbox(bi_fc_No_NA)[1], sf::st_bbox(bi_fc_No_NA)[3]),
-    #     ylim = c(sf::st_bbox(bi_fc_No_NA)[2], sf::st_bbox(bi_fc_No_NA)[4]),
-    #     expand = FALSE
-    #   ) +
-    #   ggplot2::theme(
-    #     axis.line = ggplot2::element_blank(),
-    #     axis.text.x = ggplot2::element_blank(),
-    #     axis.text.y = ggplot2::element_blank(),
-    #     axis.ticks = ggplot2::element_blank(),
-    #     axis.title.x = ggplot2::element_blank(),
-    #     axis.title.y = ggplot2::element_blank(),
-    #     legend.position = "none",
-    #     panel.background = ggplot2::element_blank(),
-    #     panel.border = ggplot2::element_blank(),
-    #     panel.grid.major = ggplot2::element_blank(),
-    #     panel.grid.minor = ggplot2::element_blank(),
-    #     plot.background = ggplot2::element_blank()
-    #   )
-    #
-    #
-    # # legend
-    # legend <- biscale::bi_legend(
-    #   pal = "GrPink",
-    #   dim = 3,
-    #   xlab = "Higher Sampling",
-    #   ylab = "Higher Landings",
-    #   size = 9
-    # )
-    #
-    # # combine map with legend
-    # finalPlot <- cowplot::plot_grid(map,
-    #                                 legend,
-    #                                 labels = NULL,
-    #                                 rel_widths = c(2.5, 1),
-    #                                 rel_heights = c(2.5, 1))
-    # x <- ggiraph::girafe(ggobj = finalPlot, width_svg = 6, height_svg = 6)
-    # x <- ggiraph::girafe_options(
-    #   x,
-    #   ggiraph::opts_zoom(min = .4, max = 2)
-    # )
-    #
-    # all_plot[[i]] <- x
   }
 
   all_plot
 }
 
-#' Internal function to return a list of plots which compare the statistical
-#' rectangle where landings occured to the statistical rectangles where
-#' sampling occured.  The relative amounts of landings/samples are
-#' shown by the use of different colours for the rectangle.
-#'
-#' @param landingsData Landings data
-#' @param sampleData Sample data
-#' @param vesselFlag Registered Country of Vessel - e.g "IE", "ES" or "FR".
-#' @param catchCat Catch category
-#' @param commercialVariable The variable from the landings data to plot
-#' @param samplingVariable The variable from the sample data to plot
-#'
-#' @return A tagList of ggplot2 plots
-#'
-bivariatePlot <- function(landingsData,
-                          sampleData,
-                          vesselFlag,
-                          catchCat,
-                          commercialVariable,
-                          samplingVariable) {
-
-  if (is.na(vesselFlag)) {
-    flagLabel <- "All"
-  } else {
-    flagLabel <- vesselFlag
-  }
-
-  d1 <- na.omit(landingsData %>%
-                  dplyr::group_by(CLyear, CLstatRect) %>%
-                  dplyr::summarize(CL = sum(!!rlang::sym(
-                    commercialVariable
-                  ))))
-  d2 <- na.omit(sampleData %>%
-                  dplyr::group_by(SAyear, SAstatRect) %>%
-                  dplyr::summarize(sa = sum(!!rlang::sym(
-                    samplingVariable
-                  ))))
-
-  df <-
-    dplyr::left_join(d1,
-                     d2,
-                     by = c("CLyear" = "SAyear", "CLstatRect" = "SAstatRect")
-    )
-
-  y <- unique(df$CLyear)
-
-  ices_rect <- RDBESvisualise::icesRectSpatialPolygon
-  ices_rect_df <- ices_rect@data
-
-  all_plot <- htmltools::tagList()
-
-  for (i in seq_along(length(y))) {
-    dd <- df %>% dplyr::filter(CLyear == y[i])
-
-    # create classes
-    biToPlot <-
-      biscale::bi_class(
-        dd,
-        x = sa,
-        y = CL,
-        style = "fisher",
-        dim = 3
-      )
-    # join to our data
-    bi_ices <-
-      dplyr::left_join(ices_rect_df,
-                       biToPlot,
-                       by = c("ICESNAME" = "CLstatRect"))
-
-    # assign back to ices rectangles
-    ices_rect@data <- bi_ices
-
-    # get ICES rectangles feature collection
-    bi_fc <- sf::st_as_sf(ices_rect)
-
-    # ICES rectangles feature collection without NAs for bounding box
-    bi_fc_No_NA <- na.omit(bi_fc)
-
-
-    # create map
-    map <- ggplot2::ggplot() +
-      ggplot2::geom_polygon(
-        data = RDBESvisualise::shoreline,
-        ggplot2::aes(x = long, y = lat, group = group),
-        color = "azure2",
-        fill = "azure4",
-        show.legend = FALSE
-      ) +
-      ggplot2::geom_sf(
-        data = bi_fc,
-        mapping = ggplot2::aes(fill = bi_class),
-        color = "transparent",
-        size = 0.1,
-        show.legend = FALSE
-      ) +
-      biscale::bi_scale_fill(
-        pal = "GrPink",
-        dim = 3,
-        na.value = "transparent"
-      ) +
-      ggplot2::labs(
-        title = paste0("Vessel Flag: ", flagLabel),
-        subtitle = paste0(
-          "Sampling - ",
-          catchCat, " (",
-          samplingVariable,
-          ")  vs Landings (",
-          commercialVariable,
-          ") in ",
-          y[i]
-        )
-      ) +
-      ggplot2::coord_sf(
-        xlim = c(sf::st_bbox(bi_fc_No_NA)[1], sf::st_bbox(bi_fc_No_NA)[3]),
-        ylim = c(sf::st_bbox(bi_fc_No_NA)[2], sf::st_bbox(bi_fc_No_NA)[4]),
-        expand = FALSE
-      ) +
-      ggplot2::theme(
-        axis.line = ggplot2::element_blank(),
-        axis.text.x = ggplot2::element_blank(),
-        axis.text.y = ggplot2::element_blank(),
-        axis.ticks = ggplot2::element_blank(),
-        axis.title.x = ggplot2::element_blank(),
-        axis.title.y = ggplot2::element_blank(),
-        legend.position = "none",
-        panel.background = ggplot2::element_blank(),
-        panel.border = ggplot2::element_blank(),
-        panel.grid.major = ggplot2::element_blank(),
-        panel.grid.minor = ggplot2::element_blank(),
-        plot.background = ggplot2::element_blank()
-      )
-
-
-    # legend
-    legend <- biscale::bi_legend(
-      pal = "GrPink",
-      dim = 3,
-      xlab = "Higher Sampling",
-      ylab = "Higher Landings",
-      size = 9
-    )
-
-    # combine map with legend
-    finalPlot <- cowplot::plot_grid(map,
-                                    legend,
-                                    labels = NULL,
-                                    rel_widths = c(2.5, 1),
-                                    rel_heights = c(2.5, 1))
-    x <- ggiraph::girafe(ggobj = finalPlot, width_svg = 6, height_svg = 6)
-    x <- ggiraph::girafe_options(
-      x,
-      ggiraph::opts_zoom(min = .4, max = 2)
-    )
-
-    all_plot[[i]] <- x
-  }
-
-  all_plot
-}
 
 
 #' Internal function to filter landings data for coverageLandingsXXX functions

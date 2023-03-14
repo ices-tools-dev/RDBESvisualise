@@ -173,7 +173,7 @@ coverageSpatialBivariate <- function(dataToPlot,
     print("Preparing plots")
   }
 
-  plotsToPrint <- bivariatePlotAll(
+  plotsToPrint <- bivariatePlot(
     landingsData = ld1,
     effortData = ef1,
     sampleData = sa1,

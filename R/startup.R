@@ -18,7 +18,7 @@ experimental.
 
 Please report any issues or bugs you encounter here:
 
-    https://github.com/ices-tools-dev/RDBESvisulise
+    https://github.com/ices-tools-dev/RDBESvisualise
 
 ======================================================================")
 

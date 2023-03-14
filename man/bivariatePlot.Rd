@@ -8,11 +8,13 @@ sampling occured.  The relative amounts of landings/samples are
 shown by the use of different colours for the rectangle.}
 \usage{
 bivariatePlot(
-  landingsData,
+  landingsData = NA,
+  effortData = NA,
   sampleData,
   vesselFlag,
   catchCat,
-  commercialVariable,
+  landingsVariable,
+  effortVariable,
   samplingVariable
 )
 }
@@ -25,7 +27,9 @@ bivariatePlot(
 
 \item{catchCat}{Catch category}
 
-\item{commercialVariable}{The variable from the landings data to plot}
+\item{landingsVariable}{The variable from the landings data to plot}
+
+\item{effortVariable}{The variable from the effort data to plot}
 
 \item{samplingVariable}{The variable from the sample data to plot}
 }

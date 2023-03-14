@@ -66,7 +66,7 @@ This output shows the top species landings - the bars represent relative species
   myYear = 1965
   myvesselFlag = "ZW"
 
-  myPlots <- coverageLandingsBySpecies(
+  myPlots <- coverageBySpecies(
       dataToPlot = myH1RawObject,
       year = myYear,
       vesselFlag = myvesselFlag,
@@ -212,13 +212,14 @@ This bivariate plot shows the spatial location of the landings variable 'CLoffWe
   myYear = 1965
   myvesselFlag = "ZW"
 
-  myPlots <- coverageLandingsSpatialBivariate(
+  myPlots <- coverageSpatialBivariate(
       dataToPlot = myH1RawObject,
       year = myYear,
       vesselFlag = myvesselFlag,
       catchCat = "Lan",
-      commercialVariable = "CLoffWeight",
-      samplingVariable = "SAsampWtLive"
+      landingsVariable = "CLoffWeight",
+      samplingVariable = "SAsampWtLive",
+      includeEffort = FALSE
     )
 
   myPlots

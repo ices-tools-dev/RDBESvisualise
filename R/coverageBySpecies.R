@@ -30,7 +30,7 @@
 #'   myPlots[1]
 #'
 #' }
-coverageLandingsBySpecies <- function(dataToPlot,
+coverageBySpecies <- function(dataToPlot,
                              year = NA,
                              vesselFlag = NA,
                              catchCat = c(
