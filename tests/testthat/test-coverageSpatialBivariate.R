@@ -28,67 +28,73 @@ prepareTestData <- function(){
 
 }
 
-test_that("Species landings plot runs without errors",  {
+test_that("Spatial bivariate plot runs without errors for landings only",  {
 
   myH1RawObject <- prepareTestData()
   myYear <- 1965
   myvesselFlag <- "ZW"
 
-  # Species, landings plot
+  # Spatial bivariate plot
   expect_error(
-    coverageLandingsBySpecies(
-      dataToPlot = myH1RawObject,
-      year = myYear,
-      vesselFlag = myvesselFlag,
-      catchCat = "Lan"
-    )
+    coverageSpatialBivariate(
+        dataToPlot = myH1RawObject,
+        year = myYear,
+        vesselFlag = myvesselFlag,
+        catchCat = "Lan",
+        landingsVariable = "CLoffWeight",
+        effortVariable = "CEnumFracTrips",
+        samplingVariable = "SAsampWtLive",
+        includeLandings = TRUE,
+        includeEffort = FALSE
+      )
     ,NA)
 })
 
-
-
-test_that("Stat rectangles points landings runs without errors",  {
+test_that("Spatial bivariate plot runs without errors for effort only",  {
 
   myH1RawObject <- prepareTestData()
   myYear <- 1965
   myvesselFlag <- "ZW"
 
-
-  # Stat rectangles, points, landings plot
+  # Spatial bivariate plot
   expect_error(
-    coverageLandingsSpatial(
-      dataToPlot = myH1RawObject,
-      year = myYear,
-      vesselFlag = myvesselFlag,
-      var = "Statrec",
-      catchCat = "Lan",
-      commercialVariable = "CLoffWeight",
-      samplingVariable = "SAsampWtLive"
-    )
-    ,NA)
-
-})
-
-
-test_that("Stat rectangles bivariate landings runs without errors",  {
-
-  myH1RawObject <- prepareTestData()
-  myYear <- 1965
-  myvesselFlag <- "ZW"
-
-
-  # Stat rectangles, bivariate, landings plot
-  expect_error(
-    coverageLandingsSpatialBivariate(
+    coverageSpatialBivariate(
       dataToPlot = myH1RawObject,
       year = myYear,
       vesselFlag = myvesselFlag,
       catchCat = "Lan",
-      commercialVariable = "CLoffWeight",
+      landingsVariable = "CLoffWeight",
+      effortVariable = "CEnumFracTrips",
       samplingVariable = "SAsampWtLive",
+      includeLandings = FALSE,
+      includeEffort = TRUE
     )
     ,NA)
+})
 
+
+
+
+test_that("Spatial bivariate plot runs without errors for landinsg and effort",  {
+
+  myH1RawObject <- prepareTestData()
+  myYear <- 1965
+  myvesselFlag <- "ZW"
+
+  # Spatial bivariate plot
+  expect_error(
+    coverageSpatialBivariate(
+      dataToPlot = myH1RawObject,
+      year = myYear,
+      vesselFlag = myvesselFlag,
+      catchCat = "Lan",
+      landingsVariable = "CLoffWeight",
+      effortVariable = "CEnumFracTrips",
+      samplingVariable = "SAsampWtLive",
+      includeLandings = TRUE,
+      includeEffort = TRUE
+    )
+    ,NA)
 })
 
 
