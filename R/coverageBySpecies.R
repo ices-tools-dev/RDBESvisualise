@@ -38,6 +38,8 @@ coverageBySpecies <- function(dataToPlot,
                                "Dis",
                                "Catch"
                              ),
+                             includeLandings = TRUE,
+                             includeSamples = TRUE,
                              verbose = FALSE) {
 
 
@@ -65,24 +67,33 @@ coverageBySpecies <- function(dataToPlot,
   # Check the input data is valid
   RDBEScore::validateRDBESDataObject(dataToPlot, verbose = verbose)
 
-  # STEP 1) PREPARE THE DATA
 
-  ld <- preprocessLandingsDataForCoverage(dataToPlot, verbose = verbose)
-  sa <- preprocessSampleDataForCoverage(dataToPlot, verbose = verbose)
+  # STEP 1) PREPARE AND FILTER THE DATA
 
-  # STEP 2) FILTER THE DATA BASED ON THE INPUT PARAMETERS
+  # Landings
+  if (includeLandings){
+    ld <- preprocessLandingsDataForCoverage(dataToPlot, verbose = verbose)
+    ld1 <- filterLandingsDataForCoverage(ld,
+                                         year = year,
+                                         quarter = NA,
+                                         vesselFlag = vesselFlag,
+                                         verbose = verbose)
+  } else {
+    ld1 <- NA
+  }
 
-  ld1 <- filterLandingsDataForCoverage(ld,
+  # Samples
+  if (includeSamples){
+    sa <- preprocessSampleDataForCoverage(dataToPlot, verbose = verbose)
+    sa1 <- filterSampleDataForCoverage(sa,
                                        year = year,
                                        quarter = NA,
                                        vesselFlag = vesselFlag,
+                                       catchCat = catchCat,
                                        verbose = verbose)
-  sa1 <- filterSampleDataForCoverage(sa,
-                                     year = year,
-                                     quarter = NA,
-                                     vesselFlag = vesselFlag,
-                                     catchCat = catchCat,
-                                     verbose = verbose)
+  } else {
+    sa1 <- NA
+  }
 
 
   # STEP 3) Plot the data

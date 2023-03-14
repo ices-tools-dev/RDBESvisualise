@@ -54,8 +54,8 @@ as.integer.or.dbl <- function(x){
 #'
 #' @return A tagList of plotly plots
 #'
-speciesPlot <- function(landingsData,
-                        sampleData,
+speciesPlot <- function(landingsData = NA,
+                        sampleData = NA,
                         vesselFlag,
                         catchCat,
                         topN = 10) {
@@ -66,110 +66,195 @@ speciesPlot <- function(landingsData,
     flagLabel <- vesselFlag
   }
 
+  # see what data we've been given
+  if (length(landingsData) == 1 && is.na(landingsData)){
+    landings <- FALSE
+  } else {
+    landings <- TRUE
+  }
+  if (length(sampleData) == 1 && is.na(sampleData)){
+    samples <- FALSE
+  } else {
+    samples <- TRUE
+  }
+
   # Get the species names
   full_name <- RDBESvisualise::speciesNamesAndCodes
   full_name <- full_name[-which(duplicated(full_name$AphiaID)), ]
 
-  # Landings data
-  # Group by year, and year and quarter, and count the number of species
-  df1 <- na.omit(
-    landingsData %>%
-      dplyr::group_by(CLyear) %>%
-      dplyr::add_count(CLspecCode, name = "CLSpeCount") %>%
-      dplyr::summarise(LandingCountYear = sum(CLSpeCount))
-  ) %>%
-    dplyr::mutate(totalSpeCountAll = sum(LandingCountYear))
-  d1 <- na.omit(
-    landingsData %>%
-      dplyr::group_by(CLyear, CLquar, CLspecCode) %>%
-      dplyr::add_count(CLspecCode, name = "CLSpeCount") %>%
-      dplyr::summarise(LandingCount = sum(CLSpeCount))
-  )
-  d1Species <-
-    dplyr::left_join(d1, full_name, by = c("CLspecCode" = "AphiaID"))
+  if (landings){
 
-  d1Species <- dplyr::left_join(d1Species, df1, by = "CLyear") %>%
-    dplyr::mutate(relativeValuesYear = LandingCount / LandingCountYear) %>%
-    dplyr::mutate(relativeValuesAll = LandingCount / totalSpeCountAll) %>%
-    dplyr::top_n(topN)
+    # Landings data
+    # Group by year, and year and quarter, and count the number of species
+    df1 <- na.omit(
+      landingsData %>%
+        dplyr::group_by(CLyear) %>%
+        dplyr::add_count(CLspecCode, name = "CLSpeCount") %>%
+        dplyr::summarise(LandingCountYear = sum(CLSpeCount))
+    ) %>%
+      dplyr::mutate(totalSpeCountAll = sum(LandingCountYear))
+    d1 <- na.omit(
+      landingsData %>%
+        dplyr::group_by(CLyear, CLquar, CLspecCode) %>%
+        dplyr::add_count(CLspecCode, name = "CLSpeCount") %>%
+        dplyr::summarise(LandingCount = sum(CLSpeCount))
+    )
+    d1Species <-
+      dplyr::left_join(d1, full_name, by = c("CLspecCode" = "AphiaID"))
 
-  # Sample data
-  # Group by year, and year and quarter, and count the number of species
+    d1Species <- dplyr::left_join(d1Species, df1, by = "CLyear") %>%
+      dplyr::mutate(relativeValuesYear = LandingCount / LandingCountYear) %>%
+      dplyr::mutate(relativeValuesAll = LandingCount / totalSpeCountAll) %>%
+      dplyr::top_n(topN)
+  }
 
-  # add df to calculate total species for year
-  df2 <- na.omit(
-    sampleData %>%
-      dplyr::group_by(SAyear) %>%
-      dplyr::add_count(SAspeCode, name = "SASpeCount") %>%
-      dplyr::summarise(SamplingCountYear = sum(SASpeCount))
-  ) %>%
-    dplyr::mutate(totalSpeCountAll = sum(SamplingCountYear))
+  if (samples){
 
-  d2 <- na.omit(
-    sampleData %>%
-      dplyr::group_by(SAyear, SAquar, SAspeCode) %>%
-      dplyr::add_count(SAspeCode, name = "SASpeCount") %>%
-      dplyr::summarise(SamplingCount = sum(SASpeCount))
-  )
-  d2Species <-
-    dplyr::left_join(d2, full_name, by = c("SAspeCode" = "AphiaID"))
+    # Sample data
+    # Group by year, and year and quarter, and count the number of species
 
-  d2Species <- dplyr::left_join(d2Species, df2, by = "SAyear") %>%
-    dplyr::mutate(relSamplingYear = SamplingCount / SamplingCountYear) %>%
-    dplyr::mutate(relSamplingAll = SamplingCount / totalSpeCountAll) %>%
-    dplyr::top_n(topN)
+    # add df to calculate total species for year
+    df2 <- na.omit(
+      sampleData %>%
+        dplyr::group_by(SAyear) %>%
+        dplyr::add_count(SAspeCode, name = "SASpeCount") %>%
+        dplyr::summarise(SamplingCountYear = sum(SASpeCount))
+    ) %>%
+      dplyr::mutate(totalSpeCountAll = sum(SamplingCountYear))
 
-  y <- unique(d1Species$CLyear)
+    d2 <- na.omit(
+      sampleData %>%
+        dplyr::group_by(SAyear, SAquar, SAspeCode) %>%
+        dplyr::add_count(SAspeCode, name = "SASpeCount") %>%
+        dplyr::summarise(SamplingCount = sum(SASpeCount))
+    )
+    d2Species <-
+      dplyr::left_join(d2, full_name, by = c("SAspeCode" = "AphiaID"))
+
+    d2Species <- dplyr::left_join(d2Species, df2, by = "SAyear") %>%
+      dplyr::mutate(relSamplingYear = SamplingCount / SamplingCountYear) %>%
+      dplyr::mutate(relSamplingAll = SamplingCount / totalSpeCountAll) %>%
+      dplyr::top_n(topN)
+
+  }
+
+  # Get the years we want plot
+  y <- c()
+  if (landings){
+    y <- c(y,unique(d1$CLyear))
+  }
+  if (samples){
+    y <- c(y,unique(d2$SAyear))
+  }
+  y <- sort(unique(y))
+
+  #y <- unique(d1Species$CLyear)
 
   # Generate plots for the data
 
   all_plot <- htmltools::tagList()
   for (i in  seq_along(length(y))) {
-    t1 <- d1Species %>% dplyr::filter(CLyear == y[i])
-    t2 <- d2Species %>% dplyr::filter(SAyear == y[i])
-    # Landings plot
-    p1 <- plotly::plot_ly(
-      t1,
-      x = ~ as.character(FAODescription),
-      y = ~relativeValuesYear,
-      color = ~ as.character(CLquar),
-      type = "bar",
-      showlegend = FALSE
-    ) %>%
-      plotly::layout(
-        title = paste0(
-          "Vessel Flag ",
-          flagLabel,
-          ": Top Landings Species in",
-          y[i]
-        ),
-        yaxis = list(title = "Landings"),
-        xaxis = list(categoryorder = "total descending"),
-        barmode = "stack"
-      )
-    # sample data plot
-    p2 <- plotly::plot_ly(
-      t2,
-      x = ~ as.character(FAODescription),
-      y = ~relSamplingYear,
-      color = ~ as.character(SAquar),
-      type = "bar",
-      showlegend = TRUE
-    ) %>%
-      plotly::layout(
-        title = paste0(
-          "Vessel Flag ",
-          flagLabel,
-          " : Top Landings and Sampling (",
-          catchCat,
-          ") Species \nRelative Values per Plot in ",
-          y[i]
-        ),
-        yaxis = list(title = "Sampling"),
-        xaxis = list(categoryorder = "total descending"),
-        barmode = "stack",
-        legend = list(title = list(text = "<b> Quarter: </b>"))
-      )
+
+    if (landings){
+      t1 <- d1Species %>% dplyr::filter(CLyear == y[i])
+      # Landings plot
+      p1 <- plotly::plot_ly(
+        t1,
+        x = ~ as.character(FAODescription),
+        y = ~relativeValuesYear,
+        color = ~ as.character(CLquar),
+        type = "bar",
+        showlegend = FALSE
+      ) %>%
+        plotly::layout(
+          title = paste0(
+            "Vessel Flag ",
+            flagLabel,
+            ": Top Landings Species in",
+            y[i]
+          ),
+          yaxis = list(title = "Landings"),
+          xaxis = list(categoryorder = "total descending"),
+          barmode = "stack"
+        )
+    } else {
+      p1 <- plotly::plotly_empty()
+    }
+
+    if (samples){
+      t2 <- d2Species %>% dplyr::filter(SAyear == y[i])
+      # sample data plot
+      p2 <- plotly::plot_ly(
+        t2,
+        x = ~ as.character(FAODescription),
+        y = ~relSamplingYear,
+        color = ~ as.character(SAquar),
+        type = "bar",
+        showlegend = TRUE
+      ) %>%
+        plotly::layout(
+          title = paste0(
+            "Vessel Flag ",
+            flagLabel,
+            " : Top Landings and Sampling (",
+            catchCat,
+            ") Species \nRelative Values per Plot in ",
+            y[i]
+          ),
+          yaxis = list(title = "Sampling"),
+          xaxis = list(categoryorder = "total descending"),
+          barmode = "stack",
+          legend = list(title = list(text = "<b> Quarter: </b>"))
+        )
+    } else {
+      p2 <- plotly::plotly_empty()
+    }
+
+    # t1 <- d1Species %>% dplyr::filter(CLyear == y[i])
+    # t2 <- d2Species %>% dplyr::filter(SAyear == y[i])
+    # # Landings plot
+    # p1 <- plotly::plot_ly(
+    #   t1,
+    #   x = ~ as.character(FAODescription),
+    #   y = ~relativeValuesYear,
+    #   color = ~ as.character(CLquar),
+    #   type = "bar",
+    #   showlegend = FALSE
+    # ) %>%
+    #   plotly::layout(
+    #     title = paste0(
+    #       "Vessel Flag ",
+    #       flagLabel,
+    #       ": Top Landings Species in",
+    #       y[i]
+    #     ),
+    #     yaxis = list(title = "Landings"),
+    #     xaxis = list(categoryorder = "total descending"),
+    #     barmode = "stack"
+    #   )
+    # # sample data plot
+    # p2 <- plotly::plot_ly(
+    #   t2,
+    #   x = ~ as.character(FAODescription),
+    #   y = ~relSamplingYear,
+    #   color = ~ as.character(SAquar),
+    #   type = "bar",
+    #   showlegend = TRUE
+    # ) %>%
+    #   plotly::layout(
+    #     title = paste0(
+    #       "Vessel Flag ",
+    #       flagLabel,
+    #       " : Top Landings and Sampling (",
+    #       catchCat,
+    #       ") Species \nRelative Values per Plot in ",
+    #       y[i]
+    #     ),
+    #     yaxis = list(title = "Sampling"),
+    #     xaxis = list(categoryorder = "total descending"),
+    #     barmode = "stack",
+    #     legend = list(title = list(text = "<b> Quarter: </b>"))
+    #   )
 
 
     all_plot[[i]] <- plotly::subplot(p1, p2, titleY = TRUE, nrows = 2)

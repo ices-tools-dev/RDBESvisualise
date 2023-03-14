@@ -28,7 +28,7 @@ prepareTestData <- function(){
 
 }
 
-test_that("Species landings plot runs without errors",  {
+test_that("Species plot runs without errors for landings, and samples",  {
 
   myH1RawObject <- prepareTestData()
   myYear <- 1965
@@ -40,11 +40,50 @@ test_that("Species landings plot runs without errors",  {
       dataToPlot = myH1RawObject,
       year = myYear,
       vesselFlag = myvesselFlag,
-      catchCat = "Lan"
+      catchCat = "Lan",
+      includeLandings = TRUE,
+      includeSamples = TRUE
     )
     ,NA)
 })
 
+test_that("Species plot runs without errors for just landings",  {
+
+  myH1RawObject <- prepareTestData()
+  myYear <- 1965
+  myvesselFlag <- "ZW"
+
+  # Species, landings plot
+  expect_error(
+    coverageBySpecies(
+      dataToPlot = myH1RawObject,
+      year = myYear,
+      vesselFlag = myvesselFlag,
+      catchCat = "Lan",
+      includeLandings = TRUE,
+      includeSamples = FALSE
+    )
+    ,NA)
+})
+
+test_that("Species plot runs without errors for just samples",  {
+
+  myH1RawObject <- prepareTestData()
+  myYear <- 1965
+  myvesselFlag <- "ZW"
+
+  # Species, landings plot
+  expect_error(
+    coverageBySpecies(
+      dataToPlot = myH1RawObject,
+      year = myYear,
+      vesselFlag = myvesselFlag,
+      catchCat = "Lan",
+      includeLandings = FALSE,
+      includeSamples = TRUE
+    )
+    ,NA)
+})
 
 
 
