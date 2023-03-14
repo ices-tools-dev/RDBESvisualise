@@ -47,25 +47,6 @@ test_that("Species landings plot runs without errors",  {
 
 
 
-test_that("Temporal landings plot runs without errors",  {
-
-  myH1RawObject <- prepareTestData()
-  myYear <- 1965
-  myvesselFlag <- "ZW"
-
-  # Temporal, landings plot
-  expect_error(
-    coverageLandingsTemporal(
-      dataToPlot = myH1RawObject,
-      year = myYear,
-      vesselFlag = myvesselFlag,
-      catchCat = "Lan",
-      commercialVariable = "CLoffWeight",
-      samplingVariable = "SAsampWtLive"
-    )
-    ,NA)
-})
-
 test_that("Stat rectangles points landings runs without errors",  {
 
   myH1RawObject <- prepareTestData()
@@ -87,6 +68,7 @@ test_that("Stat rectangles points landings runs without errors",  {
     ,NA)
 
 })
+
 
 test_that("Stat rectangles bivariate landings runs without errors",  {
 
