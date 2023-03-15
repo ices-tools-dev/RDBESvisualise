@@ -21,36 +21,35 @@
 #' @examples
 #' \dontrun{
 #'
-#'   myH1RawObject <- RDBEScore::createRDBESDataObject(
-#'                   rdbesExtractPath = "../tests/testthat/h1_v_1_19_13")
+#' myH1RawObject <- RDBEScore::createRDBESDataObject(
+#'   rdbesExtractPath = "../tests/testthat/h1_v_1_19_13"
+#' )
 #'
-#'   myYear = 1965
-#'   myvesselFlag = "ZW"
+#' myYear <- 1965
+#' myvesselFlag <- "ZW"
 #'
-#'   myPlots <- coverageLandingsByGear(
-#'     dataToPlot = myH1RawObject,
-#'     year = myYear,
-#'     vesselFlag = myvesselFlag,
-#'     catchCat = "Lan"
-#'     )
+#' myPlots <- coverageLandingsByGear(
+#'   dataToPlot = myH1RawObject,
+#'   year = myYear,
+#'   vesselFlag = myvesselFlag,
+#'   catchCat = "Lan"
+#' )
 #'
-#'   myPlots[1]
-#'
+#' myPlots[1]
 #' }
 coverageByGear <- function(dataToPlot,
-                                   year = NA,
-                                   quarter = NA,
-                                   vesselFlag = NA,
-                                   catchCat = c(
-                                     "Lan",
-                                     "Dis",
-                                     "Catch"
-                                   ),
-                                  includeLandings = TRUE,
-                                  includeEffort = TRUE,
-                                  includeSamples = TRUE,
-                                  verbose = FALSE){
-
+                           year = NA,
+                           quarter = NA,
+                           vesselFlag = NA,
+                           catchCat = c(
+                             "Lan",
+                             "Dis",
+                             "Catch"
+                           ),
+                           includeLandings = TRUE,
+                           includeEffort = TRUE,
+                           includeSamples = TRUE,
+                           verbose = FALSE) {
   # STEP 0) VALIDATE INPUTS
 
   # check the parameters are valid before we do anything
@@ -78,38 +77,41 @@ coverageByGear <- function(dataToPlot,
   # STEP 1) PREPARE AND FILTER THE DATA
 
   # Landings
-  if (includeLandings){
+  if (includeLandings) {
     ld <- preprocessLandingsDataForCoverage(dataToPlot, verbose = verbose)
     ld1 <- filterLandingsDataForCoverage(ld,
-                                         year = year,
-                                         quarter = quarter,
-                                         vesselFlag = vesselFlag,
-                                         verbose = verbose)
+      year = year,
+      quarter = quarter,
+      vesselFlag = vesselFlag,
+      verbose = verbose
+    )
   } else {
     ld1 <- NA
   }
 
   # Effort
-  if (includeEffort){
+  if (includeEffort) {
     ef <- preprocessEffortDataForCoverage(dataToPlot, verbose = verbose)
     ef1 <- filterEffortDataForCoverage(ef,
-                                       year = year,
-                                       quarter = quarter,
-                                       vesselFlag = vesselFlag,
-                                       verbose = verbose)
+      year = year,
+      quarter = quarter,
+      vesselFlag = vesselFlag,
+      verbose = verbose
+    )
   } else {
     ef1 <- NA
   }
 
   # Samples
-  if (includeSamples){
+  if (includeSamples) {
     sa <- preprocessSampleDataForCoverage(dataToPlot, verbose = verbose)
     sa1 <- filterSampleDataForCoverage(sa,
-                                       year = year,
-                                       quarter = quarter,
-                                       vesselFlag = vesselFlag,
-                                       catchCat = catchCat,
-                                       verbose = verbose)
+      year = year,
+      quarter = quarter,
+      vesselFlag = vesselFlag,
+      catchCat = catchCat,
+      verbose = verbose
+    )
   } else {
     sa1 <- NA
   }
@@ -131,8 +133,6 @@ coverageByGear <- function(dataToPlot,
   )
 
   plotsToPrint
-
-
 }
 
 #' Internal function to return a list of plots which compare the fishing gears
@@ -152,19 +152,18 @@ gearPlot <- function(landingsData = NA,
                      vesselFlag,
                      catchCat,
                      quarter) {
-
   # see what data we've been given
-  if (length(landingsData) == 1 && is.na(landingsData)){
+  if (length(landingsData) == 1 && is.na(landingsData)) {
     landings <- FALSE
   } else {
     landings <- TRUE
   }
-  if (length(effortData) == 1 && is.na(effortData)){
+  if (length(effortData) == 1 && is.na(effortData)) {
     effort <- FALSE
   } else {
     effort <- TRUE
   }
-  if (length(sampleData) == 1 && is.na(sampleData)){
+  if (length(sampleData) == 1 && is.na(sampleData)) {
     samples <- FALSE
   } else {
     samples <- TRUE
@@ -179,10 +178,8 @@ gearPlot <- function(landingsData = NA,
 
 
   if (is.na(quarter) == FALSE) {
-
     # Landings
     if (landings) {
-
       df1 <- na.omit(
         landingsData %>%
           dplyr::group_by(CLyear, CLquar) %>%
@@ -198,13 +195,14 @@ gearPlot <- function(landingsData = NA,
       )
 
       d1 <- dplyr::left_join(d1, df1, by = "CEyear", "CEquar") %>%
-        dplyr::mutate(relativeValuesL =
-                        LandingsGearCount / LandingsGearCountQuar)
+        dplyr::mutate(
+          relativeValuesL =
+            LandingsGearCount / LandingsGearCountQuar
+        )
     }
 
     # Samples
-    if (samples){
-
+    if (samples) {
       df2 <- na.omit(
         sampleData %>%
           dplyr::group_by(SAyear, SAquar) %>%
@@ -220,13 +218,15 @@ gearPlot <- function(landingsData = NA,
       )
 
       d2 <- dplyr::left_join(d2, df2, by = "SAyear", "SAquar") %>%
-        dplyr::mutate(relativeValuesS =
-                        SamplingGearCount / SamplingGearCountQuar)
+        dplyr::mutate(
+          relativeValuesS =
+            SamplingGearCount / SamplingGearCountQuar
+        )
     }
 
 
     # Effort
-    if (effort){
+    if (effort) {
       df3 <- na.omit(
         effortData %>%
           dplyr::group_by(CEyear, CEquar) %>%
@@ -242,15 +242,14 @@ gearPlot <- function(landingsData = NA,
       )
 
       d3 <- dplyr::left_join(d3, df3, by = "CEyear", "CEquar") %>%
-        dplyr::mutate(relativeValuesE =
-                        EffortGearCount / EffortsGearCountQuar)
+        dplyr::mutate(
+          relativeValuesE =
+            EffortGearCount / EffortsGearCountQuar
+        )
     }
-
-
   } else {
-
     # Landings
-    if (landings){
+    if (landings) {
       df1 <- na.omit(
         landingsData %>%
           dplyr::group_by(CLyear) %>%
@@ -270,7 +269,7 @@ gearPlot <- function(landingsData = NA,
     }
 
     # Samples
-    if (samples){
+    if (samples) {
       df2 <- na.omit(
         sampleData %>%
           dplyr::group_by(SAyear) %>%
@@ -286,12 +285,14 @@ gearPlot <- function(landingsData = NA,
       )
 
       d2 <- dplyr::left_join(d2, df2, by = "SAyear") %>%
-        dplyr::mutate(relativeValuesS =
-                        SamplingGearCount / SamplingGearCountYear)
+        dplyr::mutate(
+          relativeValuesS =
+            SamplingGearCount / SamplingGearCountYear
+        )
     }
 
     # Effort
-    if (effort){
+    if (effort) {
       df3 <- na.omit(
         effortData %>%
           dplyr::group_by(CEyear) %>%
@@ -314,14 +315,14 @@ gearPlot <- function(landingsData = NA,
 
   # Get the years we want plot
   y <- c()
-  if (landings){
-    y <- c(y,unique(d1$CLyear))
+  if (landings) {
+    y <- c(y, unique(d1$CLyear))
   }
-  if (samples){
-    y <- c(y,unique(d2$SAyear))
+  if (samples) {
+    y <- c(y, unique(d2$SAyear))
   }
-  if (effort){
-    y <- c(y,unique(d3$CEyear))
+  if (effort) {
+    y <- c(y, unique(d3$CEyear))
   }
   y <- sort(unique(y))
 
@@ -330,7 +331,7 @@ gearPlot <- function(landingsData = NA,
 
   for (i in seq_along(length(y))) {
     # Landings
-    if (landings){
+    if (landings) {
       dd <- d1 %>% dplyr::filter(CLyear == y[i])
       dd <- dd[-1]
       p1 <- plotly::plot_ly(
@@ -353,11 +354,11 @@ gearPlot <- function(landingsData = NA,
           barmode = "stack"
         )
     } else {
-      p1 <- plotly::plotly_empty()
+      p1 <- plotly::plotly_empty(type = "bar")
     }
 
     # Samples
-    if (samples){
+    if (samples) {
       ds <- d2 %>% dplyr::filter(SAyear == y[i])
       ds <- ds[-1]
       p2 <- plotly::plot_ly(
@@ -381,11 +382,11 @@ gearPlot <- function(landingsData = NA,
           barmode = "stack"
         )
     } else {
-      p2 <- plotly::plotly_empty()
+      p2 <- plotly::plotly_empty(type = "bar")
     }
 
     # Effort
-    if (effort){
+    if (effort) {
       dde <- d3 %>% dplyr::filter(CEyear == y[i])
       dde <- dde[-1]
       p3 <- plotly::plot_ly(
@@ -400,7 +401,7 @@ gearPlot <- function(landingsData = NA,
           title = paste0(
             "Vessel Flag ",
             flagLabel,
-            " : Top Gear - Relative Values per Plot \n in",
+            " : Top Gear - Relative Values per Plot \n in ",
             y[i]
           ),
           yaxis = list(title = "Effort"),
@@ -408,7 +409,7 @@ gearPlot <- function(landingsData = NA,
           barmode = "stack"
         )
     } else {
-      p3 <- plotly::plotly_empty()
+      p3 <- plotly::plotly_empty(type = "bar")
     }
 
 
