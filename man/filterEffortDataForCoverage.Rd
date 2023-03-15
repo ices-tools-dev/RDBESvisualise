@@ -2,11 +2,13 @@
 % Please edit documentation in R/utils.R
 \name{filterEffortDataForCoverage}
 \alias{filterEffortDataForCoverage}
-\title{Internal function to filter landings data for coverageLandingsXXX functions}
+\title{Internal function to filter effort data for coverageXXX functions}
 \usage{
 filterEffortDataForCoverage(effortData, year, quarter, vesselFlag, verbose)
 }
 \arguments{
+\item{effortData}{A data table of effort data ("CE")}
+
 \item{year}{Year to be assessed e.g 2021}
 
 \item{quarter}{Quarter to be assessed - possible choices 1,2,3 or 4}
@@ -15,12 +17,10 @@ filterEffortDataForCoverage(effortData, year, quarter, vesselFlag, verbose)
 
 \item{verbose}{(Optional) Set to TRUE to print more information. Default is
 FALSE}
-
-\item{landingsData}{A data table of landings data ("CL")}
 }
 \value{
 A data table of effort data ("CE")
 }
 \description{
-Internal function to filter landings data for coverageLandingsXXX functions
+Internal function to filter effort data for coverageXXX functions
 }

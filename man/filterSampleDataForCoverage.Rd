@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{filterSampleDataForCoverage}
 \alias{filterSampleDataForCoverage}
-\title{Internal function to filter sample data for coverageLandingsXXX functions}
+\title{Internal function to filter sample data for coverageXXX functions}
 \usage{
 filterSampleDataForCoverage(
   sampleData,
@@ -31,5 +31,5 @@ FALSE}
 An RDBESEstObject
 }
 \description{
-Internal function to filter sample data for coverageLandingsXXX functions
+Internal function to filter sample data for coverageXXX functions
 }

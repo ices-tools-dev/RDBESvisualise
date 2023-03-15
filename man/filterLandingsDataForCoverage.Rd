@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{filterLandingsDataForCoverage}
 \alias{filterLandingsDataForCoverage}
-\title{Internal function to filter landings data for coverageLandingsXXX functions}
+\title{Internal function to filter landings data for coverageXXX functions}
 \usage{
 filterLandingsDataForCoverage(landingsData, year, quarter, vesselFlag, verbose)
 }
@@ -22,5 +22,5 @@ FALSE}
 A data table of landings data ("CL")
 }
 \description{
-Internal function to filter landings data for coverageLandingsXXX functions
+Internal function to filter landings data for coverageXXX functions
 }

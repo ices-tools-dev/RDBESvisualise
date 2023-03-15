@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{preprocessLandingsDataForCoverage}
 \alias{preprocessLandingsDataForCoverage}
-\title{Internal function to prepare landings data for coverageLandingsXXX functions}
+\title{Internal function to prepare landings data for coverageXXX functions}
 \usage{
 preprocessLandingsDataForCoverage(dataToPlot, verbose)
 }
@@ -16,5 +16,5 @@ FALSE}
 A data table of landings data ("CL")
 }
 \description{
-Internal function to prepare landings data for coverageLandingsXXX functions
+Internal function to prepare landings data for coverageXXX functions
 }
