@@ -20,50 +20,49 @@
 #' @examples
 #' \dontrun{
 #'
-#'   myH1RawObject <- RDBEScore::createRDBESDataObject(
-#'                   rdbesExtractPath = "../tests/testthat/h1_v_1_19_13")
+#' myH1RawObject <- RDBEScore::createRDBESDataObject(
+#'   rdbesExtractPath = "../tests/testthat/h1_v_1_19_13"
+#' )
 #'
-#'   myYear = 1965
-#'   myvesselFlag = "ZW"
+#' myYear <- 1965
+#' myvesselFlag <- "ZW"
 #'
-#'   myPlots <- coverageLandingsSpatial(
-#'     dataToPlot = myH1RawObject,
-#'     year = myYear,
-#'     vesselFlag = myvesselFlag,
-#'     catchCat = "Lan",
-#'     commercialVariable = "CLoffWeight",
-#'     samplingVariable = "SAsampWtLive"
-#'   )
+#' myPlots <- coverageLandingsSpatial(
+#'   dataToPlot = myH1RawObject,
+#'   year = myYear,
+#'   vesselFlag = myvesselFlag,
+#'   catchCat = "Lan",
+#'   commercialVariable = "CLoffWeight",
+#'   samplingVariable = "SAsampWtLive"
+#' )
 #'
-#'   myPlots[1]
-#'
+#' myPlots[1]
 #' }
 coverageSpatial <- function(dataToPlot,
-                                    year = NA,
-                                    vesselFlag = NA,
-                                    landingsVariable = c(
-                                      "CLoffWeight",
-                                      "CLsciWeight"
-                                    ),
-                                    effortVariable = c(
-                                      "CEnumFracTrips",
-                                      "CEnumDomTrip"
-                                    ),
-                                    samplingVariable = c(
-                                      "SAsampWtLive",
-                                      "SAnumSamp",
-                                      "SAsampWtMes"
-                                    ),
-                                    catchCat = c(
-                                      "Lan",
-                                      "Dis",
-                                      "Catch"
-                                    ),
-                                    includeLandings = TRUE,
-                                    includeEffort = TRUE,
-                                    includeSamples = TRUE,
-                                    verbose = FALSE){
-
+                            year = NA,
+                            vesselFlag = NA,
+                            landingsVariable = c(
+                              "CLoffWeight",
+                              "CLsciWeight"
+                            ),
+                            effortVariable = c(
+                              "CEnumFracTrips",
+                              "CEnumDomTrip"
+                            ),
+                            samplingVariable = c(
+                              "SAsampWtLive",
+                              "SAnumSamp",
+                              "SAsampWtMes"
+                            ),
+                            catchCat = c(
+                              "Lan",
+                              "Dis",
+                              "Catch"
+                            ),
+                            includeLandings = TRUE,
+                            includeEffort = TRUE,
+                            includeSamples = TRUE,
+                            verbose = FALSE) {
   # STEP 0) VALIDATE INPUTS
 
   # check the parameters are valid before we do anything
@@ -81,33 +80,33 @@ coverageSpatial <- function(dataToPlot,
     stop("Only one vessel flag country can be provided")
   }
 
-  if (includeLandings && length(landingsVariable) > 1){
+  if (includeLandings && length(landingsVariable) > 1) {
     stop("You must provide landingsVariable if you want to include landings data")
   }
 
-  if (includeEffort && length(effortVariable) > 1){
+  if (includeEffort && length(effortVariable) > 1) {
     stop("You must provide effortVariable if you want to include effort data")
   }
 
-  if (includeSamples && length(samplingVariable) > 1){
+  if (includeSamples && length(samplingVariable) > 1) {
     stop("You must provide samplingVariable if you want to include sample data")
   }
 
   if (includeLandings &&
-      length(landingsVariable) == 1 &&
-      !landingsVariable %in% RDBESvisualise::allowedLandingsVariable ) {
+    length(landingsVariable) == 1 &&
+    !landingsVariable %in% RDBESvisualise::allowedLandingsVariable) {
     stop(paste0("Invalid landingsVariable value:", landingsVariable))
   }
 
   if (includeEffort &&
-      length(effortVariable) == 1 &&
-      !effortVariable %in% RDBESvisualise::allowedEffortVariable) {
+    length(effortVariable) == 1 &&
+    !effortVariable %in% RDBESvisualise::allowedEffortVariable) {
     stop(paste0("Invalid effortVariable value:", effortVariable))
   }
 
   if (includeSamples &&
-      length(samplingVariable) == 1 &&
-      !samplingVariable %in% RDBESvisualise::allowedSamplingVariable) {
+    length(samplingVariable) == 1 &&
+    !samplingVariable %in% RDBESvisualise::allowedSamplingVariable) {
     stop(paste0("Invalid samplingVariable value:", samplingVariable))
   }
 
@@ -129,38 +128,41 @@ coverageSpatial <- function(dataToPlot,
   # STEP 1) PREPARE AND FILTER THE DATA
 
   # Landings
-  if (includeLandings){
+  if (includeLandings) {
     ld <- preprocessLandingsDataForCoverage(dataToPlot, verbose = verbose)
     ld1 <- filterLandingsDataForCoverage(ld,
-                                         year = year,
-                                         quarter = NA,
-                                         vesselFlag = vesselFlag,
-                                         verbose = verbose)
+      year = year,
+      quarter = NA,
+      vesselFlag = vesselFlag,
+      verbose = verbose
+    )
   } else {
     ld1 <- NA
   }
 
   # Effort
-  if (includeEffort){
+  if (includeEffort) {
     ef <- preprocessEffortDataForCoverage(dataToPlot, verbose = verbose)
     ef1 <- filterEffortDataForCoverage(ef,
-                                       year = year,
-                                       quarter = NA,
-                                       vesselFlag = vesselFlag,
-                                       verbose = verbose)
+      year = year,
+      quarter = NA,
+      vesselFlag = vesselFlag,
+      verbose = verbose
+    )
   } else {
     ef1 <- NA
   }
 
   # Samples
-  if (includeSamples){
+  if (includeSamples) {
     sa <- preprocessSampleDataForCoverage(dataToPlot, verbose = verbose)
     sa1 <- filterSampleDataForCoverage(sa,
-                                       year = year,
-                                       quarter = NA,
-                                       vesselFlag = vesselFlag,
-                                       catchCat = catchCat,
-                                       verbose = verbose)
+      year = year,
+      quarter = NA,
+      vesselFlag = vesselFlag,
+      catchCat = catchCat,
+      verbose = verbose
+    )
   } else {
     sa1 <- NA
   }
@@ -185,7 +187,6 @@ coverageSpatial <- function(dataToPlot,
   )
 
   plotsToPrint
-
 }
 
 #' Internal function to return a list of plots which compare the statistical
@@ -213,19 +214,18 @@ pointsPlot <- function(landingsData = NA,
                        landingsVariable,
                        effortVariable,
                        samplingVariable) {
-
   # see what data we've been given
-  if (length(landingsData) == 1 && is.na(landingsData)){
+  if (length(landingsData) == 1 && is.na(landingsData)) {
     landings <- FALSE
   } else {
     landings <- TRUE
   }
-  if (length(effortData) == 1 && is.na(effortData)){
+  if (length(effortData) == 1 && is.na(effortData)) {
     effort <- FALSE
   } else {
     effort <- TRUE
   }
-  if (length(sampleData) == 1 && is.na(sampleData)){
+  if (length(sampleData) == 1 && is.na(sampleData)) {
     samples <- FALSE
   } else {
     samples <- TRUE
@@ -237,40 +237,40 @@ pointsPlot <- function(landingsData = NA,
     flagLabel <- vesselFlag
   }
 
-  if (landings){
+  if (landings) {
     d1 <- na.omit(landingsData %>%
-                    dplyr::group_by(CLyear, CLstatRect) %>%
-                    dplyr::summarize(cl = sum(!!rlang::sym(
-                      landingsVariable
-                    ))))
+      dplyr::group_by(CLyear, CLstatRect) %>%
+      dplyr::summarize(cl = sum(!!rlang::sym(
+        landingsVariable
+      ))))
   }
 
-  if (samples){
+  if (samples) {
     d2 <- na.omit(sampleData %>%
-                    dplyr::group_by(SAyear, SAstatRect) %>%
-                    dplyr::summarize(sa = sum(!!rlang::sym(
-                      samplingVariable
-                    ))))
+      dplyr::group_by(SAyear, SAstatRect) %>%
+      dplyr::summarize(sa = sum(!!rlang::sym(
+        samplingVariable
+      ))))
   }
 
   if (effort) {
     d3 <- na.omit(effortData %>%
-                    dplyr::group_by(CEyear, CEstatRect) %>%
-                    dplyr::summarize(ce = sum(!!rlang::sym(
-                      effortVariable
-                    ))))
+      dplyr::group_by(CEyear, CEstatRect) %>%
+      dplyr::summarize(ce = sum(!!rlang::sym(
+        effortVariable
+      ))))
   }
 
   # Get the years we want plot
   y <- c()
-  if (landings){
-    y <- c(y,unique(d1$CLyear))
+  if (landings) {
+    y <- c(y, unique(d1$CLyear))
   }
-  if (samples){
-    y <- c(y,unique(d2$SAyear))
+  if (samples) {
+    y <- c(y, unique(d2$SAyear))
   }
-  if (effort){
-    y <- c(y,unique(d3$CEyear))
+  if (effort) {
+    y <- c(y, unique(d3$CEyear))
   }
   y <- sort(unique(y))
 
@@ -283,9 +283,7 @@ pointsPlot <- function(landingsData = NA,
   all_plot <- htmltools::tagList()
 
   for (i in seq_along(length(y))) {
-
-
-    if (landings){
+    if (landings) {
       dd <- d1 %>% dplyr::filter(CLyear == y[i])
 
       # Note: I received an error saying "all columns in a tibble must
@@ -298,13 +296,11 @@ pointsPlot <- function(landingsData = NA,
 
       # get quantiles
       ices_rects_l$var1 <- ices_rects_l$cl
-      ices_rects_l <- getQuantiles(ices_rects_l, numberOfClasses= no_classes)
-
-
+      ices_rects_l <- getQuantiles(ices_rects_l, numberOfClasses = no_classes)
     }
 
 
-    if (effort){
+    if (effort) {
       de <- d3 %>% dplyr::filter(CEyear == y[i])
 
       ices_rects_e <- ices_rects %>%
@@ -312,13 +308,11 @@ pointsPlot <- function(landingsData = NA,
 
       # get quantiles
       ices_rects_e$var1 <- ices_rects_e$ce
-      ices_rects_e <- getQuantiles(ices_rects_e, numberOfClasses= no_classes)
-
-
+      ices_rects_e <- getQuantiles(ices_rects_e, numberOfClasses = no_classes)
     }
 
 
-    if (samples){
+    if (samples) {
       ds <- d2 %>% dplyr::filter(SAyear == y[i])
 
       ices_rects_s <- ices_rects %>%
@@ -326,24 +320,22 @@ pointsPlot <- function(landingsData = NA,
 
       # get quantiles
       ices_rects_s$var1 <- ices_rects_s$sa
-      ices_rects_s <- getQuantiles(ices_rects_s, numberOfClasses= no_classes)
+      ices_rects_s <- getQuantiles(ices_rects_s, numberOfClasses = no_classes)
 
       # create point on surface
       points <- sf::st_coordinates(sf::st_point_on_surface(ices_rects_s))
       points <- as.data.frame(points)
       points$sa <- ices_rects_s$sa
-
     }
 
 
     myPlots <- htmltools::tagList()
 
-    if (landings){
-
+    if (landings) {
       # rename some variables
-      #ices_rects_l$var1 <- ices_rects_l$cl
+      # ices_rects_l$var1 <- ices_rects_l$cl
 
-      if (samples){
+      if (samples) {
         # rename some variables
         pointsDataToPlot <- points
         pointsDataToPlot$var2 <- pointsDataToPlot$sa
@@ -358,7 +350,6 @@ pointsPlot <- function(landingsData = NA,
           ") in ",
           y[i]
         )
-
       } else {
         pointsDataToPlot <- NA
         pointsTooltipText <- ""
@@ -368,34 +359,31 @@ pointsPlot <- function(landingsData = NA,
           ") in ",
           y[i]
         )
-
       }
 
       # plot univariate map with points (if needed)
       x_l <- spatialPlotCreateGraph(ices_rects_l,
-                                    pointsDataToPlot = pointsDataToPlot,
-                                    tooltipText = "Landings: ",
-                                    pointsTooltipText = pointsTooltipText,
-                                    legendText = "Landings Variable",
-                                    pointsLegendText = "Sampling Variable",
-                                    title = paste0("Vessel Flag:  ", flagLabel),
-                                    subtitle = subtitle
+        pointsDataToPlot = pointsDataToPlot,
+        tooltipText = "Landings: ",
+        pointsTooltipText = pointsTooltipText,
+        legendText = "Landings Variable",
+        pointsLegendText = "Sampling Variable",
+        title = paste0("Vessel Flag:  ", flagLabel),
+        subtitle = subtitle
       )
 
 
       # Add our plot to the output list
       currentPlotCount <- length(all_plot)
       all_plot[[currentPlotCount + i]] <- x_l
-
     }
 
 
-    if (effort){
-
+    if (effort) {
       # rename some variables
-      #ices_rects_e$var1 <- ices_rects_e$ce
+      # ices_rects_e$var1 <- ices_rects_e$ce
 
-      if (samples){
+      if (samples) {
         # rename some variables
         pointsDataToPlot <- points
         pointsDataToPlot$var2 <- pointsDataToPlot$sa
@@ -410,7 +398,6 @@ pointsPlot <- function(landingsData = NA,
           ") in ",
           y[i]
         )
-
       } else {
         pointsDataToPlot <- NA
         pointsTooltipText <- ""
@@ -424,13 +411,13 @@ pointsPlot <- function(landingsData = NA,
 
       # plot univariate map with points (if needed)
       x_e <- spatialPlotCreateGraph(ices_rects_e,
-                                    pointsDataToPlot = pointsDataToPlot,
-                                    tooltipText = "Landings: ",
-                                    pointsTooltipText = pointsTooltipText,
-                                    legendText = "Effort Variable",
-                                    pointsLegendText = "Sampling Variable",
-                                    title = paste0("Vessel Flag:  ", flagLabel),
-                                    subtitle = subtitle
+        pointsDataToPlot = pointsDataToPlot,
+        tooltipText = "Landings: ",
+        pointsTooltipText = pointsTooltipText,
+        legendText = "Effort Variable",
+        pointsLegendText = "Sampling Variable",
+        title = paste0("Vessel Flag:  ", flagLabel),
+        subtitle = subtitle
       )
 
 
@@ -440,10 +427,9 @@ pointsPlot <- function(landingsData = NA,
     }
 
 
-    if (samples){
-
+    if (samples) {
       # rename some variables
-      #ices_rects_s$var1 <- ices_rects_s$sa
+      # ices_rects_s$var1 <- ices_rects_s$sa
 
 
       pointsDataToPlot <- NA
@@ -459,21 +445,19 @@ pointsPlot <- function(landingsData = NA,
 
       # plot univariate map
       x_s <- spatialPlotCreateGraph(ices_rects_s,
-                                    pointsDataToPlot = pointsDataToPlot,
-                                    tooltipText = "Samples: ",
-                                    pointsTooltipText = pointsTooltipText,
-                                    legendText = "Sampling Variable",
-                                    pointsLegendText = NA,
-                                    title = paste0("Vessel Flag:  ", flagLabel),
-                                    subtitle = subtitle
+        pointsDataToPlot = pointsDataToPlot,
+        tooltipText = "Samples: ",
+        pointsTooltipText = pointsTooltipText,
+        legendText = "Sampling Variable",
+        pointsLegendText = NA,
+        title = paste0("Vessel Flag:  ", flagLabel),
+        subtitle = subtitle
       )
 
       # Add our plot to the output list
       currentPlotCount <- length(all_plot)
       all_plot[[currentPlotCount + i]] <- x_s
-
     }
-
   }
 
   all_plot
@@ -486,8 +470,7 @@ pointsPlot <- function(landingsData = NA,
 #' @param numberOfClasses The number of classes we want in the quantiles
 #'
 #' @return The data with mean_quantiles appended
-getQuantiles <- function(dataToProcess, numberOfClasses = 6){
-
+getQuantiles <- function(dataToProcess, numberOfClasses = 6) {
   # extract quantiles
   myQuantiles <- dataToProcess %>%
     dplyr::pull(var1) %>%
@@ -520,7 +503,6 @@ getQuantiles <- function(dataToProcess, numberOfClasses = 6){
     ))
 
   dataToProcess
-
 }
 
 
@@ -542,19 +524,18 @@ spatialPlotCreateGraph <- function(dataToPlot,
                                    pointsDataToPlot = NA,
                                    tooltipText = "",
                                    pointsTooltipText = NA,
-                                   legendText= "",
+                                   legendText = "",
                                    pointsLegendText = NA,
                                    title = "",
-                                   subtitle = ""){
-
-  if (length(pointsDataToPlot) == 1 && is.na(pointsDataToPlot)){
+                                   subtitle = "") {
+  if (length(pointsDataToPlot) == 1 && is.na(pointsDataToPlot)) {
     plotPointsData <- FALSE
   } else {
     plotPointsData <- TRUE
   }
 
   # get extent of plot
-  #No_NA_l <- ices_rects_l[ices_rects_l$cl != "NA", ]
+  # No_NA_l <- ices_rects_l[ices_rects_l$cl != "NA", ]
   No_NA <- dataToPlot[dataToPlot$var1 != "NA", ]
   xlim1 <- sf::st_bbox(No_NA)[1]
   ylim2 <- sf::st_bbox(No_NA)[2]
@@ -598,7 +579,7 @@ spatialPlotCreateGraph <- function(dataToPlot,
 
 
   # See if we need to add the secondary data to the plot
-  if (plotPointsData){
+  if (plotPointsData) {
     gg <- gg +
       ggiraph::geom_point_interactive(
         data = pointsDataToPlot,
@@ -636,7 +617,9 @@ spatialPlotCreateGraph <- function(dataToPlot,
       panel.border = ggplot2::element_blank(),
       panel.grid.major = ggplot2::element_blank(),
       panel.grid.minor = ggplot2::element_blank(),
-      plot.background = ggplot2::element_blank()
+      plot.background = ggplot2::element_blank(),
+      plot.title = ggplot2::element_text(size = 12),
+      plot.subtitle = ggplot2::element_text(size = 10)
     )
 
   x <- ggiraph::girafe(ggobj = gg, width_svg = 6, height_svg = 6)
@@ -646,6 +629,4 @@ spatialPlotCreateGraph <- function(dataToPlot,
   )
 
   x
-
-
 }

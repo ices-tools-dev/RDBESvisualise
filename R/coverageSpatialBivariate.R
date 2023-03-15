@@ -20,50 +20,49 @@
 #' @examples
 #' \dontrun{
 #'
-#'   myH1RawObject <- RDBEScore::createRDBESDataObject(
-#'                   rdbesExtractPath = "../tests/testthat/h1_v_1_19_13")
+#' myH1RawObject <- RDBEScore::createRDBESDataObject(
+#'   rdbesExtractPath = "../tests/testthat/h1_v_1_19_13"
+#' )
 #'
-#'   myYear = 1965
-#'   myvesselFlag = "ZW"
+#' myYear <- 1965
+#' myvesselFlag <- "ZW"
 #'
-#'   myPlots <- coverageLandingsSpatial(
-#'     dataToPlot = myH1RawObject,
-#'     year = myYear,
-#'     vesselFlag = myvesselFlag,
-#'     catchCat = "Lan",
-#'     commercialVariable = "CLoffWeight",
-#'     samplingVariable = "SAsampWtLive"
-#'   )
+#' myPlots <- coverageLandingsSpatial(
+#'   dataToPlot = myH1RawObject,
+#'   year = myYear,
+#'   vesselFlag = myvesselFlag,
+#'   catchCat = "Lan",
+#'   commercialVariable = "CLoffWeight",
+#'   samplingVariable = "SAsampWtLive"
+#' )
 #'
-#'   myPlots[1]
-#'
+#' myPlots[1]
 #' }
 coverageSpatialBivariate <- function(dataToPlot,
-                                    year = NA,
-                                    vesselFlag = NA,
-                                    landingsVariable = c(
-                                      "CLoffWeight",
-                                      "CLsciWeight"
-                                    ),
-                                    effortVariable = c(
-                                      "CEnumFracTrips",
-                                      "CEnumDomTrip"
-                                    ),
-                                    samplingVariable = c(
-                                      "SAsampWtLive",
-                                      "SAnumSamp",
-                                      "SAsampWtMes"
-                                    ),
-                                    catchCat = c(
-                                      "Lan",
-                                      "Dis",
-                                      "Catch"
-                                    ),
-                                    includeLandings = TRUE,
-                                    includeEffort = TRUE,
-                                    includeSamples = TRUE,
-                                    verbose = FALSE){
-
+                                     year = NA,
+                                     vesselFlag = NA,
+                                     landingsVariable = c(
+                                       "CLoffWeight",
+                                       "CLsciWeight"
+                                     ),
+                                     effortVariable = c(
+                                       "CEnumFracTrips",
+                                       "CEnumDomTrip"
+                                     ),
+                                     samplingVariable = c(
+                                       "SAsampWtLive",
+                                       "SAnumSamp",
+                                       "SAsampWtMes"
+                                     ),
+                                     catchCat = c(
+                                       "Lan",
+                                       "Dis",
+                                       "Catch"
+                                     ),
+                                     includeLandings = TRUE,
+                                     includeEffort = TRUE,
+                                     includeSamples = TRUE,
+                                     verbose = FALSE) {
   # STEP 0) VALIDATE INPUTS
 
   # check the parameters are valid before we do anything
@@ -81,33 +80,33 @@ coverageSpatialBivariate <- function(dataToPlot,
     stop("Only one vessel flag country can be provided")
   }
 
-  if (includeLandings && length(landingsVariable) > 1){
+  if (includeLandings && length(landingsVariable) > 1) {
     stop("You must provide landingsVariable if you want to include landings data")
   }
 
-  if (includeEffort && length(effortVariable) > 1){
+  if (includeEffort && length(effortVariable) > 1) {
     stop("You must provide effortVariable if you want to include effort data")
   }
 
-  if (includeSamples && length(samplingVariable) > 1){
+  if (includeSamples && length(samplingVariable) > 1) {
     stop("You must provide samplingVariable if you want to include sample data")
   }
 
   if (includeLandings &&
-      length(landingsVariable) == 1 &&
-      !landingsVariable %in% RDBESvisualise::allowedLandingsVariable ) {
+    length(landingsVariable) == 1 &&
+    !landingsVariable %in% RDBESvisualise::allowedLandingsVariable) {
     stop(paste0("Invalid landingsVariable value:", landingsVariable))
   }
 
   if (includeEffort &&
-      length(effortVariable) == 1 &&
-      !effortVariable %in% RDBESvisualise::allowedEffortVariable) {
+    length(effortVariable) == 1 &&
+    !effortVariable %in% RDBESvisualise::allowedEffortVariable) {
     stop(paste0("Invalid effortVariable value:", effortVariable))
   }
 
   if (includeSamples &&
-      length(samplingVariable) == 1 &&
-      !samplingVariable %in% RDBESvisualise::allowedSamplingVariable) {
+    length(samplingVariable) == 1 &&
+    !samplingVariable %in% RDBESvisualise::allowedSamplingVariable) {
     stop(paste0("Invalid samplingVariable value:", samplingVariable))
   }
 
@@ -129,38 +128,41 @@ coverageSpatialBivariate <- function(dataToPlot,
   # STEP 1) PREPARE AND FILTER THE DATA
 
   # Landings
-  if (includeLandings){
+  if (includeLandings) {
     ld <- preprocessLandingsDataForCoverage(dataToPlot, verbose = verbose)
     ld1 <- filterLandingsDataForCoverage(ld,
-                                         year = year,
-                                         quarter = NA,
-                                         vesselFlag = vesselFlag,
-                                         verbose = verbose)
+      year = year,
+      quarter = NA,
+      vesselFlag = vesselFlag,
+      verbose = verbose
+    )
   } else {
     ld1 <- NA
   }
 
   # Effort
-  if (includeEffort){
+  if (includeEffort) {
     ef <- preprocessEffortDataForCoverage(dataToPlot, verbose = verbose)
     ef1 <- filterEffortDataForCoverage(ef,
-                                       year = year,
-                                       quarter = NA,
-                                       vesselFlag = vesselFlag,
-                                       verbose = verbose)
+      year = year,
+      quarter = NA,
+      vesselFlag = vesselFlag,
+      verbose = verbose
+    )
   } else {
     ef1 <- NA
   }
 
   # Samples
-  if (includeSamples){
+  if (includeSamples) {
     sa <- preprocessSampleDataForCoverage(dataToPlot, verbose = verbose)
     sa1 <- filterSampleDataForCoverage(sa,
-                                       year = year,
-                                       quarter = NA,
-                                       vesselFlag = vesselFlag,
-                                       catchCat = catchCat,
-                                       verbose = verbose)
+      year = year,
+      quarter = NA,
+      vesselFlag = vesselFlag,
+      catchCat = catchCat,
+      verbose = verbose
+    )
   } else {
     sa1 <- NA
   }
@@ -185,7 +187,6 @@ coverageSpatialBivariate <- function(dataToPlot,
   )
 
   plotsToPrint
-
 }
 
 
@@ -213,14 +214,13 @@ bivariatePlot <- function(landingsData = NA,
                           landingsVariable,
                           effortVariable,
                           samplingVariable) {
-
   # see what data we've been given
-  if (length(landingsData) == 1 && is.na(landingsData)){
+  if (length(landingsData) == 1 && is.na(landingsData)) {
     landings <- FALSE
   } else {
     landings <- TRUE
   }
-  if (length(effortData) == 1 && is.na(effortData)){
+  if (length(effortData) == 1 && is.na(effortData)) {
     effort <- FALSE
   } else {
     effort <- TRUE
@@ -234,37 +234,37 @@ bivariatePlot <- function(landingsData = NA,
 
   # Sample data - always needed
   d2 <- na.omit(sampleData %>%
-                  dplyr::group_by(SAyear, SAstatRect) %>%
-                  dplyr::summarize(sa = sum(!!rlang::sym(
-                    samplingVariable
-                  ))))
+    dplyr::group_by(SAyear, SAstatRect) %>%
+    dplyr::summarize(sa = sum(!!rlang::sym(
+      samplingVariable
+    ))))
 
 
-  if (landings){
+  if (landings) {
     d1 <- na.omit(landingsData %>%
-                    dplyr::group_by(CLyear, CLstatRect) %>%
-                    dplyr::summarize(cl = sum(!!rlang::sym(
-                      landingsVariable
-                    ))))
+      dplyr::group_by(CLyear, CLstatRect) %>%
+      dplyr::summarize(cl = sum(!!rlang::sym(
+        landingsVariable
+      ))))
 
     df_l <-
       dplyr::left_join(d1,
-                       d2,
-                       by = c("CLyear" = "SAyear", "CLstatRect" = "SAstatRect")
+        d2,
+        by = c("CLyear" = "SAyear", "CLstatRect" = "SAstatRect")
       )
   }
 
-  if (effort){
+  if (effort) {
     d3 <- na.omit(effortData %>%
-                    dplyr::group_by(CEyear, CEstatRect) %>%
-                    dplyr::summarize(ce = sum(!!rlang::sym(
-                      effortVariable
-                    ))))
+      dplyr::group_by(CEyear, CEstatRect) %>%
+      dplyr::summarize(ce = sum(!!rlang::sym(
+        effortVariable
+      ))))
 
     df_e <-
       dplyr::left_join(d3,
-                       d2,
-                       by = c("CEyear" = "SAyear", "CEstatRect" = "SAstatRect")
+        d2,
+        by = c("CEyear" = "SAyear", "CEstatRect" = "SAstatRect")
       )
   }
 
@@ -272,12 +272,12 @@ bivariatePlot <- function(landingsData = NA,
 
   # Get the years we want plot
   y <- c()
-  if (landings){
-    y <- c(y,unique(d1$CLyear))
+  if (landings) {
+    y <- c(y, unique(d1$CLyear))
   }
-  y <- c(y,unique(d2$SAyear))
-  if (effort){
-    y <- c(y,unique(d3$CEyear))
+  y <- c(y, unique(d2$SAyear))
+  if (effort) {
+    y <- c(y, unique(d3$CEyear))
   }
   y <- sort(unique(y))
 
@@ -288,8 +288,7 @@ bivariatePlot <- function(landingsData = NA,
   all_plot <- htmltools::tagList()
 
   for (i in seq_along(length(y))) {
-
-    if (landings){
+    if (landings) {
       dd_l <- df_l %>% dplyr::filter(CLyear == y[i])
 
       # rename sa, cl, clstatrect variables before we call plot function
@@ -308,12 +307,14 @@ bivariatePlot <- function(landingsData = NA,
       )
 
       # make the plot
-      x_l <- bivariatePlotCreateGraph(dataToPlot = dd_l,
-                                      ices_rect = ices_rect,
-                                      subtitle = mySubtitle,
-                                      title = myTitle,
-                                      xlab = "Higher Sampling",
-                                      ylab = "Higher Landings")
+      x_l <- bivariatePlotCreateGraph(
+        dataToPlot = dd_l,
+        ices_rect = ices_rect,
+        subtitle = mySubtitle,
+        title = myTitle,
+        xlab = "Higher Sampling",
+        ylab = "Higher Landings"
+      )
 
       # Add our plot to the output list
       currentPlotCount <- length(all_plot)
@@ -321,7 +322,7 @@ bivariatePlot <- function(landingsData = NA,
     }
 
 
-    if (effort){
+    if (effort) {
       dd_e <- df_e %>% dplyr::filter(CEyear == y[i])
 
       # rename sa, ce, cestatrect variables before we call plot function
@@ -333,26 +334,27 @@ bivariatePlot <- function(landingsData = NA,
         "Sampling - ",
         catchCat, " (",
         samplingVariable,
-        ")  vs Landings (",
+        ")  vs Effort (",
         effortVariable,
         ") in ",
         y[i]
       )
 
       # make the plot
-      x_e <- bivariatePlotCreateGraph(dataToPlot = dd_e,
-                                      ices_rect = ices_rect,
-                                      subtitle = mySubtitle,
-                                      title = myTitle,
-                                      xlab = "Higher Sampling",
-                                      ylab = "Higher Effort")
+      x_e <- bivariatePlotCreateGraph(
+        dataToPlot = dd_e,
+        ices_rect = ices_rect,
+        subtitle = mySubtitle,
+        title = myTitle,
+        xlab = "Higher Sampling",
+        ylab = "Higher Effort"
+      )
 
 
       # Add our plot to the output list
       currentPlotCount <- length(all_plot)
       all_plot[[currentPlotCount + i]] <- x_e
     }
-
   }
 
   all_plot
@@ -375,8 +377,7 @@ bivariatePlotCreateGraph <- function(dataToPlot,
                                      title,
                                      subtitle,
                                      xlab,
-                                     ylab){
-
+                                     ylab) {
   # create classes
   biToPlot <-
     biscale::bi_class(
@@ -392,8 +393,9 @@ bivariatePlotCreateGraph <- function(dataToPlot,
   # join to our data
   bi_ices <-
     dplyr::left_join(ices_rect_df,
-                     biToPlot,
-                     by = c("ICESNAME" = "statRect"))
+      biToPlot,
+      by = c("ICESNAME" = "statRect")
+    )
 
   # assign back to ices rectangles
   ices_rect_l <- ices_rect
@@ -461,10 +463,11 @@ bivariatePlotCreateGraph <- function(dataToPlot,
 
   # combine map with legend
   finalPlot <- cowplot::plot_grid(map,
-                                  legend,
-                                  labels = NULL,
-                                  rel_widths = c(2.5, 1),
-                                  rel_heights = c(2.5, 1))
+    legend,
+    labels = NULL,
+    rel_widths = c(2.5, 1),
+    rel_heights = c(2.5, 1)
+  )
   x <- ggiraph::girafe(ggobj = finalPlot, width_svg = 6, height_svg = 6)
   x <- ggiraph::girafe_options(
     x,
@@ -472,5 +475,4 @@ bivariatePlotCreateGraph <- function(dataToPlot,
   )
 
   x
-
 }

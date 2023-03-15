@@ -18,52 +18,50 @@
 #' @examples
 #' \dontrun{
 #'
-#'   myH1RawObject <- RDBEScore::createRDBESDataObject(
-#'                   rdbesExtractPath = "./tests/testthat/h1_v_1_19_13")
+#' myH1RawObject <- RDBEScore::createRDBESDataObject(
+#'   rdbesExtractPath = "./tests/testthat/h1_v_1_19_13"
+#' )
 #'
-#'   myYear = 1965
-#'   myvesselFlag = "ZW"
+#' myYear <- 1965
+#' myvesselFlag <- "ZW"
 #'
-#'   myPlots <- coverageLandingsTemporal(
-#'     dataToPlot = myH1RawObject,
-#'     year = myYear,
-#'     vesselFlag = myvesselFlag,
-#'     catchCat = "Lan",
-#'     landingsVariable = "CLoffWeight",
-#'     samplingVariable = "SAsampWtLive"
-#'     )
+#' myPlots <- coverageLandingsTemporal(
+#'   dataToPlot = myH1RawObject,
+#'   year = myYear,
+#'   vesselFlag = myvesselFlag,
+#'   catchCat = "Lan",
+#'   landingsVariable = "CLoffWeight",
+#'   samplingVariable = "SAsampWtLive"
+#' )
 #'
-#'   myPlots[1]
-#'
+#' myPlots[1]
 #' }
 coverageTemporal <- function(dataToPlot,
-                                     year = NA,
-                                     quarter = NA,
-                                     vesselFlag = NA,
-                                     landingsVariable = c(
-                                       "CLoffWeight",
-                                       "CLsciWeight"
-                                     ),
-                                     effortVariable = c(
-                                       "CEnumFracTrips",
-                                       "CEnumDomTrip"
-                                     ),
-                                     samplingVariable = c(
-                                       "SAsampWtLive",
-                                       "SAnumSamp",
-                                       "SAsampWtMes"
-                                     ),
-                                     catchCat = c(
-                                       "Lan",
-                                       "Dis",
-                                       "Catch"
-                                     ),
-                                     includeLandings = TRUE,
-                                     includeEffort = TRUE,
-                                     includeSamples = TRUE,
-                                     verbose = FALSE){
-
-
+                             year = NA,
+                             quarter = NA,
+                             vesselFlag = NA,
+                             landingsVariable = c(
+                               "CLoffWeight",
+                               "CLsciWeight"
+                             ),
+                             effortVariable = c(
+                               "CEnumFracTrips",
+                               "CEnumDomTrip"
+                             ),
+                             samplingVariable = c(
+                               "SAsampWtLive",
+                               "SAnumSamp",
+                               "SAsampWtMes"
+                             ),
+                             catchCat = c(
+                               "Lan",
+                               "Dis",
+                               "Catch"
+                             ),
+                             includeLandings = TRUE,
+                             includeEffort = TRUE,
+                             includeSamples = TRUE,
+                             verbose = FALSE) {
   # STEP 0) VALIDATE INPUTS
 
   # check the parameters are valid before we do anything
@@ -81,33 +79,33 @@ coverageTemporal <- function(dataToPlot,
     stop("Only one vessel flag country can be provided")
   }
 
-  if (includeLandings && length(landingsVariable) > 1){
+  if (includeLandings && length(landingsVariable) > 1) {
     stop("You must provide landingsVariable if you want to include landings data")
   }
 
-  if (includeEffort && length(effortVariable) > 1){
+  if (includeEffort && length(effortVariable) > 1) {
     stop("You must provide effortVariable if you want to include effort data")
   }
 
-  if (includeSamples && length(samplingVariable) > 1){
+  if (includeSamples && length(samplingVariable) > 1) {
     stop("You must provide samplingVariable if you want to include sample data")
   }
 
   if (includeLandings &&
-      length(landingsVariable) == 1 &&
-      !landingsVariable %in% RDBESvisualise::allowedLandingsVariable ) {
+    length(landingsVariable) == 1 &&
+    !landingsVariable %in% RDBESvisualise::allowedLandingsVariable) {
     stop(paste0("Invalid landingsVariable value:", landingsVariable))
   }
 
   if (includeEffort &&
-      length(effortVariable) == 1 &&
-      !effortVariable %in% RDBESvisualise::allowedEffortVariable) {
+    length(effortVariable) == 1 &&
+    !effortVariable %in% RDBESvisualise::allowedEffortVariable) {
     stop(paste0("Invalid effortVariable value:", effortVariable))
   }
 
   if (includeSamples &&
-      length(samplingVariable) == 1 &&
-      !samplingVariable %in% RDBESvisualise::allowedSamplingVariable) {
+    length(samplingVariable) == 1 &&
+    !samplingVariable %in% RDBESvisualise::allowedSamplingVariable) {
     stop(paste0("Invalid samplingVariable value:", samplingVariable))
   }
 
@@ -121,38 +119,41 @@ coverageTemporal <- function(dataToPlot,
   # STEP 1) PREPARE AND FILTER THE DATA
 
   # Landings
-  if (includeLandings){
+  if (includeLandings) {
     ld <- preprocessLandingsDataForCoverage(dataToPlot, verbose = verbose)
     ld1 <- filterLandingsDataForCoverage(ld,
-                                         year = year,
-                                         quarter = quarter,
-                                         vesselFlag = vesselFlag,
-                                         verbose = verbose)
+      year = year,
+      quarter = quarter,
+      vesselFlag = vesselFlag,
+      verbose = verbose
+    )
   } else {
     ld1 <- NA
   }
 
   # Effort
-  if (includeEffort){
+  if (includeEffort) {
     ef <- preprocessEffortDataForCoverage(dataToPlot, verbose = verbose)
     ef1 <- filterEffortDataForCoverage(ef,
-                                       year = year,
-                                       quarter = quarter,
-                                       vesselFlag = vesselFlag,
-                                       verbose = verbose)
+      year = year,
+      quarter = quarter,
+      vesselFlag = vesselFlag,
+      verbose = verbose
+    )
   } else {
     ef1 <- NA
   }
 
   # Samples
-  if (includeSamples){
+  if (includeSamples) {
     sa <- preprocessSampleDataForCoverage(dataToPlot, verbose = verbose)
     sa1 <- filterSampleDataForCoverage(sa,
-                                       year = year,
-                                       quarter = quarter,
-                                       vesselFlag = vesselFlag,
-                                       catchCat = catchCat,
-                                       verbose = verbose)
+      year = year,
+      quarter = quarter,
+      vesselFlag = vesselFlag,
+      catchCat = catchCat,
+      verbose = verbose
+    )
   } else {
     sa1 <- NA
   }
@@ -176,7 +177,6 @@ coverageTemporal <- function(dataToPlot,
   )
 
   plotsToPrint
-
 }
 
 #' Internal function to return a list of plots which compare the relative
@@ -202,19 +202,18 @@ temporalPlot <- function(landingsData = NA,
                          landingsVariable,
                          effortVariable,
                          samplingVariable) {
-
   # see what data we've been given
-  if (length(landingsData) == 1 && is.na(landingsData)){
+  if (length(landingsData) == 1 && is.na(landingsData)) {
     landings <- FALSE
   } else {
     landings <- TRUE
   }
-  if (length(effortData) == 1 && is.na(effortData)){
+  if (length(effortData) == 1 && is.na(effortData)) {
     effort <- FALSE
   } else {
     effort <- TRUE
   }
-  if (length(sampleData) == 1 && is.na(sampleData)){
+  if (length(sampleData) == 1 && is.na(sampleData)) {
     samples <- FALSE
   } else {
     samples <- TRUE
@@ -229,43 +228,43 @@ temporalPlot <- function(landingsData = NA,
   # Landings
   if (landings) {
     d1 <- na.omit(landingsData %>%
-                    dplyr::group_by(CLyear, CLquar) %>%
-                    dplyr::summarize(CL = sum(!!rlang::sym(
-                      landingsVariable
-                    )))) %>%
+      dplyr::group_by(CLyear, CLquar) %>%
+      dplyr::summarize(CL = sum(!!rlang::sym(
+        landingsVariable
+      )))) %>%
       dplyr::mutate(relCL = CL / sum(CL))
   }
 
   # Samples
-  if (samples){
+  if (samples) {
     d2 <- na.omit(sampleData %>%
-                    dplyr::group_by(SAyear, SAquar) %>%
-                    dplyr::summarize(sa = sum(!!rlang::sym(
-                      samplingVariable
-                    )))) %>%
+      dplyr::group_by(SAyear, SAquar) %>%
+      dplyr::summarize(sa = sum(!!rlang::sym(
+        samplingVariable
+      )))) %>%
       dplyr::mutate(relSA = sa / sum(sa))
   }
 
   # Effort
   if (effort) {
     d3 <- na.omit(effortData %>%
-                    dplyr::group_by(CEyear, CEquar) %>%
-                    dplyr::summarize(CE = sum(!!rlang::sym(
-                      effortVariable
-                    )))) %>%
+      dplyr::group_by(CEyear, CEquar) %>%
+      dplyr::summarize(CE = sum(!!rlang::sym(
+        effortVariable
+      )))) %>%
       dplyr::mutate(relCE = CE / sum(CE))
   }
 
   # Get the years we want plot
   y <- c()
-  if (landings){
-    y <- c(y,unique(d1$CLyear))
+  if (landings) {
+    y <- c(y, unique(d1$CLyear))
   }
-  if (samples){
-    y <- c(y,unique(d2$SAyear))
+  if (samples) {
+    y <- c(y, unique(d2$SAyear))
   }
-  if (effort){
-    y <- c(y,unique(d3$CEyear))
+  if (effort) {
+    y <- c(y, unique(d3$CEyear))
   }
   y <- sort(unique(y))
 
@@ -275,17 +274,16 @@ temporalPlot <- function(landingsData = NA,
 
 
   for (i in seq_along(length(y))) {
-
     show_legend <- if (i == 1) {
       TRUE
     } else {
       FALSE
     }
 
-    plotTitle = paste0("Vessel Flag ", flagLabel)
+    plotTitle <- paste0("Vessel Flag ", flagLabel)
 
     # Create an empty data set to use as a base for our plots
-    emptyData <- data.frame(quarters = c(1,2,3,4),values =c(NA,NA,NA,NA))
+    emptyData <- data.frame(quarters = c(1, 2, 3, 4), values = c(NA, NA, NA, NA))
     p0 <- plotly::plot_ly(
       emptyData,
       x = ~quarters,
@@ -293,10 +291,10 @@ temporalPlot <- function(landingsData = NA,
       type = "bar",
       alpha = 0.7
     )
-    #p0 <- plotly::plotly_empty()
+    # p0 <- plotly::plotly_empty()
 
     # Landings
-    if (landings){
+    if (landings) {
       dd <- d1 %>% dplyr::filter(CLyear == y[i])
       dd <- dd[-1]
 
@@ -315,11 +313,11 @@ temporalPlot <- function(landingsData = NA,
           )
         )
 
-      plotTitle = paste0(plotTitle, " | Landings: ", landingsVariable)
+      plotTitle <- paste0(plotTitle, " | Landings: ", landingsVariable)
     }
 
     # Effort
-    if (effort){
+    if (effort) {
       dde <- d3 %>% dplyr::filter(CEyear == y[i])
       dde <- dde[-1]
 
@@ -338,11 +336,11 @@ temporalPlot <- function(landingsData = NA,
           )
         )
 
-      plotTitle = paste0(plotTitle, " | Effort: ", effortVariable)
+      plotTitle <- paste0(plotTitle, " | Effort: ", effortVariable)
     }
 
     # Samples
-    if (samples){
+    if (samples) {
       ds <- d2 %>% dplyr::filter(SAyear == y[i])
       ds <- ds[-1]
 
@@ -361,26 +359,26 @@ temporalPlot <- function(landingsData = NA,
           )
         )
 
-      plotTitle = paste0(plotTitle,
-                         " | Sampling: ",
-                         samplingVariable,
-                         " (",
-                         catchCat,
-                         ") "
+      plotTitle <- paste0(
+        plotTitle,
+        " | Sampling: ",
+        samplingVariable,
+        " (",
+        catchCat,
+        ") "
       )
     }
 
-    plotTitle = paste0(plotTitle, " in ",y[i])
+    plotTitle <- paste0(plotTitle, " in ", y[i])
 
     # Add a title
     p0 <- p0 %>%
       plotly::layout(
-        title = list(text = plotTitle,font = list(size = 12)),
+        title = list(text = plotTitle, font = list(size = 12)),
         xaxis = list(title = "Quarter"),
         yaxis = list(title = "Relative Values")
       )
     all_plot[[i]] <- p0
-
   }
   all_plot
 }
