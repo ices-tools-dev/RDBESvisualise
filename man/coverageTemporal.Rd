@@ -50,22 +50,22 @@ landings to those in the sample data.
 \examples{
 \dontrun{
 
-  myH1RawObject <- RDBEScore::createRDBESDataObject(
-                  rdbesExtractPath = "./tests/testthat/h1_v_1_19_13")
+myH1RawObject <- RDBEScore::createRDBESDataObject(
+  rdbesExtractPath = "./tests/testthat/h1_v_1_19_13"
+)
 
-  myYear = 1965
-  myvesselFlag = "ZW"
+myYear <- 1965
+myvesselFlag <- "ZW"
 
-  myPlots <- coverageLandingsTemporal(
-    dataToPlot = myH1RawObject,
-    year = myYear,
-    vesselFlag = myvesselFlag,
-    catchCat = "Lan",
-    landingsVariable = "CLoffWeight",
-    samplingVariable = "SAsampWtLive"
-    )
+myPlots <- coverageLandingsTemporal(
+  dataToPlot = myH1RawObject,
+  year = myYear,
+  vesselFlag = myvesselFlag,
+  catchCat = "Lan",
+  landingsVariable = "CLoffWeight",
+  samplingVariable = "SAsampWtLive"
+)
 
-  myPlots[1]
-
+myPlots[1]
 }
 }

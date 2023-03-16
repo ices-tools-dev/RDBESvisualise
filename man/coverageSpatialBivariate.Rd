@@ -51,22 +51,22 @@ sampling.
 \examples{
 \dontrun{
 
-  myH1RawObject <- RDBEScore::createRDBESDataObject(
-                  rdbesExtractPath = "../tests/testthat/h1_v_1_19_13")
+myH1RawObject <- RDBEScore::createRDBESDataObject(
+  rdbesExtractPath = "../tests/testthat/h1_v_1_19_13"
+)
 
-  myYear = 1965
-  myvesselFlag = "ZW"
+myYear <- 1965
+myvesselFlag <- "ZW"
 
-  myPlots <- coverageLandingsSpatial(
-    dataToPlot = myH1RawObject,
-    year = myYear,
-    vesselFlag = myvesselFlag,
-    catchCat = "Lan",
-    commercialVariable = "CLoffWeight",
-    samplingVariable = "SAsampWtLive"
-  )
+myPlots <- coverageLandingsSpatial(
+  dataToPlot = myH1RawObject,
+  year = myYear,
+  vesselFlag = myvesselFlag,
+  catchCat = "Lan",
+  commercialVariable = "CLoffWeight",
+  samplingVariable = "SAsampWtLive"
+)
 
-  myPlots[1]
-
+myPlots[1]
 }
 }
