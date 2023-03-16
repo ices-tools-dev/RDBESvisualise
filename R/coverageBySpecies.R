@@ -147,8 +147,8 @@ speciesPlot <- function(landingsData = NA,
   }
 
   # Get the species names
-  full_name <- RDBESvisualise::speciesNamesAndCodes
-  full_name <- full_name[-which(duplicated(full_name$AphiaID)), ]
+  full_name <- RDBESvisualise::wormsSpecies
+  full_name <- dplyr::distinct(full_name, Key, .keep_all = TRUE)
 
   if (landings) {
     # Landings data
@@ -167,17 +167,17 @@ speciesPlot <- function(landingsData = NA,
         dplyr::summarise(LandingCount = sum(CLSpeCount))
     )
     d1Species <-
-      dplyr::left_join(d1, full_name, by = c("CLspecCode" = "AphiaID"))
+      dplyr::left_join(d1, full_name, by = c("CLspecCode" = "Key"))
 
     # Check for unmatched species codes
-    if (nrow(d1Species[is.na(d1Species$FAOCode),c("CLspecCode")])>0){
+    if (nrow(d1Species[is.na(d1Species$Description),c("CLspecCode")])>0){
       unmatchedSpeciesd1 <- paste(
-        unique(d1Species[is.na(d1Species$FAOCode),c("CLspecCode")])
+        unique(d1Species[is.na(d1Species$Description),c("CLspecCode")])
         , collapse = ", ")
       warning(paste0("Not all values of CLspecCode matched to a species ",
       " record. The following unmatched values will not be plotted: ",
       unmatchedSpeciesd1))
-      d1Species <- d1Species[!is.na(d1Species$FAOCode),]
+      d1Species <- d1Species[!is.na(d1Species$Description),]
     }
 
     d1Species <- dplyr::left_join(d1Species, df1, by = "CLyear") %>%
@@ -206,17 +206,17 @@ speciesPlot <- function(landingsData = NA,
         dplyr::summarise(SamplingCount = sum(SASpeCount))
     )
     d2Species <-
-      dplyr::left_join(d2, full_name, by = c("SAspeCode" = "AphiaID"))
+      dplyr::left_join(d2, full_name, by = c("SAspeCode" = "Key"))
 
     # Check for unmatched species codes
-    if (nrow(d2Species[is.na(d2Species$FAOCode),c("SAspeCode")])>0){
+    if (nrow(d2Species[is.na(d2Species$Description),c("SAspeCode")])>0){
       unmatchedSpeciesd2 <- paste(
-        unique(d2Species[is.na(d2Species$FAOCode),c("SAspeCode")])
+        unique(d2Species[is.na(d2Species$Description),c("SAspeCode")])
         , collapse = ", ")
       warning(paste0("Not all values of SAspeCode matched to a species ",
               " record. The following unmatched values will not be plotted: ",
               unmatchedSpeciesd2))
-      d2Species <- d2Species[!is.na(d2Species$FAOCode),]
+      d2Species <- d2Species[!is.na(d2Species$Description),]
     }
 
     d2Species <- dplyr::left_join(d2Species, df2, by = "SAyear") %>%
@@ -245,7 +245,7 @@ speciesPlot <- function(landingsData = NA,
       # Landings plot
       p1 <- plotly::plot_ly(
         t1,
-        x = ~ as.character(FAODescription),
+        x = ~ as.character(Description),
         y = ~relativeValuesYear,
         color = ~ as.character(CLquar),
         type = "bar",
@@ -271,7 +271,7 @@ speciesPlot <- function(landingsData = NA,
       # sample data plot
       p2 <- plotly::plot_ly(
         t2,
-        x = ~ as.character(FAODescription),
+        x = ~ as.character(Description),
         y = ~relSamplingYear,
         color = ~ as.character(SAquar),
         type = "bar",

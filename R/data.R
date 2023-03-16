@@ -12,6 +12,20 @@
 #' }
 #' @source David Currie
 "speciesNamesAndCodes"
+#' Species WORMS aphiaids and descriptions.
+#'
+#' A data frame containing the WORMS aphiaid, and
+#' scientific name for a selection of species.  See
+#' https://www.marinespecies.org/
+#'
+#'
+#' @format A data frame containing the species information
+#' \describe{
+#'   \item{Key}{WORMS aphiaid}
+#'   \item{Description}{Species name}
+#' }
+#' @source ICES
+"wormsSpecies"
 #' ICES statistical rectangles
 #'
 #' An sf object containing spatial information for ICES statistical rectangles
