@@ -7,8 +7,15 @@
 #' @param quarter Quarter to be assessed - possible choices 1,2,3 or 4.
 #' @param vesselFlag Registered Country of Vessel - e.g "IE", "ES" or "FR".
 #' @param landingsVariable Landings variable to be assessed
+#' @param effortVariable Effort variable to be assessed
 #' @param samplingVariable Sampling Variable to be assessed
 #' @param catchCat Sampling catch category - "Lan", "Dis",or "Catch"
+#' @param includeLandings (Optional) Set to TRUE to include landings in the
+#' plot - default is TRUE.
+#' @param includeEffort (Optional) Set to TRUE to include effort in the
+#' plot - default is TRUE.
+#' @param includeSamples (Optional) Set to TRUE to include samples in the
+#' plot - default is TRUE.
 #' @param verbose (Optional) Set to TRUE to print more information. Default is
 #' FALSE
 #'
