@@ -82,14 +82,14 @@ coverageBySpecies <- function(dataToPlot,
   }
 
   if (includeLandings &&
-      length(landingsVariable) == 1 &&
-      !landingsVariable %in% RDBESvisualise::allowedLandingsVariable) {
+    length(landingsVariable) == 1 &&
+    !landingsVariable %in% RDBESvisualise::allowedLandingsVariable) {
     stop(paste0("Invalid landingsVariable value:", landingsVariable))
   }
 
   if (includeSamples &&
-      length(samplingVariable) == 1 &&
-      !samplingVariable %in% RDBESvisualise::allowedSamplingVariable) {
+    length(samplingVariable) == 1 &&
+    !samplingVariable %in% RDBESvisualise::allowedSamplingVariable) {
     stop(paste0("Invalid samplingVariable value:", samplingVariable))
   }
 
@@ -214,14 +214,17 @@ speciesPlot <- function(landingsData = NA,
       dplyr::left_join(d1, full_name, by = c("CLspecCode" = "Key"))
 
     # Check for unmatched species codes
-    if (nrow(d1Species[is.na(d1Species$Description),c("CLspecCode")])>0){
+    if (nrow(d1Species[is.na(d1Species$Description), c("CLspecCode")]) > 0) {
       unmatchedSpeciesd1 <- paste(
-        unique(d1Species[is.na(d1Species$Description),c("CLspecCode")])
-        , collapse = ", ")
-      warning(paste0("Not all values of CLspecCode matched to a species ",
-      " record. The following unmatched values will not be plotted: ",
-      unmatchedSpeciesd1))
-      d1Species <- d1Species[!is.na(d1Species$Description),]
+        unique(d1Species[is.na(d1Species$Description), c("CLspecCode")]),
+        collapse = ", "
+      )
+      warning(paste0(
+        "Not all values of CLspecCode matched to a species ",
+        " record. The following unmatched values will not be plotted: ",
+        unmatchedSpeciesd1
+      ))
+      d1Species <- d1Species[!is.na(d1Species$Description), ]
     }
 
     # Get relative values
@@ -236,8 +239,8 @@ speciesPlot <- function(landingsData = NA,
 
     # Filter relative values to topN species
     d1SpeciesRelative <- d1SpeciesRelative[
-      d1SpeciesRelative$CLspecCode %in% topNSpecies_l$CLspecCode,]
-
+      d1SpeciesRelative$CLspecCode %in% topNSpecies_l$CLspecCode,
+    ]
   }
 
   if (samples) {
@@ -262,14 +265,17 @@ speciesPlot <- function(landingsData = NA,
       dplyr::left_join(d2, full_name, by = c("SAspeCode" = "Key"))
 
     # Check for unmatched species codes
-    if (nrow(d2Species[is.na(d2Species$Description),c("SAspeCode")])>0){
+    if (nrow(d2Species[is.na(d2Species$Description), c("SAspeCode")]) > 0) {
       unmatchedSpeciesd2 <- paste(
-        unique(d2Species[is.na(d2Species$Description),c("SAspeCode")])
-        , collapse = ", ")
-      warning(paste0("Not all values of SAspeCode matched to a species ",
-              " record. The following unmatched values will not be plotted: ",
-              unmatchedSpeciesd2))
-      d2Species <- d2Species[!is.na(d2Species$Description),]
+        unique(d2Species[is.na(d2Species$Description), c("SAspeCode")]),
+        collapse = ", "
+      )
+      warning(paste0(
+        "Not all values of SAspeCode matched to a species ",
+        " record. The following unmatched values will not be plotted: ",
+        unmatchedSpeciesd2
+      ))
+      d2Species <- d2Species[!is.na(d2Species$Description), ]
     }
 
     # Get relative values
@@ -284,8 +290,8 @@ speciesPlot <- function(landingsData = NA,
 
     # Filter relative values to topN species
     d2SpeciesRelative <- d2SpeciesRelative[
-      d2SpeciesRelative$SAspeCode %in% topNSpecies_l$SAspeCode,]
-
+      d2SpeciesRelative$SAspeCode %in% topNSpecies_l$SAspeCode,
+    ]
   }
 
   # Get the years we want plot
@@ -318,11 +324,13 @@ speciesPlot <- function(landingsData = NA,
           title = paste0(
             "Vessel Flag ",
             flagLabel,
-            ": Top ", topN ," Landings Species in",
+            ": Top ", topN, " Landings Species in",
             y[i]
           ),
-          yaxis = list(title = paste0("Relative ", landingsVariable),
-                       titlefont = list(size = 12)),
+          yaxis = list(
+            title = paste0("Relative ", landingsVariable),
+            titlefont = list(size = 12)
+          ),
           xaxis = list(categoryorder = "total descending"),
           barmode = "stack"
         )
@@ -345,13 +353,15 @@ speciesPlot <- function(landingsData = NA,
           title = paste0(
             "Vessel Flag ",
             flagLabel,
-            " : Top ", topN ," Landings and Sampling (",
+            " : Top ", topN, " Landings and Sampling (",
             catchCat,
             ")\n species in ",
             y[i]
           ),
-          yaxis = list(title = paste0("Relative ", samplingVariable),
-                       titlefont = list(size = 12)),
+          yaxis = list(
+            title = paste0("Relative ", samplingVariable),
+            titlefont = list(size = 12)
+          ),
           xaxis = list(categoryorder = "total descending"),
           barmode = "stack",
           legend = list(title = list(text = "<b> Quarter: </b>"))
