@@ -325,10 +325,10 @@ speciesPlot <- function(landingsData = NA,
             "Vessel Flag ",
             flagLabel,
             ": Top ", topN, " Landings Species in",
-            y[i]
+            y[i], " (relative values)"
           ),
           yaxis = list(
-            title = paste0("Relative ", landingsVariable),
+            title = landingsVariable,
             titlefont = list(size = 12)
           ),
           xaxis = list(categoryorder = "total descending"),
@@ -356,10 +356,10 @@ speciesPlot <- function(landingsData = NA,
             " : Top ", topN, " Landings and Sampling (",
             catchCat,
             ")\n species in ",
-            y[i]
+            y[i], " (relative values)"
           ),
           yaxis = list(
-            title = paste0("Relative ", samplingVariable),
+            title = samplingVariable,
             titlefont = list(size = 12)
           ),
           xaxis = list(categoryorder = "total descending"),

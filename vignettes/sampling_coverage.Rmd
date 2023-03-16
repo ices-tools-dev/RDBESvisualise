@@ -1,8 +1,8 @@
 ---
-title: "Landings Sampling Coverage"
+title: "Sampling Coverage"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Landings Sampling Coverage}
+  %\VignetteIndexEntry{Sampling Coverage}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -16,7 +16,7 @@ knitr::opts_chunk$set(
 
 ## Introduction 
 
-The aim of this document is to provide examples of the different plots that can be produced using the coverageLandings() function.
+The aim of this document is to provide examples of the different plots that can be produced using the coveragexxx() functions.
 
 
 ## Load the package
