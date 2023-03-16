@@ -41,6 +41,8 @@ test_that("Species plot runs without errors for landings, and samples",  {
       year = myYear,
       vesselFlag = myvesselFlag,
       catchCat = "Lan",
+      landingsVariable = "CLoffWeight",
+      samplingVariable = "SAsampWtLive",
       includeLandings = TRUE,
       includeSamples = TRUE
     )
@@ -60,6 +62,8 @@ test_that("Species plot runs without errors for just landings",  {
       year = myYear,
       vesselFlag = myvesselFlag,
       catchCat = "Lan",
+      landingsVariable = "CLoffWeight",
+      samplingVariable = "SAsampWtLive",
       includeLandings = TRUE,
       includeSamples = FALSE
     )
@@ -79,6 +83,8 @@ test_that("Species plot runs without errors for just samples",  {
       year = myYear,
       vesselFlag = myvesselFlag,
       catchCat = "Lan",
+      landingsVariable = "CLoffWeight",
+      samplingVariable = "SAsampWtLive",
       includeLandings = FALSE,
       includeSamples = TRUE
     )

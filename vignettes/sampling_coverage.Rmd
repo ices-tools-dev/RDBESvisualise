@@ -70,7 +70,9 @@ This output shows the top species landings - the bars represent relative species
       dataToPlot = myH1RawObject,
       year = myYear,
       vesselFlag = myvesselFlag,
-      catchCat = "Lan"
+      catchCat = "Lan",
+      landingsVariable = "CLoffWeight",
+      samplingVariable = "SAsampWtLive",
     )
 
   myPlots
