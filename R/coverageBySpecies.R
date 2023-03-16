@@ -4,7 +4,13 @@
 #' @param dataToPlot RDBES data to be plotted (as an RDBESDataObject)
 #' @param year Year to be assessed e.g 2021
 #' @param vesselFlag Registered Country of Vessel - e.g "IE", "ES" or "FR".
+#' @param landingsVariable Landings variable to be assessed
+#' @param samplingVariable Sampling Variable to be assessed
 #' @param catchCat Sampling catch category - "Lan", "Dis",or "Catch"
+#' @param includeLandings (Optional) Set to TRUE to include landings in the
+#' plot - default is TRUE.
+#' @param includeSamples (Optional) Set to TRUE to include samples in the
+#' plot - default is TRUE.
 #' @param verbose (Optional) Set to TRUE to print more information. Default is
 #' FALSE
 #'
@@ -33,6 +39,15 @@
 coverageBySpecies <- function(dataToPlot,
                               year = NA,
                               vesselFlag = NA,
+                              landingsVariable = c(
+                                "CLoffWeight",
+                                "CLsciWeight"
+                              ),
+                              samplingVariable = c(
+                                "SAsampWtLive",
+                                "SAnumSamp",
+                                "SAsampWtMes"
+                              ),
                               catchCat = c(
                                 "Lan",
                                 "Dis",
@@ -56,6 +71,26 @@ coverageBySpecies <- function(dataToPlot,
 
   if (length(vesselFlag) > 1) {
     stop("Only one vessel flag country can be provided")
+  }
+
+  if (includeLandings && length(landingsVariable) > 1) {
+    stop("You must provide landingsVariable if you want to include landings data")
+  }
+
+  if (includeSamples && length(samplingVariable) > 1) {
+    stop("You must provide samplingVariable if you want to include sample data")
+  }
+
+  if (includeLandings &&
+      length(landingsVariable) == 1 &&
+      !landingsVariable %in% RDBESvisualise::allowedLandingsVariable) {
+    stop(paste0("Invalid landingsVariable value:", landingsVariable))
+  }
+
+  if (includeSamples &&
+      length(samplingVariable) == 1 &&
+      !samplingVariable %in% RDBESvisualise::allowedSamplingVariable) {
+    stop(paste0("Invalid samplingVariable value:", samplingVariable))
   }
 
   if (length(catchCat) == 1 && !catchCat %in% c("Lan", "Dis", "Catch")) {
@@ -106,7 +141,9 @@ coverageBySpecies <- function(dataToPlot,
     landingsData = ld1,
     sampleData = sa1,
     vesselFlag = vesselFlag,
-    catchCat = catchCat
+    catchCat = catchCat,
+    landingsVariable = landingsVariable,
+    samplingVariable = samplingVariable
   )
 
   plotsToPrint
@@ -119,7 +156,9 @@ coverageBySpecies <- function(dataToPlot,
 #' @param sampleData Sample data
 #' @param vesselFlag Registered Country of Vessel - e.g "IE", "ES" or "FR".
 #' @param catchCat Catch category
-#' @param (Optional) Number of species to plot.  Default is 10.
+#' @param landingsVariable Variable from CL to plot
+#' @param samplingVariable variable from SA to plot
+#' @param topN (Optional) The number of species to include - default is 10
 #'
 #' @return A tagList of plotly plots
 #'
@@ -127,6 +166,8 @@ speciesPlot <- function(landingsData = NA,
                         sampleData = NA,
                         vesselFlag,
                         catchCat,
+                        landingsVariable,
+                        samplingVariable,
                         topN = 10) {
   if (is.na(vesselFlag)) {
     flagLabel <- "All"
@@ -150,22 +191,25 @@ speciesPlot <- function(landingsData = NA,
   full_name <- RDBESvisualise::wormsSpecies
   full_name <- dplyr::distinct(full_name, Key, .keep_all = TRUE)
 
+
   if (landings) {
     # Landings data
-    # Group by year, and year and quarter, and count the number of species
+
+    # Sum landingsVariable by year
     df1 <- na.omit(
       landingsData %>%
         dplyr::group_by(CLyear) %>%
-        dplyr::add_count(CLspecCode, name = "CLSpeCount") %>%
-        dplyr::summarise(LandingCountYear = sum(CLSpeCount))
-    ) %>%
-      dplyr::mutate(totalSpeCountAll = sum(LandingCountYear))
+        dplyr::summarize(CLSumForYear = sum(!!rlang::sym(landingsVariable))) %>%
+        dplyr::mutate(CLSumTotal = sum(CLSumForYear))
+    )
+
+    # Sum landingsVariable by year, quarter, and species
     d1 <- na.omit(
       landingsData %>%
         dplyr::group_by(CLyear, CLquar, CLspecCode) %>%
-        dplyr::add_count(CLspecCode, name = "CLSpeCount") %>%
-        dplyr::summarise(LandingCount = sum(CLSpeCount))
+        dplyr::summarize(CLSpeSum = sum(!!rlang::sym(landingsVariable)))
     )
+
     d1Species <-
       dplyr::left_join(d1, full_name, by = c("CLspecCode" = "Key"))
 
@@ -180,31 +224,40 @@ speciesPlot <- function(landingsData = NA,
       d1Species <- d1Species[!is.na(d1Species$Description),]
     }
 
-    d1Species <- dplyr::left_join(d1Species, df1, by = "CLyear") %>%
-      dplyr::mutate(relativeValuesYear = LandingCount / LandingCountYear) %>%
-      dplyr::mutate(relativeValuesAll = LandingCount / totalSpeCountAll) %>%
-      dplyr::top_n(topN)
+    # Get relative values
+    d1SpeciesRelative <- dplyr::left_join(d1Species, df1, by = "CLyear") %>%
+      dplyr::mutate(relativeValuesYear = CLSpeSum / CLSumForYear)
+
+    # Get topN species based on their total value of landingsVariable
+    topNSpecies_l <- d1SpeciesRelative %>%
+      dplyr::group_by(CLspecCode) %>%
+      dplyr::summarize(CLtotalSpeSum = sum(CLSpeSum)) %>%
+      dplyr::slice_max(order_by = CLtotalSpeSum, n = topN)
+
+    # Filter relative values to topN species
+    d1SpeciesRelative <- d1SpeciesRelative[
+      d1SpeciesRelative$CLspecCode %in% topNSpecies_l$CLspecCode,]
+
   }
 
   if (samples) {
     # Sample data
-    # Group by year, and year and quarter, and count the number of species
 
-    # add df to calculate total species for year
+    # Sum samplingVariable by year
     df2 <- na.omit(
       sampleData %>%
         dplyr::group_by(SAyear) %>%
-        dplyr::add_count(SAspeCode, name = "SASpeCount") %>%
-        dplyr::summarise(SamplingCountYear = sum(SASpeCount))
-    ) %>%
-      dplyr::mutate(totalSpeCountAll = sum(SamplingCountYear))
+        dplyr::summarize(SASumForYear = sum(!!rlang::sym(samplingVariable))) %>%
+        dplyr::mutate(SASumTotal = sum(SASumForYear))
+    )
 
+    # Sum samplingVariable by year, quarter, and species
     d2 <- na.omit(
       sampleData %>%
         dplyr::group_by(SAyear, SAquar, SAspeCode) %>%
-        dplyr::add_count(SAspeCode, name = "SASpeCount") %>%
-        dplyr::summarise(SamplingCount = sum(SASpeCount))
+        dplyr::summarize(SASpeSum = sum(!!rlang::sym(samplingVariable)))
     )
+
     d2Species <-
       dplyr::left_join(d2, full_name, by = c("SAspeCode" = "Key"))
 
@@ -219,10 +272,20 @@ speciesPlot <- function(landingsData = NA,
       d2Species <- d2Species[!is.na(d2Species$Description),]
     }
 
-    d2Species <- dplyr::left_join(d2Species, df2, by = "SAyear") %>%
-      dplyr::mutate(relSamplingYear = SamplingCount / SamplingCountYear) %>%
-      dplyr::mutate(relSamplingAll = SamplingCount / totalSpeCountAll) %>%
-      dplyr::top_n(topN)
+    # Get relative values
+    d2SpeciesRelative <- dplyr::left_join(d2Species, df2, by = "SAyear") %>%
+      dplyr::mutate(relativeValuesYear = SASpeSum / SASumForYear)
+
+    # Get topN species based on their total value of landingsVariable
+    topNSpecies_l <- d2SpeciesRelative %>%
+      dplyr::group_by(SAspeCode) %>%
+      dplyr::summarize(SAtotalSpeSum = sum(SASpeSum)) %>%
+      dplyr::slice_max(order_by = SAtotalSpeSum, n = topN)
+
+    # Filter relative values to topN species
+    d2SpeciesRelative <- d2SpeciesRelative[
+      d2SpeciesRelative$SAspeCode %in% topNSpecies_l$SAspeCode,]
+
   }
 
   # Get the years we want plot
@@ -241,7 +304,7 @@ speciesPlot <- function(landingsData = NA,
 
   for (i in seq_along(length(y))) {
     if (landings) {
-      t1 <- d1Species %>% dplyr::filter(CLyear == y[i])
+      t1 <- d1SpeciesRelative %>% dplyr::filter(CLyear == y[i])
       # Landings plot
       p1 <- plotly::plot_ly(
         t1,
@@ -255,10 +318,11 @@ speciesPlot <- function(landingsData = NA,
           title = paste0(
             "Vessel Flag ",
             flagLabel,
-            ": Top Landings Species in",
+            ": Top ", topN ," Landings Species in",
             y[i]
           ),
-          yaxis = list(title = "Landings"),
+          yaxis = list(title = paste0("Relative ", landingsVariable),
+                       titlefont = list(size = 12)),
           xaxis = list(categoryorder = "total descending"),
           barmode = "stack"
         )
@@ -267,12 +331,12 @@ speciesPlot <- function(landingsData = NA,
     }
 
     if (samples) {
-      t2 <- d2Species %>% dplyr::filter(SAyear == y[i])
+      t2 <- d2SpeciesRelative %>% dplyr::filter(SAyear == y[i])
       # sample data plot
       p2 <- plotly::plot_ly(
         t2,
         x = ~ as.character(Description),
-        y = ~relSamplingYear,
+        y = ~relativeValuesYear,
         color = ~ as.character(SAquar),
         type = "bar",
         showlegend = TRUE
@@ -281,12 +345,13 @@ speciesPlot <- function(landingsData = NA,
           title = paste0(
             "Vessel Flag ",
             flagLabel,
-            " : Top Landings and Sampling (",
+            " : Top ", topN ," Landings and Sampling (",
             catchCat,
-            ") Species \nRelative Values per Plot in ",
+            ")\n species in ",
             y[i]
           ),
-          yaxis = list(title = "Sampling"),
+          yaxis = list(title = paste0("Relative ", samplingVariable),
+                       titlefont = list(size = 12)),
           xaxis = list(categoryorder = "total descending"),
           barmode = "stack",
           legend = list(title = list(text = "<b> Quarter: </b>"))
