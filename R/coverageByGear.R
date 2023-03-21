@@ -5,6 +5,9 @@
 #' @param year Year to be assessed e.g 2021
 #' @param quarter Quarter to be assessed - possible choices 1,2,3 or 4.
 #' @param vesselFlag Registered Country of Vessel - e.g "IE", "ES" or "FR".
+#' @param landingsVariable Landings variable to be assessed
+#' @param effortVariable Effort variable to be assessed
+#' @param samplingVariable Sampling Variable to be assessed
 #' @param catchCat Sampling catch category - "Lan", "Dis",or "Catch"
 #' @param includeLandings (Optional) Set to TRUE to include landings.
 #' Default is TRUE
@@ -41,6 +44,19 @@ coverageByGear <- function(dataToPlot,
                            year = NA,
                            quarter = NA,
                            vesselFlag = NA,
+                           landingsVariable = c(
+                             "CLoffWeight",
+                             "CLsciWeight"
+                           ),
+                           effortVariable = c(
+                             "CEnumFracTrips",
+                             "CEnumDomTrip"
+                           ),
+                           samplingVariable = c(
+                             "SAsampWtLive",
+                             "SAnumSamp",
+                             "SAsampWtMes"
+                           ),
                            catchCat = c(
                              "Lan",
                              "Dis",
@@ -57,6 +73,10 @@ coverageByGear <- function(dataToPlot,
     print("Validating input parameters")
   }
 
+  if (length(quarter)>1){
+    stop("You can provide a single value or NA for quarter")
+  }
+
   if (length(catchCat) == 3) {
     stop("You must provide a Catch Category")
   } else if (length(catchCat) == 2) {
@@ -65,6 +85,36 @@ coverageByGear <- function(dataToPlot,
 
   if (length(vesselFlag) > 1) {
     stop("Only one vessel flag country can be provided")
+  }
+
+  if (includeLandings && length(landingsVariable) > 1) {
+    stop("You must provide landingsVariable if you want to include landings data")
+  }
+
+  if (includeEffort && length(effortVariable) > 1) {
+    stop("You must provide effortVariable if you want to include effort data")
+  }
+
+  if (includeSamples && length(samplingVariable) > 1) {
+    stop("You must provide samplingVariable if you want to include sample data")
+  }
+
+  if (includeLandings &&
+      length(landingsVariable) == 1 &&
+      !landingsVariable %in% RDBESvisualise::allowedLandingsVariable) {
+    stop(paste0("Invalid landingsVariable value:", landingsVariable))
+  }
+
+  if (includeEffort &&
+      length(effortVariable) == 1 &&
+      !effortVariable %in% RDBESvisualise::allowedEffortVariable) {
+    stop(paste0("Invalid effortVariable value:", effortVariable))
+  }
+
+  if (includeSamples &&
+      length(samplingVariable) == 1 &&
+      !samplingVariable %in% RDBESvisualise::allowedSamplingVariable) {
+    stop(paste0("Invalid samplingVariable value:", samplingVariable))
   }
 
   if (length(catchCat) == 1 && !catchCat %in% c("Lan", "Dis", "Catch")) {
@@ -129,7 +179,10 @@ coverageByGear <- function(dataToPlot,
     sampleData = sa1,
     vesselFlag = vesselFlag,
     catchCat = catchCat,
-    quarter = quarter
+    quarter = quarter,
+    landingsVariable = landingsVariable,
+    effortVariable = effortVariable,
+    samplingVariable = samplingVariable
   )
 
   plotsToPrint
@@ -151,7 +204,10 @@ gearPlot <- function(landingsData = NA,
                      sampleData = NA,
                      vesselFlag,
                      catchCat,
-                     quarter) {
+                     quarter,
+                     landingsVariable,
+                     effortVariable,
+                     samplingVariable) {
   # see what data we've been given
   if (length(landingsData) == 1 && is.na(landingsData)) {
     landings <- FALSE
@@ -180,135 +236,226 @@ gearPlot <- function(landingsData = NA,
   if (is.na(quarter) == FALSE) {
     # Landings
     if (landings) {
+      # df1 <- na.omit(
+      #   landingsData %>%
+      #     dplyr::group_by(CLyear, CLquar) %>%
+      #     dplyr::add_count(CLGear, name = "CLGearCount") %>%
+      #     dplyr::summarise(LandingsGearCountQuar = sum(CLGearCount))
+      # )
+
+      # Sum landingsVariable by year and quarter
       df1 <- na.omit(
         landingsData %>%
           dplyr::group_by(CLyear, CLquar) %>%
-          dplyr::add_count(CLGear, name = "CLGearCount") %>%
-          dplyr::summarise(LandingsGearCountQuar = sum(CLGearCount))
+          dplyr::summarize(CLSumForYear = sum(!!rlang::sym(landingsVariable))) %>%
+          dplyr::mutate(CLSumTotal = sum(CLSumForYear))
       )
 
+      # d1 <- na.omit(
+      #   landingsData %>%
+      #     dplyr::group_by(CLyear, CLquar, CLGear) %>%
+      #     dplyr::add_count(CLGear, name = "CLGearCount") %>%
+      #     dplyr::summarise(LandingsGearCount = sum(CLGearCount))
+      # )
+
+      # Sum landingsVariable by year, quarter, and gear
       d1 <- na.omit(
         landingsData %>%
           dplyr::group_by(CLyear, CLquar, CLGear) %>%
-          dplyr::add_count(CLGear, name = "CLGearCount") %>%
-          dplyr::summarise(LandingsGearCount = sum(CLGearCount))
+          dplyr::summarize(LandingsGear = sum(!!rlang::sym(landingsVariable)))
       )
 
-      d1 <- dplyr::left_join(d1, df1, by = "CEyear", "CEquar") %>%
+      d1 <- dplyr::left_join(d1, df1, by = "CLyear", "CLquar") %>%
         dplyr::mutate(
           relativeValuesL =
-            LandingsGearCount / LandingsGearCountQuar
+            LandingsGear / CLSumTotal
         )
     }
 
     # Samples
     if (samples) {
+      # df2 <- na.omit(
+      #   sampleData %>%
+      #     dplyr::group_by(SAyear, SAquar) %>%
+      #     dplyr::add_count(SAgear, name = "SAGearCount") %>%
+      #     dplyr::summarise(SamplingGearCountQuar = sum(SAGearCount))
+      # )
+
+      # Sum samplingVariable by year and quarter
       df2 <- na.omit(
         sampleData %>%
           dplyr::group_by(SAyear, SAquar) %>%
-          dplyr::add_count(SAgear, name = "SAGearCount") %>%
-          dplyr::summarise(SamplingGearCountQuar = sum(SAGearCount))
+          dplyr::summarize(SASumForYear = sum(!!rlang::sym(samplingVariable))) %>%
+          dplyr::mutate(SASumTotal = sum(SASumForYear))
       )
 
+      # d2 <- na.omit(
+      #   sampleData %>%
+      #     dplyr::group_by(SAyear, SAquar, SAgear) %>%
+      #     dplyr::add_count(SAgear, name = "SAGearCount") %>%
+      #     dplyr::summarise(SamplingGearCount = sum(SAGearCount))
+      # )
+
+      # Sum samplingVariable by year, and gear
       d2 <- na.omit(
         sampleData %>%
           dplyr::group_by(SAyear, SAquar, SAgear) %>%
-          dplyr::add_count(SAgear, name = "SAGearCount") %>%
-          dplyr::summarise(SamplingGearCount = sum(SAGearCount))
+          dplyr::summarize(SASpeSum = sum(!!rlang::sym(samplingVariable)))
       )
 
       d2 <- dplyr::left_join(d2, df2, by = "SAyear", "SAquar") %>%
         dplyr::mutate(
           relativeValuesS =
-            SamplingGearCount / SamplingGearCountQuar
+            SASpeSum / SASumTotal
         )
     }
 
 
     # Effort
     if (effort) {
+      # df3 <- na.omit(
+      #   effortData %>%
+      #     dplyr::group_by(CEyear, CEquar) %>%
+      #     dplyr::add_count(CEGear, name = "CEGearCount") %>%
+      #     dplyr::summarise(EffortGearCountQuar = sum(CEGearCount))
+      # )
+
+      # Sum effortVariable by year
       df3 <- na.omit(
         effortData %>%
           dplyr::group_by(CEyear, CEquar) %>%
-          dplyr::add_count(CEGear, name = "CEGearCount") %>%
-          dplyr::summarise(EffortGearCountQuar = sum(CEGearCount))
+          dplyr::summarize(CESumForYear = sum(!!rlang::sym(effortVariable))) %>%
+          dplyr::mutate(CESumTotal = sum(CESumForYear))
       )
 
+      # d3 <- na.omit(
+      #   effortData %>%
+      #     dplyr::group_by(CEyear, CEquar, CEGear) %>%
+      #     dplyr::add_count(CEGear, name = "CEGearCount") %>%
+      #     dplyr::summarise(EffortGearCount = sum(CEGearCount))
+      # )
+
+      # Sum effortVariable by year, and gear
       d3 <- na.omit(
         effortData %>%
           dplyr::group_by(CEyear, CEquar, CEGear) %>%
-          dplyr::add_count(CEGear, name = "CEGearCount") %>%
-          dplyr::summarise(EffortGearCount = sum(CEGearCount))
+          dplyr::summarize(EffortGear = sum(!!rlang::sym(effortVariable)))
       )
 
       d3 <- dplyr::left_join(d3, df3, by = "CEyear", "CEquar") %>%
         dplyr::mutate(
           relativeValuesE =
-            EffortGearCount / EffortsGearCountQuar
+            EffortGear / CESumTotal
         )
     }
   } else {
     # Landings
     if (landings) {
+      # df1 <- na.omit(
+      #   landingsData %>%
+      #     dplyr::group_by(CLyear) %>%
+      #     dplyr::add_count(CLGear, name = "CLGearCount") %>%
+      #     dplyr::summarise(totalGearYear = sum(CLGearCount))
+      # )
+
+      # Sum landingsVariable by year
       df1 <- na.omit(
         landingsData %>%
           dplyr::group_by(CLyear) %>%
-          dplyr::add_count(CLGear, name = "CLGearCount") %>%
-          dplyr::summarise(totalGearYear = sum(CLGearCount))
+          dplyr::summarize(CLSumForYear = sum(!!rlang::sym(landingsVariable))) %>%
+          dplyr::mutate(CLSumTotal = sum(CLSumForYear))
       )
 
+
+      # d1 <- na.omit(
+      #   landingsData %>%
+      #     dplyr::group_by(CLyear, CLGear) %>%
+      #     dplyr::add_count(CLGear, name = "CLGearCount") %>%
+      #     dplyr::summarise(LandingsGearCount = sum(CLGearCount))
+      # )
+
+      # Sum landingsVariable by year, and gear
       d1 <- na.omit(
         landingsData %>%
           dplyr::group_by(CLyear, CLGear) %>%
-          dplyr::add_count(CLGear, name = "CLGearCount") %>%
-          dplyr::summarise(LandingsGearCount = sum(CLGearCount))
+          dplyr::summarize(LandingsGear = sum(!!rlang::sym(landingsVariable)))
       )
 
       d1 <- dplyr::left_join(d1, df1, by = "CLyear") %>%
-        dplyr::mutate(relativeValuesL = LandingsGearCount / totalGearYear)
+        dplyr::mutate(relativeValuesL = LandingsGear / CLSumTotal)
     }
 
     # Samples
     if (samples) {
+      # df2 <- na.omit(
+      #   sampleData %>%
+      #     dplyr::group_by(SAyear) %>%
+      #     dplyr::add_count(SAgear, name = "SAGearCount") %>%
+      #     dplyr::summarise(SamplingGearCountYear = sum(SAGearCount))
+      # )
+
+      # Sum samplingVariable by year
       df2 <- na.omit(
         sampleData %>%
           dplyr::group_by(SAyear) %>%
-          dplyr::add_count(SAgear, name = "SAGearCount") %>%
-          dplyr::summarise(SamplingGearCountYear = sum(SAGearCount))
+          dplyr::summarize(SASumForYear = sum(!!rlang::sym(samplingVariable))) %>%
+          dplyr::mutate(SASumTotal = sum(SASumForYear))
       )
 
+      # d2 <- na.omit(
+      #   sampleData %>%
+      #     dplyr::group_by(SAyear, SAgear) %>%
+      #     dplyr::add_count(SAgear, name = "SAGearCount") %>%
+      #     dplyr::summarise(SamplingGearCount = sum(SAGearCount))
+      # )
+
+      # Sum samplingVariable by year, and gear
       d2 <- na.omit(
         sampleData %>%
           dplyr::group_by(SAyear, SAgear) %>%
-          dplyr::add_count(SAgear, name = "SAGearCount") %>%
-          dplyr::summarise(SamplingGearCount = sum(SAGearCount))
+          dplyr::summarize(SASpeSum = sum(!!rlang::sym(samplingVariable)))
       )
 
       d2 <- dplyr::left_join(d2, df2, by = "SAyear") %>%
         dplyr::mutate(
           relativeValuesS =
-            SamplingGearCount / SamplingGearCountYear
+            SASpeSum / SASumTotal
         )
     }
 
     # Effort
     if (effort) {
+      # df3 <- na.omit(
+      #   effortData %>%
+      #     dplyr::group_by(CEyear) %>%
+      #     dplyr::add_count(CEGear, name = "CEGearCount") %>%
+      #     dplyr::summarise(totalGearYear = sum(CEGearCount))
+      # )
+
+      # Sum effortVariable by year
       df3 <- na.omit(
         effortData %>%
           dplyr::group_by(CEyear) %>%
-          dplyr::add_count(CEGear, name = "CEGearCount") %>%
-          dplyr::summarise(totalGearYear = sum(CEGearCount))
+          dplyr::summarize(CESumForYear = sum(!!rlang::sym(effortVariable))) %>%
+          dplyr::mutate(CESumTotal = sum(CESumForYear))
       )
 
+      # d3 <- na.omit(
+      #   effortData %>%
+      #     dplyr::group_by(CEyear, CEGear) %>%
+      #     dplyr::add_count(CEGear, name = "CEGearCount") %>%
+      #     dplyr::summarise(EffortGearCount = sum(CEGearCount))
+      # )
+
+      # Sum effortVariable by year, and gear
       d3 <- na.omit(
         effortData %>%
           dplyr::group_by(CEyear, CEGear) %>%
-          dplyr::add_count(CEGear, name = "CEGearCount") %>%
-          dplyr::summarise(EffortGearCount = sum(CEGearCount))
+          dplyr::summarize(EffortGear = sum(!!rlang::sym(effortVariable)))
       )
 
       d3 <- dplyr::left_join(d3, df3, by = "CEyear") %>%
-        dplyr::mutate(relativeValuesE = EffortGearCount / totalGearYear)
+        dplyr::mutate(relativeValuesE = EffortGear / CESumTotal)
     }
   }
 
@@ -330,6 +477,9 @@ gearPlot <- function(landingsData = NA,
   all_plot <- htmltools::tagList()
 
   for (i in seq_along(length(y))) {
+
+
+
     # Landings
     if (landings) {
       dd <- d1 %>% dplyr::filter(CLyear == y[i])
@@ -343,13 +493,17 @@ gearPlot <- function(landingsData = NA,
         showlegend = FALSE
       ) %>%
         plotly::layout(
-          title = paste0(
-            "Vessel Flag ",
-            flagLabel,
-            " : Top Gear - Relative Values per Plot \n in",
-            y[i]
+          #title = paste0(
+          #  "Vessel Flag ",
+          #  flagLabel,
+          #  " : Top Gear - Relative Values per Plot \n in",
+          #  y[i]
+          #),
+          #yaxis = list(title = "Landings"),
+          yaxis = list(
+            title = landingsVariable,
+            titlefont = list(size = 12)
           ),
-          yaxis = list(title = "Landings"),
           xaxis = list(categoryorder = "total descending"),
           barmode = "stack"
         )
@@ -370,14 +524,18 @@ gearPlot <- function(landingsData = NA,
         showlegend = FALSE
       ) %>%
         plotly::layout(
-          title = paste0(
-            "Vessel Flag ", flagLabel,
-            " : Top Gear (",
-            catchCat,
-            ")\n Relative Values per Plot in ",
-            y[i]
+          #title = paste0(
+          #  "Vessel Flag ", flagLabel,
+          #  " : Top Gear (",
+          #  catchCat,
+          #  ")\n Relative Values per Plot in ",
+          #  y[i]
+          #),
+          #yaxis = list(title = "Sampling"),
+          yaxis = list(
+            title = samplingVariable,
+            titlefont = list(size = 12)
           ),
-          yaxis = list(title = "Sampling"),
           xaxis = list(categoryorder = "total descending"),
           barmode = "stack"
         )
@@ -398,13 +556,17 @@ gearPlot <- function(landingsData = NA,
         showlegend = FALSE
       ) %>%
         plotly::layout(
-          title = paste0(
-            "Vessel Flag ",
-            flagLabel,
-            " : Top Gear - Relative Values per Plot \n in ",
-            y[i]
+          #title = paste0(
+          #  "Vessel Flag ",
+          #  flagLabel,
+          #  " : Top Gear - Relative Values per Plot \n in ",
+          #  y[i]
+          #),
+          #yaxis = list(title = "Effort"),
+          yaxis = list(
+            title = effortVariable,
+            titlefont = list(size = 12)
           ),
-          yaxis = list(title = "Effort"),
           xaxis = list(categoryorder = "total descending"),
           barmode = "stack"
         )
@@ -412,8 +574,21 @@ gearPlot <- function(landingsData = NA,
       p3 <- plotly::plotly_empty(type = "bar")
     }
 
+    # Create the plot title
+    myTitle <- paste0("Vessel Flag ", flagLabel,
+                      " : Gear "
+    )
+    if (samples){
+      myTitle <- paste0(myTitle, "(", catchCat, ") ")
+    }
+    myTitle <- paste0(myTitle, "- Relative Values per Plot \n in ")
+    if (!is.na(quarter)){
+      myTitle <- paste0(myTitle, "Q", quarter, ", " )
+    }
+    myTitle <- paste0(myTitle, y[i])
 
-    all_plot[[i]] <- plotly::subplot(p1, p3, p2, titleY = TRUE, nrows = 3)
+    all_plot[[i]] <- plotly::subplot(p1, p3, p2, titleY = TRUE, nrows = 3) %>%
+      plotly::layout(title = myTitle)
   }
   all_plot
 }
