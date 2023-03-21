@@ -192,10 +192,14 @@ coverageByGear <- function(dataToPlot,
 #' in landings, effort, and sample data.
 #'
 #' @param landingsData Landings data
+#' @param effortData Effort data
 #' @param sampleData Sample data
 #' @param vesselFlag Registered Country of Vessel - e.g "IE", "ES" or "FR".
 #' @param catchCat Catch category
 #' @param quarter Quarter of year
+#' @param landingsVariable Variable from CL to plot
+#' @param landingsVariable Variable from CE to plot
+#' @param samplingVariable variable from SA to plot
 #'
 #' @return A tagList of plotly plots
 #'
@@ -236,12 +240,6 @@ gearPlot <- function(landingsData = NA,
   if (is.na(quarter) == FALSE) {
     # Landings
     if (landings) {
-      # df1 <- na.omit(
-      #   landingsData %>%
-      #     dplyr::group_by(CLyear, CLquar) %>%
-      #     dplyr::add_count(CLGear, name = "CLGearCount") %>%
-      #     dplyr::summarise(LandingsGearCountQuar = sum(CLGearCount))
-      # )
 
       # Sum landingsVariable by year and quarter
       df1 <- na.omit(
@@ -250,13 +248,6 @@ gearPlot <- function(landingsData = NA,
           dplyr::summarize(CLSumForYear = sum(!!rlang::sym(landingsVariable))) %>%
           dplyr::mutate(CLSumTotal = sum(CLSumForYear))
       )
-
-      # d1 <- na.omit(
-      #   landingsData %>%
-      #     dplyr::group_by(CLyear, CLquar, CLGear) %>%
-      #     dplyr::add_count(CLGear, name = "CLGearCount") %>%
-      #     dplyr::summarise(LandingsGearCount = sum(CLGearCount))
-      # )
 
       # Sum landingsVariable by year, quarter, and gear
       d1 <- na.omit(
@@ -274,12 +265,6 @@ gearPlot <- function(landingsData = NA,
 
     # Samples
     if (samples) {
-      # df2 <- na.omit(
-      #   sampleData %>%
-      #     dplyr::group_by(SAyear, SAquar) %>%
-      #     dplyr::add_count(SAgear, name = "SAGearCount") %>%
-      #     dplyr::summarise(SamplingGearCountQuar = sum(SAGearCount))
-      # )
 
       # Sum samplingVariable by year and quarter
       df2 <- na.omit(
@@ -288,13 +273,6 @@ gearPlot <- function(landingsData = NA,
           dplyr::summarize(SASumForYear = sum(!!rlang::sym(samplingVariable))) %>%
           dplyr::mutate(SASumTotal = sum(SASumForYear))
       )
-
-      # d2 <- na.omit(
-      #   sampleData %>%
-      #     dplyr::group_by(SAyear, SAquar, SAgear) %>%
-      #     dplyr::add_count(SAgear, name = "SAGearCount") %>%
-      #     dplyr::summarise(SamplingGearCount = sum(SAGearCount))
-      # )
 
       # Sum samplingVariable by year, and gear
       d2 <- na.omit(
@@ -313,12 +291,6 @@ gearPlot <- function(landingsData = NA,
 
     # Effort
     if (effort) {
-      # df3 <- na.omit(
-      #   effortData %>%
-      #     dplyr::group_by(CEyear, CEquar) %>%
-      #     dplyr::add_count(CEGear, name = "CEGearCount") %>%
-      #     dplyr::summarise(EffortGearCountQuar = sum(CEGearCount))
-      # )
 
       # Sum effortVariable by year
       df3 <- na.omit(
@@ -327,13 +299,6 @@ gearPlot <- function(landingsData = NA,
           dplyr::summarize(CESumForYear = sum(!!rlang::sym(effortVariable))) %>%
           dplyr::mutate(CESumTotal = sum(CESumForYear))
       )
-
-      # d3 <- na.omit(
-      #   effortData %>%
-      #     dplyr::group_by(CEyear, CEquar, CEGear) %>%
-      #     dplyr::add_count(CEGear, name = "CEGearCount") %>%
-      #     dplyr::summarise(EffortGearCount = sum(CEGearCount))
-      # )
 
       # Sum effortVariable by year, and gear
       d3 <- na.omit(
@@ -351,12 +316,6 @@ gearPlot <- function(landingsData = NA,
   } else {
     # Landings
     if (landings) {
-      # df1 <- na.omit(
-      #   landingsData %>%
-      #     dplyr::group_by(CLyear) %>%
-      #     dplyr::add_count(CLGear, name = "CLGearCount") %>%
-      #     dplyr::summarise(totalGearYear = sum(CLGearCount))
-      # )
 
       # Sum landingsVariable by year
       df1 <- na.omit(
@@ -365,14 +324,6 @@ gearPlot <- function(landingsData = NA,
           dplyr::summarize(CLSumForYear = sum(!!rlang::sym(landingsVariable))) %>%
           dplyr::mutate(CLSumTotal = sum(CLSumForYear))
       )
-
-
-      # d1 <- na.omit(
-      #   landingsData %>%
-      #     dplyr::group_by(CLyear, CLGear) %>%
-      #     dplyr::add_count(CLGear, name = "CLGearCount") %>%
-      #     dplyr::summarise(LandingsGearCount = sum(CLGearCount))
-      # )
 
       # Sum landingsVariable by year, and gear
       d1 <- na.omit(
@@ -387,12 +338,6 @@ gearPlot <- function(landingsData = NA,
 
     # Samples
     if (samples) {
-      # df2 <- na.omit(
-      #   sampleData %>%
-      #     dplyr::group_by(SAyear) %>%
-      #     dplyr::add_count(SAgear, name = "SAGearCount") %>%
-      #     dplyr::summarise(SamplingGearCountYear = sum(SAGearCount))
-      # )
 
       # Sum samplingVariable by year
       df2 <- na.omit(
@@ -401,13 +346,6 @@ gearPlot <- function(landingsData = NA,
           dplyr::summarize(SASumForYear = sum(!!rlang::sym(samplingVariable))) %>%
           dplyr::mutate(SASumTotal = sum(SASumForYear))
       )
-
-      # d2 <- na.omit(
-      #   sampleData %>%
-      #     dplyr::group_by(SAyear, SAgear) %>%
-      #     dplyr::add_count(SAgear, name = "SAGearCount") %>%
-      #     dplyr::summarise(SamplingGearCount = sum(SAGearCount))
-      # )
 
       # Sum samplingVariable by year, and gear
       d2 <- na.omit(
@@ -425,12 +363,6 @@ gearPlot <- function(landingsData = NA,
 
     # Effort
     if (effort) {
-      # df3 <- na.omit(
-      #   effortData %>%
-      #     dplyr::group_by(CEyear) %>%
-      #     dplyr::add_count(CEGear, name = "CEGearCount") %>%
-      #     dplyr::summarise(totalGearYear = sum(CEGearCount))
-      # )
 
       # Sum effortVariable by year
       df3 <- na.omit(
@@ -439,13 +371,6 @@ gearPlot <- function(landingsData = NA,
           dplyr::summarize(CESumForYear = sum(!!rlang::sym(effortVariable))) %>%
           dplyr::mutate(CESumTotal = sum(CESumForYear))
       )
-
-      # d3 <- na.omit(
-      #   effortData %>%
-      #     dplyr::group_by(CEyear, CEGear) %>%
-      #     dplyr::add_count(CEGear, name = "CEGearCount") %>%
-      #     dplyr::summarise(EffortGearCount = sum(CEGearCount))
-      # )
 
       # Sum effortVariable by year, and gear
       d3 <- na.omit(
@@ -493,13 +418,6 @@ gearPlot <- function(landingsData = NA,
         showlegend = FALSE
       ) %>%
         plotly::layout(
-          #title = paste0(
-          #  "Vessel Flag ",
-          #  flagLabel,
-          #  " : Top Gear - Relative Values per Plot \n in",
-          #  y[i]
-          #),
-          #yaxis = list(title = "Landings"),
           yaxis = list(
             title = landingsVariable,
             titlefont = list(size = 12)
@@ -524,14 +442,6 @@ gearPlot <- function(landingsData = NA,
         showlegend = FALSE
       ) %>%
         plotly::layout(
-          #title = paste0(
-          #  "Vessel Flag ", flagLabel,
-          #  " : Top Gear (",
-          #  catchCat,
-          #  ")\n Relative Values per Plot in ",
-          #  y[i]
-          #),
-          #yaxis = list(title = "Sampling"),
           yaxis = list(
             title = samplingVariable,
             titlefont = list(size = 12)
@@ -556,13 +466,6 @@ gearPlot <- function(landingsData = NA,
         showlegend = FALSE
       ) %>%
         plotly::layout(
-          #title = paste0(
-          #  "Vessel Flag ",
-          #  flagLabel,
-          #  " : Top Gear - Relative Values per Plot \n in ",
-          #  y[i]
-          #),
-          #yaxis = list(title = "Effort"),
           yaxis = list(
             title = effortVariable,
             titlefont = list(size = 12)

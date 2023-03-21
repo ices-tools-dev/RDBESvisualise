@@ -93,7 +93,10 @@ The following output shows the top gears used in landings and sampling landings 
       dataToPlot = myH1RawObject,
       year = myYear,
       vesselFlag = myvesselFlag,
-      catchCat = "Lan"
+      catchCat = "Lan",
+      landingsVariable = "CLoffWeight",
+      effortVariable = "CEnumFracTrips",
+      samplingVariable = "SAsampWtLive",
     )
 
   myPlots
@@ -112,11 +115,15 @@ The following output shows the top gears used in effort and sampling landings - 
   myPlots <- coverageByGear(
       dataToPlot = myH1RawObject,
       year = myYear,
+      quarter = 1,
       vesselFlag = myvesselFlag,
       catchCat = "Lan",
-      includeLandings = FALSE,
+      landingsVariable = "CLoffWeight",
+      effortVariable = "CEnumFracTrips",
+      samplingVariable = "SAsampWtLive",
+      includeLandings = TRUE,
       includeEffort = TRUE,
-      includeSamples = TRUE
+      includeSamples = FALSE
     )
 
   myPlots
