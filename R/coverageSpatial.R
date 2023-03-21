@@ -323,7 +323,13 @@ pointsPlot <- function(landingsData = NA,
       ices_rects_s <- getQuantiles(ices_rects_s, numberOfClasses = no_classes)
 
       # create point on surface
-      points <- sf::st_coordinates(sf::st_point_on_surface(ices_rects_s))
+      # Note this line always produced a warning saying "st_point_on_surface
+      # assumes attributes are constant over geometries of x" so I suppresed
+      # it - there's probaby a way to fix the problem rather than
+      # just hide it...
+      suppressWarnings(points <-
+                         sf::st_coordinates(
+                           sf::st_point_on_surface(ices_rects_s)))
       points <- as.data.frame(points)
       points$sa <- ices_rects_s$sa
     }
@@ -536,7 +542,8 @@ spatialPlotCreateGraph <- function(dataToPlot,
 
   # get extent of plot
   # No_NA_l <- ices_rects_l[ices_rects_l$cl != "NA", ]
-  No_NA <- dataToPlot[dataToPlot$var1 != "NA", ]
+  # No_NA <- dataToPlot[dataToPlot$var1 != "NA", ]
+  No_NA <- dataToPlot[!is.na(dataToPlot$var1), ]
   xlim1 <- sf::st_bbox(No_NA)[1]
   ylim2 <- sf::st_bbox(No_NA)[2]
   xlim3 <- sf::st_bbox(No_NA)[3]
@@ -580,9 +587,13 @@ spatialPlotCreateGraph <- function(dataToPlot,
 
   # See if we need to add the secondary data to the plot
   if (plotPointsData) {
+
+    # Get rid of any NAs first - otherwise we get warnings
+    pointsDataToPlot_noNa <- pointsDataToPlot[!is.na(pointsDataToPlot$var2),]
+
     gg <- gg +
       ggiraph::geom_point_interactive(
-        data = pointsDataToPlot,
+        data = pointsDataToPlot_noNa,
         ggplot2::aes(
           x = X,
           y = Y,
