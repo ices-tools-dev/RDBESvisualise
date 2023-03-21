@@ -10,6 +10,8 @@ speciesPlot(
   sampleData = NA,
   vesselFlag,
   catchCat,
+  landingsVariable,
+  samplingVariable,
   topN = 10
 )
 }
@@ -22,7 +24,11 @@ speciesPlot(
 
 \item{catchCat}{Catch category}
 
-\item{(Optional)}{Number of species to plot.  Default is 10.}
+\item{landingsVariable}{Variable from CL to plot}
+
+\item{samplingVariable}{variable from SA to plot}
+
+\item{topN}{(Optional) The number of species to include - default is 10}
 }
 \value{
 A tagList of plotly plots

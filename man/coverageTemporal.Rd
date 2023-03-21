@@ -32,9 +32,20 @@ coverageTemporal(
 
 \item{landingsVariable}{Landings variable to be assessed}
 
+\item{effortVariable}{Effort variable to be assessed}
+
 \item{samplingVariable}{Sampling Variable to be assessed}
 
 \item{catchCat}{Sampling catch category - "Lan", "Dis",or "Catch"}
+
+\item{includeLandings}{(Optional) Set to TRUE to include landings in the
+plot - default is TRUE.}
+
+\item{includeEffort}{(Optional) Set to TRUE to include effort in the
+plot - default is TRUE.}
+
+\item{includeSamples}{(Optional) Set to TRUE to include samples in the
+plot - default is TRUE.}
 
 \item{verbose}{(Optional) Set to TRUE to print more information. Default is
 FALSE}

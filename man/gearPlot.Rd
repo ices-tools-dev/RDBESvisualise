@@ -11,11 +11,16 @@ gearPlot(
   sampleData = NA,
   vesselFlag,
   catchCat,
-  quarter
+  quarter,
+  landingsVariable,
+  effortVariable,
+  samplingVariable
 )
 }
 \arguments{
 \item{landingsData}{Landings data}
+
+\item{effortData}{Effort data}
 
 \item{sampleData}{Sample data}
 
@@ -24,6 +29,10 @@ gearPlot(
 \item{catchCat}{Catch category}
 
 \item{quarter}{Quarter of year}
+
+\item{landingsVariable}{Variable from CE to plot}
+
+\item{samplingVariable}{variable from SA to plot}
 }
 \value{
 A tagList of plotly plots

@@ -10,6 +10,9 @@ coverageByGear(
   year = NA,
   quarter = NA,
   vesselFlag = NA,
+  landingsVariable = c("CLoffWeight", "CLsciWeight"),
+  effortVariable = c("CEnumFracTrips", "CEnumDomTrip"),
+  samplingVariable = c("SAsampWtLive", "SAnumSamp", "SAsampWtMes"),
   catchCat = c("Lan", "Dis", "Catch"),
   includeLandings = TRUE,
   includeEffort = TRUE,
@@ -25,6 +28,12 @@ coverageByGear(
 \item{quarter}{Quarter to be assessed - possible choices 1,2,3 or 4.}
 
 \item{vesselFlag}{Registered Country of Vessel - e.g "IE", "ES" or "FR".}
+
+\item{landingsVariable}{Landings variable to be assessed}
+
+\item{effortVariable}{Effort variable to be assessed}
+
+\item{samplingVariable}{Sampling Variable to be assessed}
 
 \item{catchCat}{Sampling catch category - "Lan", "Dis",or "Catch"}
 
