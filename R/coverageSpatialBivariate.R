@@ -248,7 +248,7 @@ bivariatePlot <- function(landingsData = NA,
       ))))
 
     df_l <-
-      dplyr::left_join(d1,
+      dplyr::full_join(d1,
         d2,
         by = c("CLyear" = "SAyear", "CLstatRect" = "SAstatRect")
       )
@@ -262,7 +262,7 @@ bivariatePlot <- function(landingsData = NA,
       ))))
 
     df_e <-
-      dplyr::left_join(d3,
+      dplyr::full_join(d3,
         d2,
         by = c("CEyear" = "SAyear", "CEstatRect" = "SAstatRect")
       )
@@ -380,8 +380,9 @@ bivariatePlotCreateGraph <- function(dataToPlot,
                                      ylab) {
 
   # remove any NAs first
-  dataToPlot_NoNA <-
-    dataToPlot[!(is.na(dataToPlot$var1) | is.na(dataToPlot$var2)),]
+  dataToPlot_NoNA <- dataToPlot
+  dataToPlot_NoNA[is.na(dataToPlot_NoNA$var1),"var1"] <- 0
+  dataToPlot_NoNA[is.na(dataToPlot_NoNA$var2),"var2"] <- 0
 
   # create classes
   biToPlot <-
