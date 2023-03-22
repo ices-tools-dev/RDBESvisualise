@@ -418,7 +418,7 @@ pointsPlot <- function(landingsData = NA,
       # plot univariate map with points (if needed)
       x_e <- spatialPlotCreateGraph(ices_rects_e,
         pointsDataToPlot = pointsDataToPlot,
-        tooltipText = "Landings: ",
+        tooltipText = "Effort: ",
         pointsTooltipText = pointsTooltipText,
         legendText = "Effort Variable",
         pointsLegendText = "Sampling Variable",

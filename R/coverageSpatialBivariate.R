@@ -325,7 +325,7 @@ bivariatePlot <- function(landingsData = NA,
     if (effort) {
       dd_e <- df_e %>% dplyr::filter(CEyear == y[i])
 
-      # rename sa, ce, cestatrect variables before we call plot function
+      # rename sa, ce, statrect variables before we call plot function
       dd_e$var1 <- dd_e$sa
       dd_e$var2 <- dd_e$ce
       dd_e$statRect <- dd_e$CEstatRect
@@ -378,10 +378,15 @@ bivariatePlotCreateGraph <- function(dataToPlot,
                                      subtitle,
                                      xlab,
                                      ylab) {
+
+  # remove any NAs first
+  dataToPlot_NoNA <-
+    dataToPlot[!(is.na(dataToPlot$var1) | is.na(dataToPlot$var2)),]
+
   # create classes
   biToPlot <-
     biscale::bi_class(
-      dataToPlot,
+      dataToPlot_NoNA,
       x = var1,
       y = var2,
       style = "fisher",
