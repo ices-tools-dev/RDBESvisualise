@@ -633,13 +633,19 @@ createBarPlot <- function(dataToPlot,
     legendText <- ""
   }
 
+  myPalette <-  c("#A6CEE3", "#1F78B4", "#B2DF8A", "#33A02C", "#FB9A99",
+                  "#E31A1C", "#FDBF6F", "#FF7F00", "#CAB2D6", "#6A3D9A",
+                  "#E5C494", "#B15928", "#FDDAEC", "#E7298A", "#FFFFCC",
+                  "#FFED6F", "#F2F2F2", "#AAAAAA", "#666666")
+
   p1 <- plotly::plot_ly(
     dataToPlot,
     x = ~ groupingVariable,
     y = ~ relativeValue,
     color = as.formula(formulaForColour),
     type = "bar",
-    showlegend = showLegend
+    showlegend = showLegend,
+    colors = myPalette
   ) %>%
     plotly::layout(
       yaxis = list(
