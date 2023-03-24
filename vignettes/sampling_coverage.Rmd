@@ -58,7 +58,7 @@ library(RDBESvisualise)
 
 ### Species
 
-This output shows the top species landings - the bars represent relative species count values per year. The bars are coloured per quarter.
+This output shows the top 10 species landings - the bars represent relative species values per year.
 
 
 ```{r,warning=FALSE,message=FALSE}
@@ -78,6 +78,29 @@ This output shows the top species landings - the bars represent relative species
   myPlots
 
 ```
+
+This output shows the top 15 species landings - the bars represent relative species values per year. The bars are coloured per quarter.
+
+```{r,warning=FALSE,message=FALSE}
+
+  myYear = 1965
+  myvesselFlag = "ZW"
+
+  myPlots <- coverageBySpecies(
+      dataToPlot = myH1RawObject,
+      year = myYear,
+      vesselFlag = myvesselFlag,
+      catchCat = "Lan",
+      landingsVariable = "CLoffWeight",
+      samplingVariable = "SAsampWtLive",
+      topN = 15,
+      plotQuarters = TRUE
+    )
+
+  myPlots
+
+```
+
 
 ### Gear
 

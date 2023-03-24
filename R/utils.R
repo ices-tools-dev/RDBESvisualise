@@ -437,13 +437,14 @@ barPlotsByGroupingVariable <- function(landingsData = NA,
                      plotQuarters = FALSE) {
 
 
-  #groupingVariable <- "gear"
+
   regExToFind <- paste0("^..",groupingVariable,"$")
 
-  #names(landingsData)
-  #test <- c("GEAR","sagear", "CLGEAR", "CEGEARS")
-
-
+  if (is.na(vesselFlag)) {
+    flagLabel <- "All"
+  } else {
+    flagLabel <- vesselFlag
+  }
 
   # see what data we've been given
   if (length(landingsData) == 1 && is.na(landingsData)) {
@@ -465,7 +466,11 @@ barPlotsByGroupingVariable <- function(landingsData = NA,
     landingsData$groupingVariable <- landingsData[[CLcolName]]
     landingsData$variableToSum <- landingsData[[rlang::sym(landingsVariable)]]
 
+    # Format the data ready for plotting
+    d1 <- formatDataForBarPlotsByGroupingVariable(landingsData, topN)
+
   }
+
   if (length(effortData) == 1 && is.na(effortData)) {
     effort <- FALSE
   } else {
@@ -483,7 +488,12 @@ barPlotsByGroupingVariable <- function(landingsData = NA,
     }
     effortData$groupingVariable <- effortData[[CEcolName]]
     effortData$variableToSum <- effortData[[rlang::sym(effortVariable)]]
+
+    # Format the data ready for plotting
+    d3 <- formatDataForBarPlotsByGroupingVariable(effortData, topN)
+
   }
+
   if (length(sampleData) == 1 && is.na(sampleData)) {
     samples <- FALSE
   } else {
@@ -502,232 +512,11 @@ barPlotsByGroupingVariable <- function(landingsData = NA,
     sampleData$groupingVariable <- sampleData[[SAcolName]]
     sampleData$variableToSum <- sampleData[[rlang::sym(samplingVariable)]]
 
-  }
-
-
-  if (is.na(vesselFlag)) {
-    flagLabel <- "All"
-  } else {
-    flagLabel <- vesselFlag
-  }
-
-
-  if (landings) {
-    d1 <- formatDataForBarPlotsByGroupingVariable(landingsData, topN)
-  }
-
-  # Samples
-  if (samples) {
-
+    # Format the data ready for plotting
     d2 <- formatDataForBarPlotsByGroupingVariable(sampleData, topN)
-
-    # # Sum samplingVariable by year
-    # df2 <- na.omit(
-    #   sampleData %>%
-    #     dplyr::group_by(year) %>%
-    #     dplyr::summarize(SASumForYear = sum(!!rlang::sym(samplingVariable))) %>%
-    #     dplyr::mutate(SASumTotal = sum(SASumForYear))
-    # )
-    #
-    # # Sum samplingVariable by year, and groupingVariable
-    # d2 <- na.omit(
-    #   sampleData %>%
-    #     dplyr::group_by(year, quarter, !!rlang::sym(groupingVariable)) %>%
-    #     dplyr::summarize(SAByGroup = sum(!!rlang::sym(samplingVariable)))
-    # )
-    #
-    # d2 <- dplyr::left_join(d2, df2, by = "year") %>%
-    #   dplyr::mutate(
-    #     relativeValues =
-    #       SAByGroup / SASumForYear
-    #   )
   }
 
-
-  # Effort
-  if (effort) {
-
-    d3 <- formatDataForBarPlotsByGroupingVariable(effortData, topN)
-
-    # # Sum effortVariable by year
-    # df3 <- na.omit(
-    #   effortData %>%
-    #     dplyr::group_by(year) %>%
-    #     dplyr::summarize(CESumForYear = sum(!!rlang::sym(effortVariable))) %>%
-    #     dplyr::mutate(CESumTotal = sum(CESumForYear))
-    # )
-    #
-    # # Sum effortVariable by year, and groupingVariable
-    # d3 <- na.omit(
-    #   effortData %>%
-    #     #dplyr::group_by(CEyear, CEquar, CEGear) %>%
-    #     dplyr::group_by(year, quarter, !!rlang::sym(groupingVariable)) %>%
-    #     dplyr::summarize(EffortByGroup = sum(!!rlang::sym(effortVariable)))
-    # )
-    #
-    # d3 <- dplyr::left_join(d3, df3, by = "year") %>%
-    #   dplyr::mutate(
-    #     relativeValues =
-    #       EffortByGroup / CESumForYear
-    #   )
-  }
-
-
-  # if (is.na(quarter) == FALSE) {
-  #   # Landings
-  #   if (landings) {
-  #
-  #     # Sum landingsVariable by year and quarter
-  #     df1 <- na.omit(
-  #       landingsData %>%
-  #         dplyr::group_by(year, quarter) %>%
-  #         dplyr::summarize(CLSumForYear = sum(!!rlang::sym(landingsVariable))) %>%
-  #         dplyr::mutate(CLSumTotal = sum(CLSumForYear))
-  #     )
-  #
-  #     # Sum landingsVariable by year, quarter, and groupingVariable
-  #     d1 <- na.omit(
-  #       landingsData %>%
-  #         #dplyr::group_by(CLyear, CLquar, CLGear) %>%
-  #         dplyr::group_by(year, quarter, !!rlang::sym(groupingVariable)) %>%
-  #         dplyr::summarize(LandingsByGroup = sum(!!rlang::sym(landingsVariable)))
-  #     )
-  #
-  #     d1 <- dplyr::left_join(d1, df1, by = "year", "quarter") %>%
-  #       dplyr::mutate(
-  #         relativeValues =
-  #           LandingsByGroup / CLSumForYear
-  #           #LandingsByGroup / CLSumTotal
-  #       )
-  #   }
-  #
-  #   # Samples
-  #   if (samples) {
-  #
-  #     # Sum samplingVariable by year and quarter
-  #     df2 <- na.omit(
-  #       sampleData %>%
-  #         dplyr::group_by(year, quarter) %>%
-  #         dplyr::summarize(SASumForYear = sum(!!rlang::sym(samplingVariable))) %>%
-  #         dplyr::mutate(SASumTotal = sum(SASumForYear))
-  #     )
-  #
-  #     # Sum samplingVariable by year, and gear, and groupingVariable
-  #     d2 <- na.omit(
-  #       sampleData %>%
-  #         #dplyr::group_by(SAyear, SAquar, SAgear) %>%
-  #         dplyr::group_by(year, quarter, !!rlang::sym(groupingVariable)) %>%
-  #         dplyr::summarize(SAByGroup = sum(!!rlang::sym(samplingVariable)))
-  #     )
-  #
-  #     d2 <- dplyr::left_join(d2, df2, by = "year", "quarter") %>%
-  #       dplyr::mutate(
-  #         relativeValues =
-  #           SAByGroup / SASumTotal
-  #       )
-  #   }
-  #
-  #
-  #   # Effort
-  #   if (effort) {
-  #
-  #     # Sum effortVariable by year
-  #     df3 <- na.omit(
-  #       effortData %>%
-  #         dplyr::group_by(year, quarter) %>%
-  #         dplyr::summarize(CESumForYear = sum(!!rlang::sym(effortVariable))) %>%
-  #         dplyr::mutate(CESumTotal = sum(CESumForYear))
-  #     )
-  #
-  #     # Sum effortVariable by year, and gear and groupingVariable
-  #     d3 <- na.omit(
-  #       effortData %>%
-  #         #dplyr::group_by(CEyear, CEquar, CEGear) %>%
-  #         dplyr::group_by(year, quarter, !!rlang::sym(groupingVariable)) %>%
-  #         dplyr::summarize(EffortByGroup = sum(!!rlang::sym(effortVariable)))
-  #     )
-  #
-  #     d3 <- dplyr::left_join(d3, df3, by = "year", "quarter") %>%
-  #       dplyr::mutate(
-  #         relativeValues =
-  #           EffortByGroup / CESumTotal
-  #       )
-  #   }
-  # } else {
-  #   # Landings
-  #   if (landings) {
-  #
-  #     # Sum landingsVariable by year
-  #     df1 <- na.omit(
-  #       landingsData %>%
-  #         dplyr::group_by(year) %>%
-  #         dplyr::summarize(CLSumForYear = sum(!!rlang::sym(landingsVariable))) %>%
-  #         dplyr::mutate(CLSumTotal = sum(CLSumForYear))
-  #     )
-  #
-  #     # Sum landingsVariable by year, and groupingVariable
-  #     d1 <- na.omit(
-  #       landingsData %>%
-  #         dplyr::group_by(year, !!rlang::sym(groupingVariable)) %>%
-  #         dplyr::summarize(LandingsByGroup = sum(!!rlang::sym(landingsVariable)))
-  #     )
-  #
-  #     d1 <- dplyr::left_join(d1, df1, by = "year") %>%
-  #       dplyr::mutate(relativeValues = LandingsByGroup / CLSumTotal)
-  #   }
-  #
-  #   # Samples
-  #   if (samples) {
-  #
-  #     # Sum samplingVariable by year
-  #     df2 <- na.omit(
-  #       sampleData %>%
-  #         dplyr::group_by(year) %>%
-  #         dplyr::summarize(SASumForYear = sum(!!rlang::sym(samplingVariable))) %>%
-  #         dplyr::mutate(SASumTotal = sum(SASumForYear))
-  #     )
-  #
-  #     # Sum samplingVariable by year, and groupingVariable
-  #     d2 <- na.omit(
-  #       sampleData %>%
-  #         #dplyr::group_by(SAyear, SAgear) %>%
-  #         dplyr::group_by(year, !!rlang::sym(groupingVariable)) %>%
-  #         dplyr::summarize(SAByGroup = sum(!!rlang::sym(samplingVariable)))
-  #     )
-  #
-  #     d2 <- dplyr::left_join(d2, df2, by = "year") %>%
-  #       dplyr::mutate(
-  #         relativeValues =
-  #           SAByGroup / SASumTotal
-  #       )
-  #   }
-  #
-  #   # Effort
-  #   if (effort) {
-  #
-  #     # Sum effortVariable by year
-  #     df3 <- na.omit(
-  #       effortData %>%
-  #         dplyr::group_by(year) %>%
-  #         dplyr::summarize(CESumForYear = sum(!!rlang::sym(effortVariable))) %>%
-  #         dplyr::mutate(CESumTotal = sum(CESumForYear))
-  #     )
-  #
-  #     # Sum effortVariable by year, and groupingVariable
-  #     d3 <- na.omit(
-  #       effortData %>%
-  #         #dplyr::group_by(CEyear, CEGear) %>%
-  #         dplyr::group_by(year, !!rlang::sym(groupingVariable)) %>%
-  #         dplyr::summarize(EffortByGroup = sum(!!rlang::sym(effortVariable)))
-  #     )
-  #
-  #     d3 <- dplyr::left_join(d3, df3, by = "year") %>%
-  #       dplyr::mutate(relativeValues = EffortByGroup / CESumTotal)
-  #   }
-  # }
-
-
-  # Get the years we want plot
+  # Get the years we want to plot
   y <- c()
   if (landings) {
     y <- c(y, unique(d1$year))
@@ -745,8 +534,12 @@ barPlotsByGroupingVariable <- function(landingsData = NA,
 
   for (i in seq_along(length(y))) {
 
-    # Just show legend for first plot
-    showPlotLegend <- TRUE
+    # Just show legend for first plot when we display quarters
+    if (plotQuarters){
+      showPlotLegend <- TRUE
+    } else {
+      showPlotLegend <- FALSE
+    }
 
     # Landings
     if (landings) {
@@ -814,8 +607,10 @@ barPlotsByGroupingVariable <- function(landingsData = NA,
     all_plot[[i]] <- plotly::subplot(p1, p3, p2, titleY = TRUE, nrows = 3) %>%
       plotly::layout(title = myTitle)
   }
+
   all_plot
 }
+
 #' Internal function to create a bar plot
 #'
 #' @param dataToPlot The data to plot
@@ -860,6 +655,14 @@ createBarPlot <- function(dataToPlot,
 
 }
 
+#' Internal function to fromat the data ready for the createBarPlot()
+#' function.
+#'
+#' @param dataToFormat The data to plot
+#' @param topN A value to limit the data plotted to the top N values
+#'
+#' @return A data frame ready for createBarPlot()
+#'
 formatDataForBarPlotsByGroupingVariable <- function(dataToFormat, topN){
 
   # Calculate sum per group,year,quarter
