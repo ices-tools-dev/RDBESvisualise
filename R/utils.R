@@ -94,11 +94,8 @@ filterLandingsDataForCoverage <- function(landingsData,
       ld1 <- ld1 %>% dplyr::filter(quarter %in% quarterToFilter)
     } else {
       ld1 <- ld %>% dplyr::filter(year %in% yearToFilter)
-      print(unique(ld1$quarter))
       ld1 <- ld1 %>% dplyr::filter(quarter %in% quarterToFilter)
-      print(unique(ld1$quarter))
       ld1 <- ld1 %>% dplyr::filter(CLvesFlagCou %in% vesselFlag)
-      print(unique(ld1$quarter))
     }
   }
 
@@ -323,8 +320,19 @@ preprocessSampleDataForCoverage <- function(dataToPlot, verbose){
   sa <- sa[!is.na(sa$SAid), ]
   sa <- dplyr::select(sa, -SAid)
 
+
+  # Append the species names
+
   # Ensure specode is an integer
   sa$SAspeCode <- as.integer(sa$SAspeCode)
+  # Add an extra column called "specCode" to be consisten with CL
+  sa$SAspecCode <- sa$SAspeCode
+  full_name <- RDBESvisualise::wormsSpecies
+  full_name <- dplyr::distinct(full_name, Key, .keep_all = TRUE)
+  sa <-
+    dplyr::left_join(sa, full_name, by = c("SAspeCode" = "Key"))
+  names(sa)[names(sa) == "Description"] <- "SAspeciesName"
+
 
   # Return our sample data as an RDBESEstObject
   sa
@@ -353,6 +361,14 @@ preprocessLandingsDataForCoverage <- function(dataToPlot, verbose){
   ld$year <- ld$CLyear
   ld$quarter <- ld$CLquar
   ld$month <- ld$CLmonth
+
+  # Ensure specode is an integer
+  ld$CLspecCode <- as.integer(ld$CLspecCode)
+  full_name <- RDBESvisualise::wormsSpecies
+  full_name <- dplyr::distinct(full_name, Key, .keep_all = TRUE)
+  ld <-
+    dplyr::left_join(ld, full_name, by = c("CLspecCode" = "Key"))
+  names(ld)[names(ld) == "Description"] <- "CLspeciesName"
 
   # return our landings data
   ld
@@ -416,7 +432,9 @@ barPlotsByGroupingVariable <- function(landingsData = NA,
                      landingsVariable,
                      effortVariable,
                      samplingVariable,
-                     groupingVariable) {
+                     groupingVariable,
+                     topN = NA,
+                     plotQuarters = FALSE) {
 
 
   #groupingVariable <- "gear"
@@ -434,9 +452,19 @@ barPlotsByGroupingVariable <- function(landingsData = NA,
     landings <- TRUE
     # create a new column with the name we want to group by
     CLcolName <- names(landingsData)[grepl(regExToFind,names(landingsData), ignore.case = TRUE)]
-    if (CLcolName != groupingVariable) {
-      landingsData[,groupingVariable] <- landingsData[[CLcolName]]
+    if (length(CLcolName) == 0){
+      stop(paste0("Error - could not find ",
+                  groupingVariable,
+                  " in the landings data columns"))
+    } else if (length(CLcolName) > 1) {
+      stop(paste0("Error - mutiple matches for ",
+                  groupingVariable,
+                  " in the landings data columns"))
     }
+    # Create new columns to make life easier
+    landingsData$groupingVariable <- landingsData[[CLcolName]]
+    landingsData$variableToSum <- landingsData[[rlang::sym(landingsVariable)]]
+
   }
   if (length(effortData) == 1 && is.na(effortData)) {
     effort <- FALSE
@@ -444,9 +472,17 @@ barPlotsByGroupingVariable <- function(landingsData = NA,
     effort <- TRUE
     # create a new column with the name we want to group by
     CEcolName <- names(effortData)[grepl(regExToFind,names(effortData), ignore.case = TRUE)]
-    if (CEcolName != groupingVariable) {
-      effortData[,groupingVariable] <- effortData[[CEcolName]]
+    if (length(CEcolName) == 0){
+      stop(paste0("Error - could not find ",
+                  groupingVariable,
+                  " in the effort data columns"))
+    } else if (length(CEcolName) > 1) {
+      stop(paste0("Error - mutiple matches for ",
+                  groupingVariable,
+                  " in the effort data columns"))
     }
+    effortData$groupingVariable <- effortData[[CEcolName]]
+    effortData$variableToSum <- effortData[[rlang::sym(effortVariable)]]
   }
   if (length(sampleData) == 1 && is.na(sampleData)) {
     samples <- FALSE
@@ -454,9 +490,18 @@ barPlotsByGroupingVariable <- function(landingsData = NA,
     samples <- TRUE
     # create a new column with the name we want to group by
     SAcolName <- names(sampleData)[grepl(regExToFind,names(sampleData), ignore.case = TRUE)]
-    if (SAcolName != groupingVariable) {
-      sampleData[,groupingVariable] <- sampleData[[SAcolName]]
+    if (length(SAcolName) == 0){
+      stop(paste0("Error - could not find ",
+                  groupingVariable,
+                  " in the sample data columns"))
+    } else if (length(SAcolName) > 1) {
+      stop(paste0("Error - mutiple matches for ",
+                  groupingVariable,
+                  " in the sample data columns"))
     }
+    sampleData$groupingVariable <- sampleData[[SAcolName]]
+    sampleData$variableToSum <- sampleData[[rlang::sym(samplingVariable)]]
+
   }
 
 
@@ -468,80 +513,63 @@ barPlotsByGroupingVariable <- function(landingsData = NA,
 
 
   if (landings) {
-
-    # Sum landingsVariable by year
-    df1 <- na.omit(
-      landingsData %>%
-        dplyr::group_by(year) %>%
-        dplyr::summarize(CLSumForYear = sum(!!rlang::sym(landingsVariable))) %>%
-        dplyr::mutate(CLSumTotal = sum(CLSumForYear))
-    )
-
-    # Sum landingsVariable by year, and groupingVariable
-    d1 <- na.omit(
-      landingsData %>%
-        dplyr::group_by(year, !!rlang::sym(groupingVariable)) %>%
-        dplyr::summarize(LandingsByGroup = sum(!!rlang::sym(landingsVariable)))
-    )
-
-    d1 <- dplyr::left_join(d1, df1, by = "year") %>%
-      dplyr::mutate(
-        relativeValues =
-          LandingsByGroup / CLSumForYear
-        #LandingsByGroup / CLSumTotal
-      )
+    d1 <- formatDataForBarPlotsByGroupingVariable(landingsData, topN)
   }
 
   # Samples
   if (samples) {
 
-    # Sum samplingVariable by year
-    df2 <- na.omit(
-      sampleData %>%
-        dplyr::group_by(year) %>%
-        dplyr::summarize(SASumForYear = sum(!!rlang::sym(samplingVariable))) %>%
-        dplyr::mutate(SASumTotal = sum(SASumForYear))
-    )
+    d2 <- formatDataForBarPlotsByGroupingVariable(sampleData, topN)
 
-    # Sum samplingVariable by year, and groupingVariable
-    d2 <- na.omit(
-      sampleData %>%
-        dplyr::group_by(year, !!rlang::sym(groupingVariable)) %>%
-        dplyr::summarize(SAByGroup = sum(!!rlang::sym(samplingVariable)))
-    )
-
-    d2 <- dplyr::left_join(d2, df2, by = "year") %>%
-      dplyr::mutate(
-        relativeValues =
-          SAByGroup / SASumTotal
-      )
+    # # Sum samplingVariable by year
+    # df2 <- na.omit(
+    #   sampleData %>%
+    #     dplyr::group_by(year) %>%
+    #     dplyr::summarize(SASumForYear = sum(!!rlang::sym(samplingVariable))) %>%
+    #     dplyr::mutate(SASumTotal = sum(SASumForYear))
+    # )
+    #
+    # # Sum samplingVariable by year, and groupingVariable
+    # d2 <- na.omit(
+    #   sampleData %>%
+    #     dplyr::group_by(year, quarter, !!rlang::sym(groupingVariable)) %>%
+    #     dplyr::summarize(SAByGroup = sum(!!rlang::sym(samplingVariable)))
+    # )
+    #
+    # d2 <- dplyr::left_join(d2, df2, by = "year") %>%
+    #   dplyr::mutate(
+    #     relativeValues =
+    #       SAByGroup / SASumForYear
+    #   )
   }
 
 
   # Effort
   if (effort) {
 
-    # Sum effortVariable by year
-    df3 <- na.omit(
-      effortData %>%
-        dplyr::group_by(year) %>%
-        dplyr::summarize(CESumForYear = sum(!!rlang::sym(effortVariable))) %>%
-        dplyr::mutate(CESumTotal = sum(CESumForYear))
-    )
+    d3 <- formatDataForBarPlotsByGroupingVariable(effortData, topN)
 
-    # Sum effortVariable by year, and groupingVariable
-    d3 <- na.omit(
-      effortData %>%
-        #dplyr::group_by(CEyear, CEquar, CEGear) %>%
-        dplyr::group_by(year, !!rlang::sym(groupingVariable)) %>%
-        dplyr::summarize(EffortByGroup = sum(!!rlang::sym(effortVariable)))
-    )
-
-    d3 <- dplyr::left_join(d3, df3, by = "year") %>%
-      dplyr::mutate(
-        relativeValues =
-          EffortByGroup / CESumTotal
-      )
+    # # Sum effortVariable by year
+    # df3 <- na.omit(
+    #   effortData %>%
+    #     dplyr::group_by(year) %>%
+    #     dplyr::summarize(CESumForYear = sum(!!rlang::sym(effortVariable))) %>%
+    #     dplyr::mutate(CESumTotal = sum(CESumForYear))
+    # )
+    #
+    # # Sum effortVariable by year, and groupingVariable
+    # d3 <- na.omit(
+    #   effortData %>%
+    #     #dplyr::group_by(CEyear, CEquar, CEGear) %>%
+    #     dplyr::group_by(year, quarter, !!rlang::sym(groupingVariable)) %>%
+    #     dplyr::summarize(EffortByGroup = sum(!!rlang::sym(effortVariable)))
+    # )
+    #
+    # d3 <- dplyr::left_join(d3, df3, by = "year") %>%
+    #   dplyr::mutate(
+    #     relativeValues =
+    #       EffortByGroup / CESumForYear
+    #   )
   }
 
 
@@ -715,17 +743,22 @@ barPlotsByGroupingVariable <- function(landingsData = NA,
 
   all_plot <- htmltools::tagList()
 
-  formulaForGraph <- paste0('~as.character(', groupingVariable,')')
-
   for (i in seq_along(length(y))) {
+
+    # Just show legend for first plot
+    showPlotLegend <- TRUE
 
     # Landings
     if (landings) {
       dd <- d1 %>% dplyr::filter(year == y[i])
       dd <- dd[-1]
+
       p1 <- createBarPlot(dataToPlot = dd,
-                          formulaForGraph = formulaForGraph,
-                          title = landingsVariable)
+                          title = landingsVariable,
+                          plotQuarters = plotQuarters,
+                          showLegend = showPlotLegend)
+
+      showPlotLegend <- FALSE
 
     } else {
       p1 <- plotly::plotly_empty(type = "bar")
@@ -735,9 +768,13 @@ barPlotsByGroupingVariable <- function(landingsData = NA,
     if (samples) {
       ds <- d2 %>% dplyr::filter(year == y[i])
       ds <- ds[-1]
+
       p2 <- createBarPlot(dataToPlot = ds,
-                          formulaForGraph = formulaForGraph,
-                          title = samplingVariable)
+                          title = samplingVariable,
+                          plotQuarters = plotQuarters,
+                          showLegend = showPlotLegend)
+
+      showPlotLegend <- FALSE
 
     } else {
       p2 <- plotly::plotly_empty(type = "bar")
@@ -747,19 +784,25 @@ barPlotsByGroupingVariable <- function(landingsData = NA,
     if (effort) {
       dde <- d3 %>% dplyr::filter(year == y[i])
       dde <- dde[-1]
+
       p3 <- createBarPlot(dataToPlot = dde,
-                          formulaForGraph = formulaForGraph,
-                          title = effortVariable)
+                          title = effortVariable,
+                          plotQuarters = plotQuarters,
+                          showLegend = showPlotLegend)
+
+      showPlotLegend <- FALSE
+
     } else {
       p3 <- plotly::plotly_empty(type = "bar")
     }
 
     # Create the overall plot title
-    myTitle <- paste0("Vessel Flag ", flagLabel,
-                      " : ", groupingVariable, " "
-    )
+    myTitle <- paste0("Vessel Flag ", flagLabel, " ")
+    if (!is.na(topN)){
+      myTitle <- paste0(myTitle, "Top ", topN, " values of ")
+    }
     if (samples){
-      myTitle <- paste0(myTitle, "(", catchCat, ") ")
+      myTitle <- paste0(myTitle, groupingVariable, " (", catchCat, ") ")
     }
     myTitle <- paste0(myTitle, "- Relative Values per Plot \n in ")
     if (!is.na(quarter)){
@@ -776,20 +819,32 @@ barPlotsByGroupingVariable <- function(landingsData = NA,
 #' Internal function to create a bar plot
 #'
 #' @param dataToPlot The data to plot
-#' @param formulaForGraph The formula for the x axis value
 #' @param title  Title to use for the plot
+#' @param plotQuarters Show bars coloured by quarter?
+#' @param showLegend Show the legend?
 #'
 #' @return A plotly plot
 #'
-createBarPlot <- function(dataToPlot, formulaForGraph, title){
+createBarPlot <- function(dataToPlot,
+                          title,
+                          plotQuarters = FALSE,
+                          showLegend = FALSE){
+
+  if (plotQuarters){
+    formulaForColour <- "~ as.character(quarter)"
+    legendText <- "<b> Quarter: </b>"
+  } else {
+    formulaForColour <- "~ groupingVariable"
+    legendText <- ""
+  }
 
   p1 <- plotly::plot_ly(
     dataToPlot,
-    x = as.formula(formulaForGraph),
-    y = ~ relativeValues,
-    color = as.formula(formulaForGraph),
+    x = ~ groupingVariable,
+    y = ~ relativeValue,
+    color = as.formula(formulaForColour),
     type = "bar",
-    showlegend = FALSE
+    showlegend = showLegend
   ) %>%
     plotly::layout(
       yaxis = list(
@@ -797,10 +852,63 @@ createBarPlot <- function(dataToPlot, formulaForGraph, title){
         titlefont = list(size = 12)
       ),
       xaxis = list(categoryorder = "total descending"),
-      barmode = "stack"
+      barmode = "stack",
+      legend = list(title = list(text = legendText))
     )
 
   p1
+
+}
+
+formatDataForBarPlotsByGroupingVariable <- function(dataToFormat, topN){
+
+  # Calculate sum per group,year,quarter
+  d1 <- dataToFormat %>%
+    dplyr::group_by(year, quarter, groupingVariable) %>%
+    dplyr::mutate(sumByGroupYearQuarter = sum(variableToSum))
+  # Calculate sum per group,year
+  d1 <- d1 %>%
+    dplyr::group_by(year, groupingVariable) %>%
+    dplyr::mutate(sumByGroupYear = sum(variableToSum))
+  # Calculate sum per year
+  d1 <- d1 %>%
+    dplyr::group_by(year) %>%
+    dplyr::mutate(sumByYear = sum(variableToSum))
+  # Calculate a relative figure
+  d1 <- d1 %>%
+    dplyr::mutate(relativeValue =
+                    sumByGroupYearQuarter / sumByYear
+    )
+
+  # Just keep the distinct columns we need
+  d1 <- d1[,c("year", "quarter", "groupingVariable",
+              "sumByGroupYearQuarter","sumByGroupYear","sumByYear",
+              "relativeValue")] %>%
+    dplyr::distinct(year, quarter, groupingVariable, .keep_all = TRUE)
+
+  # Add a sort order column
+  # TODO - there must be a simpler way of doing this!
+  sortOrder <- d1[,c("year", "groupingVariable", "sumByGroupYear")]
+  sortOrder$temp <- 1
+  sortOrder <- sortOrder %>%
+    dplyr::distinct(year, groupingVariable, .keep_all = TRUE) %>%
+    dplyr::arrange(desc(sumByGroupYear), .by_group = TRUE) %>%
+    dplyr::mutate("sortOrder" = cumsum(temp)) %>%
+    dplyr::select(-temp)
+  d1 <- dplyr::left_join(d1,
+                         sortOrder[, c("year",
+                                       "groupingVariable",
+                                       "sortOrder")],
+                         by = c("year", "groupingVariable"))
+  # Add the quarter/10 to the sort order so its unqiue for each row
+  d1$sortOrder <- d1$sortOrder + (d1$quarter/10.0)
+
+  # Restrict to top N groups (if we need to)
+  if(!is.na(topN)){
+    d1 <- d1[d1$sortOrder <= topN + 0.5,]
+  }
+
+  d1
 
 }
 

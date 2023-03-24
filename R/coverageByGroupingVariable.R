@@ -68,6 +68,8 @@ coverageByGroupingVariable <- function(dataToPlot,
                            includeLandings = TRUE,
                            includeEffort = TRUE,
                            includeSamples = TRUE,
+                           topN = NA,
+                           plotQuarters = FALSE,
                            verbose = FALSE) {
   # STEP 0) VALIDATE INPUTS
 
@@ -185,7 +187,9 @@ coverageByGroupingVariable <- function(dataToPlot,
                              landingsVariable = landingsVariable,
                              effortVariable = effortVariable,
                              samplingVariable = samplingVariable,
-                             groupingVariable = groupingVariable)
+                             groupingVariable = groupingVariable,
+                             topN = topN,
+                             plotQuarters = plotQuarters)
 
   plotsToPrint
 }
