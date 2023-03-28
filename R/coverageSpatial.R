@@ -39,7 +39,7 @@
 #' myPlots[1]
 #' }
 coverageSpatial <- function(dataToPlot,
-                            year = NA,
+                            year,
                             vesselFlag = NA,
                             landingsVariable = c(
                               "CLoffWeight",
@@ -70,57 +70,23 @@ coverageSpatial <- function(dataToPlot,
     print("Validating input parameters")
   }
 
-  if (length(catchCat) == 3) {
-    stop("You must provide a Catch Category")
-  } else if (length(catchCat) == 2) {
-    stop("Only one Catch Category can be provided")
-  }
-
-  if (length(vesselFlag) > 1) {
-    stop("Only one vessel flag country can be provided")
-  }
-
-  if (includeLandings && length(landingsVariable) > 1) {
-    stop("You must provide landingsVariable if you want to include landings data")
-  }
-
-  if (includeEffort && length(effortVariable) > 1) {
-    stop("You must provide effortVariable if you want to include effort data")
-  }
-
-  if (includeSamples && length(samplingVariable) > 1) {
-    stop("You must provide samplingVariable if you want to include sample data")
-  }
-
-  if (includeLandings &&
-    length(landingsVariable) == 1 &&
-    !landingsVariable %in% RDBESvisualise::allowedLandingsVariable) {
-    stop(paste0("Invalid landingsVariable value:", landingsVariable))
-  }
-
-  if (includeEffort &&
-    length(effortVariable) == 1 &&
-    !effortVariable %in% RDBESvisualise::allowedEffortVariable) {
-    stop(paste0("Invalid effortVariable value:", effortVariable))
-  }
-
-  if (includeSamples &&
-    length(samplingVariable) == 1 &&
-    !samplingVariable %in% RDBESvisualise::allowedSamplingVariable) {
-    stop(paste0("Invalid samplingVariable value:", samplingVariable))
-  }
-
-  if (length(catchCat) == 1 && !catchCat %in% RDBESvisualise::allowedCatchCat) {
-    stop(paste0("Invalid catchCat value:", catchCat))
-  }
-
+  # This function requires a value for year - the other ones generally allow NA
   if (is.na(year) == TRUE) {
     stop("You must provide  the year")
   }
 
-  if (length(catchCat) == 1 && !catchCat %in% c("Lan", "Dis", "Catch")) {
-    stop(paste0("Invalid catchCat value:", catchCat))
-  }
+  validateCoverageParameters(year = year,
+                             quarter = NA,
+                             vesselFlag = vesselFlag,
+                             landingsVariable = landingsVariable,
+                             effortVariable = effortVariable,
+                             samplingVariable = samplingVariable,
+                             groupingVariable = NA,
+                             catchCat = catchCat,
+                             includeLandings = includeLandings,
+                             includeEffort = includeEffort,
+                             includeSamples = includeSamples,
+                             topN = NA)
 
   # Check the input data is valid
   RDBEScore::validateRDBESDataObject(dataToPlot, verbose = verbose)

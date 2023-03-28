@@ -2,21 +2,23 @@
 
 
 # Deal with "no visible binding for global variable.." warnings in R CMD CHECK
-globalVariables(c("CL", "cl", "CLlanCou", "CLmonth", "CLstatRect", "CLspecCode",
-                  "CLcatchCat", "CLmetier6", "CLoffWeight", "CLsciWeight",
-                  "CLvesFlagCou","CLyear", "CLquar", "CLGear", "CLGearCount",
-                  "CLSpeCount",
-                  "sa","SA","SAstatRect", "SAyear", "SAquar", "SAmonth", "SAid",
-                  "SAcatchCat","SAspeCode", "SASpeCount", "SAgear",
-                  "SAGearCount", "SamplingGearCount", "SAspeCount",
-                  "SamplingCount", "SamplingGearCountQuar",
-                  "SamplingGearCountYear",
-                  "VDvesFlsgCou", "VDflgCtry",
-                  "LandingCountYear", "LandingCount", "LandingCountAll",
-                  "LandingsGearCount", "LandingsGearCountQuar",
-                  "totalSpeCountAll", "SamplingCountYear", "totalGearYear",
-                  "long", "lat", "group", "mean_quartiles_land",
-                  "mean_quantiles_land","X", "Y", "bi_class"))
+globalVariables(c(
+  "CL", "cl", "CLlanCou", "CLmonth", "CLstatRect", "CLspecCode",
+  "CLcatchCat", "CLmetier6", "CLoffWeight", "CLsciWeight",
+  "CLvesFlagCou", "CLyear", "CLquar", "CLGear", "CLGearCount",
+  "CLSpeCount",
+  "sa", "SA", "SAstatRect", "SAyear", "SAquar", "SAmonth", "SAid",
+  "SAcatchCat", "SAspeCode", "SASpeCount", "SAgear",
+  "SAGearCount", "SamplingGearCount", "SAspeCount",
+  "SamplingCount", "SamplingGearCountQuar",
+  "SamplingGearCountYear",
+  "VDvesFlsgCou", "VDflgCtry",
+  "LandingCountYear", "LandingCount", "LandingCountAll",
+  "LandingsGearCount", "LandingsGearCountQuar",
+  "totalSpeCountAll", "SamplingCountYear", "totalGearYear",
+  "long", "lat", "group", "mean_quartiles_land",
+  "mean_quantiles_land", "X", "Y", "bi_class"
+))
 
 
 #' as.integer.or.dbl
@@ -32,12 +34,14 @@ globalVariables(c("CL", "cl", "CLlanCou", "CLmonth", "CLstatRect", "CLspecCode",
 #' @importFrom stats na.omit
 #' @keywords internal
 
-as.integer.or.dbl <- function(x){
-
+as.integer.or.dbl <- function(x) {
   # we apply as.numeric in case it is a character vector
   # we apply as.omit because that causes an error
-  if(any(as.numeric(na.omit(x)) > 2e+09)) out <- round(as.double(x)) else
+  if (any(as.numeric(na.omit(x)) > 2e+09)) {
+    out <- round(as.double(x))
+  } else {
     out <- as.integer(x)
+  }
 
   return(out)
 }
@@ -58,9 +62,7 @@ filterLandingsDataForCoverage <- function(landingsData,
                                           yearToFilter,
                                           quarterToFilter,
                                           vesselFlag,
-                                          verbose){
-
-
+                                          verbose) {
   if (verbose) {
     print("Filtering landings data")
   }
@@ -101,7 +103,6 @@ filterLandingsDataForCoverage <- function(landingsData,
 
   # Return filtered data
   ld1
-
 }
 #' Internal function to filter sample data for coverageXXX functions
 #'
@@ -120,9 +121,7 @@ filterSampleDataForCoverage <- function(sampleData,
                                         quarterToFilter,
                                         vesselFlag,
                                         catchCat,
-                                        verbose){
-
-
+                                        verbose) {
   if (verbose) {
     print("Filtering sample data")
   }
@@ -170,7 +169,6 @@ filterSampleDataForCoverage <- function(sampleData,
 
   # Return filtered data
   sa1
-
 }
 
 #' Internal function to filter effort data for coverageXXX functions
@@ -185,11 +183,10 @@ filterSampleDataForCoverage <- function(sampleData,
 #' @return A data table of effort data ("CE")
 #'
 filterEffortDataForCoverage <- function(effortData,
-                                          yearToFilter,
-                                          quarterToFilter,
-                                          vesselFlag,
-                                          verbose){
-
+                                        yearToFilter,
+                                        quarterToFilter,
+                                        vesselFlag,
+                                        verbose) {
   if (verbose) {
     print("Filtering effort data")
   }
@@ -229,7 +226,6 @@ filterEffortDataForCoverage <- function(effortData,
 
   # Return filtered data
   ef1
-
 }
 
 #' Internal function to prepare sample data for coveragesXXX functions
@@ -240,8 +236,7 @@ filterEffortDataForCoverage <- function(effortData,
 #'
 #' @return an RDBESEstObject
 #'
-preprocessSampleDataForCoverage <- function(dataToPlot, verbose){
-
+preprocessSampleDataForCoverage <- function(dataToPlot, verbose) {
   if (verbose) {
     print("Preparing sample data")
   }
@@ -250,12 +245,14 @@ preprocessSampleDataForCoverage <- function(dataToPlot, verbose){
   # make it easier to handle here
   hierarchiesInData <- unique(dataToPlot[["DE"]]$DEhierarchy)
   if (length(hierarchiesInData) != 1) {
-    stop(paste0("This function will only work if there is a single hierarchy",
-                "in dataToPlot"))
+    stop(paste0(
+      "This function will only work if there is a single hierarchy",
+      "in dataToPlot"
+    ))
   }
   datatoPlot_EstOb <- RDBEScore::createRDBESEstObject(dataToPlot,
-                                                      hierarchiesInData,
-                                                      verbose = verbose
+    hierarchiesInData,
+    verbose = verbose
   )
 
   # Check the RDBESEstObject is valid
@@ -302,10 +299,12 @@ preprocessSampleDataForCoverage <- function(dataToPlot, verbose){
   sa <- sa %>% dplyr::rename("SAnumSamp" = paste0("su", suNumber, "numSamp"))
 
   # Get the columns we want
-  sa <- sa[,c("SAstatRect", "SAyear", "SAquar", "SAmonth", "SAmetier5",
-          "SAmetier6", "SAgear", "SAtotalWtLive", "SAsampWtLive",
-          "SAnumTotal", "SAnumSamp", "SAtotalWtMes", "SAsampWtMes",
-          "SAcatchCat", "SAspeCode", "SAspeCodeFAO", "VDflgCtry", "SAid")]
+  sa <- sa[, c(
+    "SAstatRect", "SAyear", "SAquar", "SAmonth", "SAmetier5",
+    "SAmetier6", "SAgear", "SAtotalWtLive", "SAsampWtLive",
+    "SAnumTotal", "SAnumSamp", "SAtotalWtMes", "SAsampWtMes",
+    "SAcatchCat", "SAspeCode", "SAspeCodeFAO", "VDflgCtry", "SAid"
+  )]
   sa$year <- sa$SAyear
   sa$quarter <- sa$SAquar
   sa$month <- sa$SAmonth
@@ -336,7 +335,6 @@ preprocessSampleDataForCoverage <- function(dataToPlot, verbose){
 
   # Return our sample data as an RDBESEstObject
   sa
-
 }
 #' Internal function to prepare landings data for coverageXXX functions
 #'
@@ -346,16 +344,17 @@ preprocessSampleDataForCoverage <- function(dataToPlot, verbose){
 #'
 #' @return A data table of landings data ("CL")
 #'
-preprocessLandingsDataForCoverage <- function(dataToPlot, verbose){
-
+preprocessLandingsDataForCoverage <- function(dataToPlot, verbose) {
   if (verbose) {
     print("Preparing landings data")
   }
 
   # get landings
-  ld <- dataToPlot[["CL"]][,c("CLlanCou", "CLvesFlagCou", "CLyear", "CLquar",
-      "CLmonth", "CLstatRect", "CLspecCode", "CLspecFAO", "CLlandCat",
-      "CLcatchCat", "CLmetier6", "CLoffWeight", "CLsciWeight")]
+  ld <- dataToPlot[["CL"]][, c(
+    "CLlanCou", "CLvesFlagCou", "CLyear", "CLquar",
+    "CLmonth", "CLstatRect", "CLspecCode", "CLspecFAO", "CLlandCat",
+    "CLcatchCat", "CLmetier6", "CLoffWeight", "CLsciWeight"
+  )]
 
   ld$CLGear <- substr(ld$CLmetier6, 0, 3)
   ld$year <- ld$CLyear
@@ -372,7 +371,6 @@ preprocessLandingsDataForCoverage <- function(dataToPlot, verbose){
 
   # return our landings data
   ld
-
 }
 
 #' Internal function to prepare effort data for coverageXXX functions
@@ -383,21 +381,22 @@ preprocessLandingsDataForCoverage <- function(dataToPlot, verbose){
 #'
 #' @return A data table of effort data ("CE")
 #'
-preprocessEffortDataForCoverage <- function(dataToPlot, verbose){
-
+preprocessEffortDataForCoverage <- function(dataToPlot, verbose) {
   if (verbose) {
     print("Preparing effort data")
   }
 
   # get effort
-  ef <- dataToPlot[["CE"]][,c("CEvesFlagCou","CEyear","CEquar","CEMonth",
-      "CEstatRect","CEmetier6", "CEvesLenCat", "CEnumFracTrips",
-      "CEnumDomTrip", "CEoffDaySea", "CESciDaySea", "CEoffFishDay",
-      "CEsciFishDay", "CEoffNumHaulSet", "CEsciNumHaulSet", "CEoffVesFishHour",
-      "CEsciVesFishHour", "CEoffSoakMeterHour", "CEsciSoakMeterHour",
-      "CEoffkWDaySea", "CEscikWDaySea", "CEoffkWFishDay",
-      "CEscikWFishDay", "CEoffkWFishHour", "CEscikWFishHour", "CEgTDaySea",
-      "CEgTFishDay", "CEgTFishHour", "CEnumUniqVes")]
+  ef <- dataToPlot[["CE"]][, c(
+    "CEvesFlagCou", "CEyear", "CEquar", "CEMonth",
+    "CEstatRect", "CEmetier6", "CEvesLenCat", "CEnumFracTrips",
+    "CEnumDomTrip", "CEoffDaySea", "CESciDaySea", "CEoffFishDay",
+    "CEsciFishDay", "CEoffNumHaulSet", "CEsciNumHaulSet", "CEoffVesFishHour",
+    "CEsciVesFishHour", "CEoffSoakMeterHour", "CEsciSoakMeterHour",
+    "CEoffkWDaySea", "CEscikWDaySea", "CEoffkWFishDay",
+    "CEscikWFishDay", "CEoffkWFishHour", "CEscikWFishHour", "CEgTDaySea",
+    "CEgTFishDay", "CEgTFishHour", "CEnumUniqVes"
+  )]
 
   ef$CEGear <- substr(ef$CEmetier6, 0, 3)
   ef$year <- ef$CEyear
@@ -406,7 +405,6 @@ preprocessEffortDataForCoverage <- function(dataToPlot, verbose){
 
   # return our effort data
   ef
-
 }
 #' Internal function to return a list of barplots which compare the
 #' groupingVariable in landings, effort, and sample data.
@@ -424,21 +422,18 @@ preprocessEffortDataForCoverage <- function(dataToPlot, verbose){
 #' @return A tagList of plotly plots
 #'
 barPlotsByGroupingVariable <- function(landingsData = NA,
-                     effortData = NA,
-                     sampleData = NA,
-                     vesselFlag,
-                     catchCat,
-                     quarter,
-                     landingsVariable,
-                     effortVariable,
-                     samplingVariable,
-                     groupingVariable,
-                     topN = NA,
-                     plotQuarters = FALSE) {
-
-
-
-  regExToFind <- paste0("^..",groupingVariable,"$")
+                                       effortData = NA,
+                                       sampleData = NA,
+                                       vesselFlag,
+                                       catchCat,
+                                       quarter,
+                                       landingsVariable,
+                                       effortVariable,
+                                       samplingVariable,
+                                       groupingVariable,
+                                       topN = NA,
+                                       plotQuarters = FALSE) {
+  regExToFind <- paste0("^..", groupingVariable, "$")
 
   if (is.na(vesselFlag)) {
     flagLabel <- "All"
@@ -452,15 +447,19 @@ barPlotsByGroupingVariable <- function(landingsData = NA,
   } else {
     landings <- TRUE
     # create a new column with the name we want to group by
-    CLcolName <- names(landingsData)[grepl(regExToFind,names(landingsData), ignore.case = TRUE)]
-    if (length(CLcolName) == 0){
-      stop(paste0("Error - could not find ",
-                  groupingVariable,
-                  " in the landings data columns"))
+    CLcolName <- names(landingsData)[grepl(regExToFind, names(landingsData), ignore.case = TRUE)]
+    if (length(CLcolName) == 0) {
+      stop(paste0(
+        "Error - could not find ",
+        groupingVariable,
+        " in the landings data columns"
+      ))
     } else if (length(CLcolName) > 1) {
-      stop(paste0("Error - mutiple matches for ",
-                  groupingVariable,
-                  " in the landings data columns"))
+      stop(paste0(
+        "Error - mutiple matches for ",
+        groupingVariable,
+        " in the landings data columns"
+      ))
     }
     # Create new columns to make life easier
     landingsData$groupingVariable <- landingsData[[CLcolName]]
@@ -468,7 +467,6 @@ barPlotsByGroupingVariable <- function(landingsData = NA,
 
     # Format the data ready for plotting
     d1 <- formatDataForBarPlotsByGroupingVariable(landingsData, topN)
-
   }
 
   if (length(effortData) == 1 && is.na(effortData)) {
@@ -476,22 +474,26 @@ barPlotsByGroupingVariable <- function(landingsData = NA,
   } else {
     effort <- TRUE
     # create a new column with the name we want to group by
-    CEcolName <- names(effortData)[grepl(regExToFind,names(effortData), ignore.case = TRUE)]
-    if (length(CEcolName) == 0){
-      stop(paste0("Error - could not find ",
-                  groupingVariable,
-                  " in the effort data columns"))
+    CEcolName <- names(effortData)[
+                      grepl(regExToFind, names(effortData), ignore.case = TRUE)]
+    if (length(CEcolName) == 0) {
+      stop(paste0(
+        "Error - could not find ",
+        groupingVariable,
+        " in the effort data columns"
+      ))
     } else if (length(CEcolName) > 1) {
-      stop(paste0("Error - mutiple matches for ",
-                  groupingVariable,
-                  " in the effort data columns"))
+      stop(paste0(
+        "Error - mutiple matches for ",
+        groupingVariable,
+        " in the effort data columns"
+      ))
     }
     effortData$groupingVariable <- effortData[[CEcolName]]
     effortData$variableToSum <- effortData[[rlang::sym(effortVariable)]]
 
     # Format the data ready for plotting
     d3 <- formatDataForBarPlotsByGroupingVariable(effortData, topN)
-
   }
 
   if (length(sampleData) == 1 && is.na(sampleData)) {
@@ -499,15 +501,20 @@ barPlotsByGroupingVariable <- function(landingsData = NA,
   } else {
     samples <- TRUE
     # create a new column with the name we want to group by
-    SAcolName <- names(sampleData)[grepl(regExToFind,names(sampleData), ignore.case = TRUE)]
-    if (length(SAcolName) == 0){
-      stop(paste0("Error - could not find ",
-                  groupingVariable,
-                  " in the sample data columns"))
+    SAcolName <- names(sampleData)[
+                      grepl(regExToFind, names(sampleData), ignore.case = TRUE)]
+    if (length(SAcolName) == 0) {
+      stop(paste0(
+        "Error - could not find ",
+        groupingVariable,
+        " in the sample data columns"
+      ))
     } else if (length(SAcolName) > 1) {
-      stop(paste0("Error - mutiple matches for ",
-                  groupingVariable,
-                  " in the sample data columns"))
+      stop(paste0(
+        "Error - mutiple matches for ",
+        groupingVariable,
+        " in the sample data columns"
+      ))
     }
     sampleData$groupingVariable <- sampleData[[SAcolName]]
     sampleData$variableToSum <- sampleData[[rlang::sym(samplingVariable)]]
@@ -533,9 +540,8 @@ barPlotsByGroupingVariable <- function(landingsData = NA,
   all_plot <- htmltools::tagList()
 
   for (i in seq_along(length(y))) {
-
     # Just show legend for first plot when we display quarters
-    if (plotQuarters){
+    if (plotQuarters) {
       showPlotLegend <- TRUE
     } else {
       showPlotLegend <- FALSE
@@ -546,13 +552,14 @@ barPlotsByGroupingVariable <- function(landingsData = NA,
       dd <- d1 %>% dplyr::filter(year == y[i])
       dd <- dd[-1]
 
-      p1 <- createBarPlot(dataToPlot = dd,
-                          title = landingsVariable,
-                          plotQuarters = plotQuarters,
-                          showLegend = showPlotLegend)
+      p1 <- createBarPlot(
+        dataToPlot = dd,
+        title = landingsVariable,
+        plotQuarters = plotQuarters,
+        showLegend = showPlotLegend
+      )
 
       showPlotLegend <- FALSE
-
     } else {
       p1 <- plotly::plotly_empty(type = "bar")
     }
@@ -562,13 +569,14 @@ barPlotsByGroupingVariable <- function(landingsData = NA,
       ds <- d2 %>% dplyr::filter(year == y[i])
       ds <- ds[-1]
 
-      p2 <- createBarPlot(dataToPlot = ds,
-                          title = samplingVariable,
-                          plotQuarters = plotQuarters,
-                          showLegend = showPlotLegend)
+      p2 <- createBarPlot(
+        dataToPlot = ds,
+        title = samplingVariable,
+        plotQuarters = plotQuarters,
+        showLegend = showPlotLegend
+      )
 
       showPlotLegend <- FALSE
-
     } else {
       p2 <- plotly::plotly_empty(type = "bar")
     }
@@ -578,28 +586,29 @@ barPlotsByGroupingVariable <- function(landingsData = NA,
       dde <- d3 %>% dplyr::filter(year == y[i])
       dde <- dde[-1]
 
-      p3 <- createBarPlot(dataToPlot = dde,
-                          title = effortVariable,
-                          plotQuarters = plotQuarters,
-                          showLegend = showPlotLegend)
+      p3 <- createBarPlot(
+        dataToPlot = dde,
+        title = effortVariable,
+        plotQuarters = plotQuarters,
+        showLegend = showPlotLegend
+      )
 
       showPlotLegend <- FALSE
-
     } else {
       p3 <- plotly::plotly_empty(type = "bar")
     }
 
     # Create the overall plot title
     myTitle <- paste0("Vessel Flag ", flagLabel, " ")
-    if (!is.na(topN)){
+    if (!is.na(topN)) {
       myTitle <- paste0(myTitle, "Top ", topN, " values of ")
     }
-    if (samples){
+    if (samples) {
       myTitle <- paste0(myTitle, groupingVariable, " (", catchCat, ") ")
     }
     myTitle <- paste0(myTitle, "- Relative Values per Plot \n in ")
-    if (!is.na(quarter)){
-      myTitle <- paste0(myTitle, "Q", quarter, ", " )
+    if (!is.na(quarter)) {
+      myTitle <- paste0(myTitle, "Q", quarter, ", ")
     }
     myTitle <- paste0(myTitle, y[i])
 
@@ -623,9 +632,8 @@ barPlotsByGroupingVariable <- function(landingsData = NA,
 createBarPlot <- function(dataToPlot,
                           title,
                           plotQuarters = FALSE,
-                          showLegend = FALSE){
-
-  if (plotQuarters){
+                          showLegend = FALSE) {
+  if (plotQuarters) {
     formulaForColour <- "~ as.character(quarter)"
     legendText <- "<b> Quarter: </b>"
   } else {
@@ -633,15 +641,17 @@ createBarPlot <- function(dataToPlot,
     legendText <- ""
   }
 
-  myPalette <-  c("#A6CEE3", "#1F78B4", "#B2DF8A", "#33A02C", "#FB9A99",
-                  "#E31A1C", "#FDBF6F", "#FF7F00", "#CAB2D6", "#6A3D9A",
-                  "#E5C494", "#B15928", "#FDDAEC", "#E7298A", "#FFFFCC",
-                  "#FFED6F", "#F2F2F2", "#AAAAAA", "#666666")
+  myPalette <- c(
+    "#A6CEE3", "#1F78B4", "#B2DF8A", "#33A02C", "#FB9A99",
+    "#E31A1C", "#FDBF6F", "#FF7F00", "#CAB2D6", "#6A3D9A",
+    "#E5C494", "#B15928", "#FDDAEC", "#E7298A", "#FFFFCC",
+    "#FFED6F", "#F2F2F2", "#AAAAAA", "#666666"
+  )
 
   p1 <- plotly::plot_ly(
     dataToPlot,
-    x = ~ groupingVariable,
-    y = ~ relativeValue,
+    x = ~groupingVariable,
+    y = ~relativeValue,
     color = as.formula(formulaForColour),
     type = "bar",
     showlegend = showLegend,
@@ -658,7 +668,6 @@ createBarPlot <- function(dataToPlot,
     )
 
   p1
-
 }
 
 #' Internal function to fromat the data ready for the createBarPlot()
@@ -669,8 +678,7 @@ createBarPlot <- function(dataToPlot,
 #'
 #' @return A data frame ready for createBarPlot()
 #'
-formatDataForBarPlotsByGroupingVariable <- function(dataToFormat, topN){
-
+formatDataForBarPlotsByGroupingVariable <- function(dataToFormat, topN) {
   # Calculate sum per group,year,quarter
   d1 <- dataToFormat %>%
     dplyr::group_by(year, quarter, groupingVariable) %>%
@@ -685,19 +693,22 @@ formatDataForBarPlotsByGroupingVariable <- function(dataToFormat, topN){
     dplyr::mutate(sumByYear = sum(variableToSum))
   # Calculate a relative figure
   d1 <- d1 %>%
-    dplyr::mutate(relativeValue =
-                    sumByGroupYearQuarter / sumByYear
+    dplyr::mutate(
+      relativeValue =
+        sumByGroupYearQuarter / sumByYear
     )
 
   # Just keep the distinct columns we need
-  d1 <- d1[,c("year", "quarter", "groupingVariable",
-              "sumByGroupYearQuarter","sumByGroupYear","sumByYear",
-              "relativeValue")] %>%
+  d1 <- d1[, c(
+    "year", "quarter", "groupingVariable",
+    "sumByGroupYearQuarter", "sumByGroupYear", "sumByYear",
+    "relativeValue"
+  )] %>%
     dplyr::distinct(year, quarter, groupingVariable, .keep_all = TRUE)
 
   # Add a sort order column
   # TODO - there must be a simpler way of doing this!
-  sortOrder <- d1[,c("year", "groupingVariable", "sumByGroupYear")]
+  sortOrder <- d1[, c("year", "groupingVariable", "sumByGroupYear")]
   sortOrder$temp <- 1
   sortOrder <- sortOrder %>%
     dplyr::distinct(year, groupingVariable, .keep_all = TRUE) %>%
@@ -705,24 +716,145 @@ formatDataForBarPlotsByGroupingVariable <- function(dataToFormat, topN){
     dplyr::mutate("sortOrder" = cumsum(temp)) %>%
     dplyr::select(-temp)
   d1 <- dplyr::left_join(d1,
-                         sortOrder[, c("year",
-                                       "groupingVariable",
-                                       "sortOrder")],
-                         by = c("year", "groupingVariable"))
-  # Add the quarter/10 to the sort order so its unqiue for each row
-  d1$sortOrder <- d1$sortOrder + (d1$quarter/10.0)
+    sortOrder[, c(
+      "year",
+      "groupingVariable",
+      "sortOrder"
+    )],
+    by = c("year", "groupingVariable")
+  )
+  # Add the quarter/10 to the sort order so its unique for each row
+  d1$sortOrder <- d1$sortOrder + (d1$quarter / 10.0)
 
   # Restrict to top N groups (if we need to)
-  if(!is.na(topN)){
-    d1 <- d1[d1$sortOrder <= topN + 0.5,]
+  if (!is.na(topN)) {
+    d1 <- d1[d1$sortOrder <= topN + 0.5, ]
   }
 
   d1
-
 }
 
+#' Interntal function to validate the values of the parameters used in the
+#' coveragexxx functions()
+#'
+#' @param year Parameter to validate
+#' @param quarter Parameter to validate
+#' @param vesselFlag Parameter to validate
+#' @param landingsVariable Parameter to validate
+#' @param effortVariable Parameter to validate
+#' @param samplingVariable Parameter to validate
+#' @param groupingVariable Parameter to validate
+#' @param catchCat Parameter to validate
+#' @param includeLandings Parameter to validate
+#' @param includeEffort Parameter to validate
+#' @param includeSamples Parameter to validate
+#' @param topN Parameter to validate
+#'
+#'
+validateCoverageParameters <- function(year,
+                                       quarter,
+                                       vesselFlag,
+                                       landingsVariable,
+                                       effortVariable,
+                                       samplingVariable,
+                                       groupingVariable,
+                                       catchCat,
+                                       includeLandings,
+                                       includeEffort,
+                                       includeSamples,
+                                       topN) {
+  if (length(year) > 1) {
+    stop("You can provide a single value or NA for year")
+  }
+
+  if (length(quarter) > 1) {
+    stop("You can provide a single value or NA for quarter")
+  }
+
+  if (length(catchCat) == 3) {
+    stop("You must provide a Catch Category")
+  } else if (length(catchCat) == 2) {
+    stop("Only one Catch Category can be provided")
+  }
+
+  if (length(vesselFlag) > 1) {
+    stop("Only one vessel flag country can be provided")
+  }
+
+  if (length(includeLandings) > 1) {
+    stop("includeLandings can only be TRUE or FALSE")
+  } else if (length(includeLandings) == 1 &&
+             !includeLandings %in% c(TRUE, FALSE)) {
+    stop("includeLandings can only be TRUE or FALSE")
+  }
+
+  if (length(includeEffort) > 1) {
+    stop("includeEffort can only be TRUE or FALSE")
+  } else if (length(includeEffort) == 1 &&
+             !includeEffort %in% c(TRUE, FALSE)) {
+    stop("includeEffort can only be TRUE or FALSE")
+  }
+
+  if (length(includeSamples) > 1) {
+    stop("includeSamples can only be TRUE or FALSE")
+  } else if (length(includeSamples) == 1 &&
+             !includeSamples %in% c(TRUE, FALSE)) {
+    stop("includeSamples can only be TRUE or FALSE")
+  }
+
+  if (!includeLandings && !includeEffort && !includeSamples) {
+    stop(paste0(
+      "At least one of includeLandings, includeEffort",
+      ", includeSamples must be TRUE"
+    ))
+  }
+
+  if (includeLandings && length(landingsVariable) > 1) {
+    stop(paste0("You must provide landingsVariable if you want to ",
+    "include landings data"))
+  }
+
+  if (includeEffort && length(effortVariable) > 1) {
+    stop(paste("You must provide effortVariable if you want to ",
+    "include effort data"))
+  }
+
+  if (includeSamples && length(samplingVariable) > 1) {
+    stop(paste("You must provide samplingVariable if you want to ",
+    "include sample data"))
+  }
+
+  if (includeLandings &&
+    length(landingsVariable) == 1 &&
+    !landingsVariable %in% RDBESvisualise::allowedLandingsVariable) {
+    stop(paste0("Invalid landingsVariable value:", landingsVariable))
+  }
+
+  if (includeEffort &&
+    length(effortVariable) == 1 &&
+    !effortVariable %in% RDBESvisualise::allowedEffortVariable) {
+    stop(paste0("Invalid effortVariable value:", effortVariable))
+  }
+
+  if (includeSamples &&
+    length(samplingVariable) == 1 &&
+    !samplingVariable %in% RDBESvisualise::allowedSamplingVariable) {
+    stop(paste0("Invalid samplingVariable value:", samplingVariable))
+  }
+
+  if (length(catchCat) == 1 && !catchCat %in% RDBESvisualise::allowedCatchCat) {
+    stop(paste0("Invalid catchCat value:", catchCat))
+  }
+
+  if (length(topN) > 1) {
+    stop("You can provide a single value or NA for topN")
+  }
+
+  if (!is.na(topN) && (topN < 1 || topN != round(topN))) {
+    stop("You can provide NA or a positive integer for topN")
+  }
 
 
-
-
-
+  # Return an invisible value of TRUE if we got this far
+  return(invisible(TRUE))
+}
