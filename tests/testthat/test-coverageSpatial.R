@@ -36,7 +36,7 @@ test_that("Spatial plot runs without errors for landings only",  {
 
   # Spatial plot
   expect_error(
-    coverageSpatial(
+    plots <- coverageSpatial(
         dataToPlot = myH1RawObject,
         year = myYear,
         vesselFlag = myvesselFlag,
@@ -49,6 +49,10 @@ test_that("Spatial plot runs without errors for landings only",  {
         includeSamples = FALSE
       )
     ,NA)
+
+  # expect 1 girafe object
+  expect_equal(length(plots),1)
+  expect_s3_class(plots[[1]],"girafe")
 })
 
 test_that("Spatial plot runs without errors for effort only",  {
@@ -59,7 +63,7 @@ test_that("Spatial plot runs without errors for effort only",  {
 
   # Spatial plot
   expect_error(
-    coverageSpatial(
+    plots <- coverageSpatial(
       dataToPlot = myH1RawObject,
       year = myYear,
       vesselFlag = myvesselFlag,
@@ -72,6 +76,10 @@ test_that("Spatial plot runs without errors for effort only",  {
       includeSamples = FALSE
     )
     ,NA)
+
+  # expect 1 girafe object
+  expect_equal(length(plots),1)
+  expect_s3_class(plots[[1]],"girafe")
 })
 
 test_that("Spatial plot runs without errors for samples only",  {
@@ -82,7 +90,7 @@ test_that("Spatial plot runs without errors for samples only",  {
 
   # Spatial plot
   expect_error(
-    coverageSpatial(
+    plots <- coverageSpatial(
       dataToPlot = myH1RawObject,
       year = myYear,
       vesselFlag = myvesselFlag,
@@ -95,6 +103,10 @@ test_that("Spatial plot runs without errors for samples only",  {
       includeSamples = TRUE
     )
     ,NA)
+
+  # expect 1 girafe object
+  expect_equal(length(plots),1)
+  expect_s3_class(plots[[1]],"girafe")
 })
 
 test_that("Spatial plot runs without errors for landing and samples",  {
@@ -105,7 +117,7 @@ test_that("Spatial plot runs without errors for landing and samples",  {
 
   # Spatial plot
   expect_error(
-    coverageSpatial(
+    plots <- coverageSpatial(
       dataToPlot = myH1RawObject,
       year = myYear,
       vesselFlag = myvesselFlag,
@@ -118,6 +130,11 @@ test_that("Spatial plot runs without errors for landing and samples",  {
       includeSamples = TRUE
     )
     ,NA)
+
+  # expect 2 girafe objects
+  expect_equal(length(plots),2)
+  expect_s3_class(plots[[1]],"girafe")
+  expect_s3_class(plots[[2]],"girafe")
 })
 
 test_that("Spatial plot runs without errors for effort and samples",  {
@@ -128,7 +145,7 @@ test_that("Spatial plot runs without errors for effort and samples",  {
 
   # Spatial plot
   expect_error(
-    coverageSpatial(
+    plots <- coverageSpatial(
       dataToPlot = myH1RawObject,
       year = myYear,
       vesselFlag = myvesselFlag,
@@ -141,6 +158,11 @@ test_that("Spatial plot runs without errors for effort and samples",  {
       includeSamples = TRUE
     )
     ,NA)
+
+  # expect 2 girafe objects
+  expect_equal(length(plots),2)
+  expect_s3_class(plots[[1]],"girafe")
+  expect_s3_class(plots[[2]],"girafe")
 })
 
 test_that("Spatial plot runs without errors for landinsg and effort",  {
@@ -151,7 +173,7 @@ test_that("Spatial plot runs without errors for landinsg and effort",  {
 
   # Spatial plot
   expect_error(
-    coverageSpatial(
+    plots <- coverageSpatial(
       dataToPlot = myH1RawObject,
       year = myYear,
       vesselFlag = myvesselFlag,
@@ -164,6 +186,11 @@ test_that("Spatial plot runs without errors for landinsg and effort",  {
       includeSamples = FALSE
     )
     ,NA)
+
+  # expect 2 girafe objects
+  expect_equal(length(plots),2)
+  expect_s3_class(plots[[1]],"girafe")
+  expect_s3_class(plots[[2]],"girafe")
 })
 
 test_that("Spatial plot runs without errors for landings, effort, and samples",  {
@@ -174,7 +201,7 @@ test_that("Spatial plot runs without errors for landings, effort, and samples", 
 
   # Spatial plot
   expect_error(
-    coverageSpatial(
+    plots <- coverageSpatial(
       dataToPlot = myH1RawObject,
       year = myYear,
       vesselFlag = myvesselFlag,
@@ -187,6 +214,12 @@ test_that("Spatial plot runs without errors for landings, effort, and samples", 
       includeSamples = TRUE
     )
     ,NA)
+
+  # expect 3 girafe objects
+  expect_equal(length(plots),3)
+  expect_s3_class(plots[[1]],"girafe")
+  expect_s3_class(plots[[2]],"girafe")
+  expect_s3_class(plots[[3]],"girafe")
 })
 
 

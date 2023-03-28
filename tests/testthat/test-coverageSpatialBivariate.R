@@ -36,7 +36,7 @@ test_that("Spatial bivariate plot runs without errors for landings only",  {
 
   # Spatial bivariate plot
   expect_error(
-    coverageSpatialBivariate(
+    plots <- coverageSpatialBivariate(
         dataToPlot = myH1RawObject,
         year = myYear,
         vesselFlag = myvesselFlag,
@@ -48,6 +48,10 @@ test_that("Spatial bivariate plot runs without errors for landings only",  {
         includeEffort = FALSE
       )
     ,NA)
+
+  # expect 1 girafe object
+  expect_equal(length(plots),1)
+  expect_s3_class(plots[[1]],"girafe")
 })
 
 test_that("Spatial bivariate plot runs without errors for effort only",  {
@@ -58,7 +62,7 @@ test_that("Spatial bivariate plot runs without errors for effort only",  {
 
   # Spatial bivariate plot
   expect_error(
-    coverageSpatialBivariate(
+    plots <- coverageSpatialBivariate(
       dataToPlot = myH1RawObject,
       year = myYear,
       vesselFlag = myvesselFlag,
@@ -70,6 +74,10 @@ test_that("Spatial bivariate plot runs without errors for effort only",  {
       includeEffort = TRUE
     )
     ,NA)
+
+  # expect 1 girafe object
+  expect_equal(length(plots),1)
+  expect_s3_class(plots[[1]],"girafe")
 })
 
 
@@ -83,7 +91,7 @@ test_that("Spatial bivariate plot runs without errors for landinsg and effort", 
 
   # Spatial bivariate plot
   expect_error(
-    coverageSpatialBivariate(
+    plots <- coverageSpatialBivariate(
       dataToPlot = myH1RawObject,
       year = myYear,
       vesselFlag = myvesselFlag,
@@ -95,6 +103,11 @@ test_that("Spatial bivariate plot runs without errors for landinsg and effort", 
       includeEffort = TRUE
     )
     ,NA)
+
+  # expect 2 girafe objects
+  expect_equal(length(plots),2)
+  expect_s3_class(plots[[1]],"girafe")
+  expect_s3_class(plots[[2]],"girafe")
 })
 
 
