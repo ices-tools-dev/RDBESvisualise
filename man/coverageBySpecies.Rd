@@ -14,6 +14,8 @@ coverageBySpecies(
   catchCat = c("Lan", "Dis", "Catch"),
   includeLandings = TRUE,
   includeSamples = TRUE,
+  topN = 10,
+  plotQuarters = FALSE,
   verbose = FALSE
 )
 }
@@ -35,6 +37,12 @@ plot - default is TRUE.}
 
 \item{includeSamples}{(Optional) Set to TRUE to include samples in the
 plot - default is TRUE.}
+
+\item{topN}{(Optional) Set to a posiive integer N to limit the data that is
+plotted to the top N species each year. Default is 10.}
+
+\item{plotQuarters}{(Optional) Set to TRUE to colour the data in the
+plots by quarter - default is FALSE.}
 
 \item{verbose}{(Optional) Set to TRUE to print more information. Default is
 FALSE}

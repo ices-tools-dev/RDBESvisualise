@@ -10,7 +10,7 @@ sampling.}
 \usage{
 coverageSpatial(
   dataToPlot,
-  year = NA,
+  year,
   vesselFlag = NA,
   landingsVariable = c("CLoffWeight", "CLsciWeight"),
   effortVariable = c("CEnumFracTrips", "CEnumDomTrip"),

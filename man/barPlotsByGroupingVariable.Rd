@@ -15,7 +15,9 @@ barPlotsByGroupingVariable(
   landingsVariable,
   effortVariable,
   samplingVariable,
-  groupingVariable
+  groupingVariable,
+  topN = NA,
+  plotQuarters = FALSE
 )
 }
 \arguments{

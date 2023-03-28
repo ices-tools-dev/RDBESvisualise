@@ -4,14 +4,16 @@
 \alias{createBarPlot}
 \title{Internal function to create a bar plot}
 \usage{
-createBarPlot(dataToPlot, formulaForGraph, title)
+createBarPlot(dataToPlot, title, plotQuarters = FALSE, showLegend = FALSE)
 }
 \arguments{
 \item{dataToPlot}{The data to plot}
 
-\item{formulaForGraph}{The formula for the x axis value}
-
 \item{title}{Title to use for the plot}
+
+\item{plotQuarters}{Show bars coloured by quarter?}
+
+\item{showLegend}{Show the legend?}
 }
 \value{
 A plotly plot

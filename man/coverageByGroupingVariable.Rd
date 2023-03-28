@@ -18,6 +18,8 @@ coverageByGroupingVariable(
   includeLandings = TRUE,
   includeEffort = TRUE,
   includeSamples = TRUE,
+  topN = NA,
+  plotQuarters = FALSE,
   verbose = FALSE
 )
 }
