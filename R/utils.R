@@ -20,6 +20,13 @@ globalVariables(c(
   "mean_quantiles_land", "X", "Y", "bi_class"
 ))
 
+# Palette developed by the RCGs
+RCGPalette <- c(
+  "#A6CEE3", "#1F78B4", "#B2DF8A", "#33A02C", "#FB9A99",
+  "#E31A1C", "#FDBF6F", "#FF7F00", "#CAB2D6", "#6A3D9A",
+  "#E5C494", "#B15928", "#FDDAEC", "#E7298A", "#FFFFCC",
+  "#FFED6F", "#F2F2F2", "#AAAAAA", "#666666"
+)
 
 #' as.integer.or.dbl
 #'
@@ -641,12 +648,6 @@ createBarPlot <- function(dataToPlot,
     legendText <- ""
   }
 
-  myPalette <- c(
-    "#A6CEE3", "#1F78B4", "#B2DF8A", "#33A02C", "#FB9A99",
-    "#E31A1C", "#FDBF6F", "#FF7F00", "#CAB2D6", "#6A3D9A",
-    "#E5C494", "#B15928", "#FDDAEC", "#E7298A", "#FFFFCC",
-    "#FFED6F", "#F2F2F2", "#AAAAAA", "#666666"
-  )
 
   p1 <- plotly::plot_ly(
     dataToPlot,
@@ -655,7 +656,7 @@ createBarPlot <- function(dataToPlot,
     color = as.formula(formulaForColour),
     type = "bar",
     showlegend = showLegend,
-    colors = myPalette
+    colors = RCGPalette
   ) %>%
     plotly::layout(
       yaxis = list(
