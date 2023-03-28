@@ -36,7 +36,7 @@ test_that("Temporal plot runs without errors for landings only",  {
 
   # Temporal plot
   expect_error(
-    coverageTemporal(
+    plots <- coverageTemporal(
       dataToPlot = myH1RawObject,
       year = myYear,
       vesselFlag = myvesselFlag,
@@ -49,6 +49,10 @@ test_that("Temporal plot runs without errors for landings only",  {
       includeSamples = FALSE
     )
     ,NA)
+
+  # expect a single plotly, plot
+  expect_equal(length(plots),1)
+  expect_s3_class(plots[[1]],"plotly")
 })
 
 test_that("Temporal plot runs without errors for effort only",  {
@@ -59,7 +63,7 @@ test_that("Temporal plot runs without errors for effort only",  {
 
   # Temporal plot
   expect_error(
-    coverageTemporal(
+    plots <- coverageTemporal(
       dataToPlot = myH1RawObject,
       year = myYear,
       vesselFlag = myvesselFlag,
@@ -72,6 +76,10 @@ test_that("Temporal plot runs without errors for effort only",  {
       includeSamples = FALSE
     )
     ,NA)
+
+  # expect a single plotly, plot
+  expect_equal(length(plots),1)
+  expect_s3_class(plots[[1]],"plotly")
 })
 
 test_that("Temporal plot runs without errors for samples only",  {
@@ -82,7 +90,7 @@ test_that("Temporal plot runs without errors for samples only",  {
 
   # Temporal plot
   expect_error(
-    coverageTemporal(
+    plots <- coverageTemporal(
       dataToPlot = myH1RawObject,
       year = myYear,
       vesselFlag = myvesselFlag,
@@ -95,6 +103,10 @@ test_that("Temporal plot runs without errors for samples only",  {
       includeSamples = TRUE
     )
     ,NA)
+
+  # expect a single plotly, plot
+  expect_equal(length(plots),1)
+  expect_s3_class(plots[[1]],"plotly")
 })
 
 test_that("Temporal plot runs without errors for landing and samples",  {
@@ -105,7 +117,7 @@ test_that("Temporal plot runs without errors for landing and samples",  {
 
   # Temporal plot
   expect_error(
-    coverageTemporal(
+    plots <- coverageTemporal(
       dataToPlot = myH1RawObject,
       year = myYear,
       vesselFlag = myvesselFlag,
@@ -118,6 +130,10 @@ test_that("Temporal plot runs without errors for landing and samples",  {
       includeSamples = TRUE
     )
     ,NA)
+
+  # expect a single plotly, plot
+  expect_equal(length(plots),1)
+  expect_s3_class(plots[[1]],"plotly")
 })
 
 test_that("Temporal plot runs without errors for effort and samples",  {
@@ -128,7 +144,7 @@ test_that("Temporal plot runs without errors for effort and samples",  {
 
   # Temporal plot
   expect_error(
-    coverageTemporal(
+    plots <- coverageTemporal(
       dataToPlot = myH1RawObject,
       year = myYear,
       vesselFlag = myvesselFlag,
@@ -141,6 +157,10 @@ test_that("Temporal plot runs without errors for effort and samples",  {
       includeSamples = TRUE
     )
     ,NA)
+
+  # expect a single plotly, plot
+  expect_equal(length(plots),1)
+  expect_s3_class(plots[[1]],"plotly")
 })
 
 test_that("Temporal plot runs without errors for landinsg and effort",  {
@@ -151,7 +171,7 @@ test_that("Temporal plot runs without errors for landinsg and effort",  {
 
   # Temporal plot
   expect_error(
-    coverageTemporal(
+    plots <- coverageTemporal(
       dataToPlot = myH1RawObject,
       year = myYear,
       vesselFlag = myvesselFlag,
@@ -164,6 +184,10 @@ test_that("Temporal plot runs without errors for landinsg and effort",  {
       includeSamples = FALSE
     )
     ,NA)
+
+  # expect a single plotly, plot
+  expect_equal(length(plots),1)
+  expect_s3_class(plots[[1]],"plotly")
 })
 
 test_that("Temporal plot runs without errors for landings, effort, and samples",  {
@@ -174,7 +198,7 @@ test_that("Temporal plot runs without errors for landings, effort, and samples",
 
   # Temporal plot
   expect_error(
-    coverageTemporal(
+    plots <- coverageTemporal(
       dataToPlot = myH1RawObject,
       year = myYear,
       vesselFlag = myvesselFlag,
@@ -187,6 +211,10 @@ test_that("Temporal plot runs without errors for landings, effort, and samples",
       includeSamples = TRUE
     )
     ,NA)
+
+  # expect a single plotly, plot
+  expect_equal(length(plots),1)
+  expect_s3_class(plots[[1]],"plotly")
 })
 
 

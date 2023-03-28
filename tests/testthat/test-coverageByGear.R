@@ -36,7 +36,7 @@ test_that("Gear plot runs without errors for landings only",  {
 
   # Gear plot
   expect_error(
-    coverageByGear(
+    plots <- coverageByGear(
       dataToPlot = myH1RawObject,
       year = myYear,
       vesselFlag = myvesselFlag,
@@ -49,6 +49,11 @@ test_that("Gear plot runs without errors for landings only",  {
       includeSamples = FALSE,
     )
     ,NA)
+
+  # expect a single plotly, plot
+  expect_equal(length(plots),1)
+  expect_s3_class(plots[[1]],"plotly")
+
 })
 
 test_that("Gear plot runs without errors for effort only",  {
@@ -59,7 +64,7 @@ test_that("Gear plot runs without errors for effort only",  {
 
   # Gear plot
   expect_error(
-    coverageByGear(
+    plots <- coverageByGear(
       dataToPlot = myH1RawObject,
       year = myYear,
       vesselFlag = myvesselFlag,
@@ -72,6 +77,11 @@ test_that("Gear plot runs without errors for effort only",  {
       includeSamples = FALSE,
     )
     ,NA)
+
+  # expect a single plotly, plot
+  expect_equal(length(plots),1)
+  expect_s3_class(plots[[1]],"plotly")
+
 })
 
 test_that("Gear plot runs without errors for samples only",  {
@@ -82,7 +92,7 @@ test_that("Gear plot runs without errors for samples only",  {
 
   # Gear plot
   expect_error(
-    coverageByGear(
+    plots <- coverageByGear(
       dataToPlot = myH1RawObject,
       year = myYear,
       vesselFlag = myvesselFlag,
@@ -95,6 +105,10 @@ test_that("Gear plot runs without errors for samples only",  {
       includeSamples = TRUE,
     )
     ,NA)
+
+  # expect a single plotly, plot
+  expect_equal(length(plots),1)
+  expect_s3_class(plots[[1]],"plotly")
 })
 
 test_that("Gear plot runs without errors for landing and samples",  {
@@ -105,7 +119,7 @@ test_that("Gear plot runs without errors for landing and samples",  {
 
   # Gear plot
   expect_error(
-    coverageByGear(
+    plots <- coverageByGear(
       dataToPlot = myH1RawObject,
       year = myYear,
       vesselFlag = myvesselFlag,
@@ -118,6 +132,10 @@ test_that("Gear plot runs without errors for landing and samples",  {
       includeSamples = TRUE,
     )
     ,NA)
+
+  # expect a single plotly, plot
+  expect_equal(length(plots),1)
+  expect_s3_class(plots[[1]],"plotly")
 })
 
 test_that("Gear plot runs without errors for effort and samples",  {
@@ -128,7 +146,7 @@ test_that("Gear plot runs without errors for effort and samples",  {
 
   # Gear plot
   expect_error(
-    coverageByGear(
+    plots <- coverageByGear(
       dataToPlot = myH1RawObject,
       year = myYear,
       vesselFlag = myvesselFlag,
@@ -141,6 +159,10 @@ test_that("Gear plot runs without errors for effort and samples",  {
       includeSamples = TRUE,
     )
     ,NA)
+
+  # expect a single plotly, plot
+  expect_equal(length(plots),1)
+  expect_s3_class(plots[[1]],"plotly")
 })
 
 test_that("Gear plot runs without errors for landinsg and effort",  {
@@ -151,7 +173,7 @@ test_that("Gear plot runs without errors for landinsg and effort",  {
 
   # Gear plot
   expect_error(
-    coverageByGear(
+    plots <- coverageByGear(
       dataToPlot = myH1RawObject,
       year = myYear,
       vesselFlag = myvesselFlag,
@@ -164,6 +186,10 @@ test_that("Gear plot runs without errors for landinsg and effort",  {
       includeSamples = FALSE,
     )
     ,NA)
+
+  # expect a single plotly, plot
+  expect_equal(length(plots),1)
+  expect_s3_class(plots[[1]],"plotly")
 })
 
 test_that("Gear plot runs without errors for landings, effort, and samples",  {
@@ -174,7 +200,7 @@ test_that("Gear plot runs without errors for landings, effort, and samples",  {
 
   # Gear plot
   expect_error(
-    coverageByGear(
+    plots <- coverageByGear(
       dataToPlot = myH1RawObject,
       year = myYear,
       vesselFlag = myvesselFlag,
@@ -187,6 +213,10 @@ test_that("Gear plot runs without errors for landings, effort, and samples",  {
       includeSamples = TRUE,
     )
     ,NA)
+
+  # expect a single plotly, plot
+  expect_equal(length(plots),1)
+  expect_s3_class(plots[[1]],"plotly")
 })
 
 

@@ -36,7 +36,7 @@ test_that("Species plot runs without errors for landings, and samples",  {
 
   # Species, landings plot
   expect_error(
-    coverageBySpecies(
+    plots <- coverageBySpecies(
       dataToPlot = myH1RawObject,
       year = myYear,
       vesselFlag = myvesselFlag,
@@ -47,6 +47,10 @@ test_that("Species plot runs without errors for landings, and samples",  {
       includeSamples = TRUE
     )
     ,NA)
+
+  # expect a single plotly, plot
+  expect_equal(length(plots),1)
+  expect_s3_class(plots[[1]],"plotly")
 })
 
 test_that("Species plot runs without errors for just landings",  {
@@ -57,7 +61,7 @@ test_that("Species plot runs without errors for just landings",  {
 
   # Species, landings plot
   expect_error(
-    coverageBySpecies(
+    plots <- coverageBySpecies(
       dataToPlot = myH1RawObject,
       year = myYear,
       vesselFlag = myvesselFlag,
@@ -68,6 +72,10 @@ test_that("Species plot runs without errors for just landings",  {
       includeSamples = FALSE
     )
     ,NA)
+
+  # expect a single plotly, plot
+  expect_equal(length(plots),1)
+  expect_s3_class(plots[[1]],"plotly")
 })
 
 test_that("Species plot runs without errors for just samples",  {
@@ -78,7 +86,7 @@ test_that("Species plot runs without errors for just samples",  {
 
   # Species, landings plot
   expect_error(
-    coverageBySpecies(
+    plots <- coverageBySpecies(
       dataToPlot = myH1RawObject,
       year = myYear,
       vesselFlag = myvesselFlag,
@@ -89,6 +97,10 @@ test_that("Species plot runs without errors for just samples",  {
       includeSamples = TRUE
     )
     ,NA)
+
+  # expect a single plotly, plot
+  expect_equal(length(plots),1)
+  expect_s3_class(plots[[1]],"plotly")
 })
 
 
