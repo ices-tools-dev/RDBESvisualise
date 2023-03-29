@@ -27,6 +27,8 @@ RCGPalette <- c(
   "#E5C494", "#B15928", "#FDDAEC", "#E7298A", "#FFFFCC",
   "#FFED6F", "#F2F2F2", "#AAAAAA", "#666666"
 )
+paletteForPlotting <- RCGPalette
+paletteForQuarters <- c("#B2DF8A","#1F78B4","#E31A1C","#FDBF6F")
 
 #' as.integer.or.dbl
 #'
@@ -554,16 +556,49 @@ barPlotsByGroupingVariable <- function(landingsData = NA,
       showPlotLegend <- FALSE
     }
 
-    # Landings
-    if (landings) {
+    # We need to filter all the data first so we can use consistent colours
+    # across different plots
+    uniqueGVValues <- c()
+    if(landings){
       dd <- d1 %>% dplyr::filter(year == y[i])
       dd <- dd[-1]
+      uniqueGVValues <- c(uniqueGVValues,
+                                        unique(dd$groupingVariable))
+      uniqueGVValues <- unique(uniqueGVValues)
+
+    }
+    if(samples){
+      ds <- d2 %>% dplyr::filter(year == y[i])
+      ds <- ds[-1]
+      uniqueGVValues <- c(uniqueGVValues,
+                          unique(ds$groupingVariable))
+      uniqueGVValues <- unique(uniqueGVValues)
+    }
+    if(effort){
+      dde <- d3 %>% dplyr::filter(year == y[i])
+      dde <- dde[-1]
+      uniqueGVValues <- c(uniqueGVValues,
+                          unique(dde$groupingVariable))
+      uniqueGVValues <- unique(uniqueGVValues)
+    }
+    # Create our palette to cover all the grouping variable distinct values
+    if (length(uniqueGVValues) > 0 &&
+        length(uniqueGVValues) < length(paletteForPlotting)){
+      gvColours <- paletteForPlotting[seq_len(length(uniqueGVValues))]
+      names(gvColours) <- uniqueGVValues
+    } else {
+      gvColours <- paletteForPlotting
+    }
+
+    # Landings
+    if (landings) {
 
       p1 <- createBarPlot(
         dataToPlot = dd,
         title = landingsVariable,
         plotQuarters = plotQuarters,
-        showLegend = showPlotLegend
+        showLegend = showPlotLegend,
+        paletteToUse = gvColours
       )
 
       showPlotLegend <- FALSE
@@ -573,14 +608,13 @@ barPlotsByGroupingVariable <- function(landingsData = NA,
 
     # Samples
     if (samples) {
-      ds <- d2 %>% dplyr::filter(year == y[i])
-      ds <- ds[-1]
 
       p2 <- createBarPlot(
         dataToPlot = ds,
         title = samplingVariable,
         plotQuarters = plotQuarters,
-        showLegend = showPlotLegend
+        showLegend = showPlotLegend,
+        paletteToUse = gvColours
       )
 
       showPlotLegend <- FALSE
@@ -590,14 +624,13 @@ barPlotsByGroupingVariable <- function(landingsData = NA,
 
     # Effort
     if (effort) {
-      dde <- d3 %>% dplyr::filter(year == y[i])
-      dde <- dde[-1]
 
       p3 <- createBarPlot(
         dataToPlot = dde,
         title = effortVariable,
         plotQuarters = plotQuarters,
-        showLegend = showPlotLegend
+        showLegend = showPlotLegend,
+        paletteToUse = gvColours
       )
 
       showPlotLegend <- FALSE
@@ -639,15 +672,19 @@ barPlotsByGroupingVariable <- function(landingsData = NA,
 createBarPlot <- function(dataToPlot,
                           title,
                           plotQuarters = FALSE,
-                          showLegend = FALSE) {
+                          showLegend = FALSE,
+                          paletteToUse = "paletteForPlotting") {
+
   if (plotQuarters) {
     formulaForColour <- "~ as.character(quarter)"
     legendText <- "<b> Quarter: </b>"
+    # Use a fixed palette for quarters
+    paletteToUse = paletteForQuarters
+    names(paletteToUse) <- c("1","2","3","4")
   } else {
     formulaForColour <- "~ groupingVariable"
     legendText <- ""
   }
-
 
   p1 <- plotly::plot_ly(
     dataToPlot,
@@ -656,7 +693,7 @@ createBarPlot <- function(dataToPlot,
     color = as.formula(formulaForColour),
     type = "bar",
     showlegend = showLegend,
-    colors = RCGPalette
+    colors = paletteToUse
   ) %>%
     plotly::layout(
       yaxis = list(
