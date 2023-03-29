@@ -209,6 +209,15 @@ pointsPlot <- function(landingsData = NA,
       dplyr::summarize(cl = sum(!!rlang::sym(
         landingsVariable
       ))))
+
+    # Check we still have some landings data left to plot after removing NAs
+    # - if we don't have then we can't plot landings data
+    if (nrow(d1) == 0){
+      warning(paste0("No non-NA landings data to plot - check the values ",
+                     "of CLyear, CLstatRect and ", landingsVariable,
+                     " in your input data"))
+      landings <- FALSE
+    }
   }
 
   if (samples) {
@@ -217,6 +226,15 @@ pointsPlot <- function(landingsData = NA,
       dplyr::summarize(sa = sum(!!rlang::sym(
         samplingVariable
       ))))
+
+    # Check we still have some sample data left to plot after removing NAs
+    # - if we don't have then we can't plot sample data
+    if (nrow(d2) == 0){
+      warning(paste0("No non-NA sample data to plot - check the values ",
+                     "of SAyear, SAstatRect and ", samplingVariable,
+                     " in your input data"))
+      samples <- FALSE
+    }
   }
 
   if (effort) {
@@ -225,6 +243,15 @@ pointsPlot <- function(landingsData = NA,
       dplyr::summarize(ce = sum(!!rlang::sym(
         effortVariable
       ))))
+
+    # Check we still have some effort data left to plot after removing NAs
+    # - if we don't have then we can't plot effort data
+    if (nrow(d3) == 0){
+      warning(paste0("No non-NA effort data to plot - check the values ",
+                     "of CEyear, CEstatRect and ", effortVariable,
+                     " in your input data"))
+      effort <- FALSE
+    }
   }
 
   # Get the years we want plot
