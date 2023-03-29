@@ -110,5 +110,88 @@ test_that("Spatial bivariate plot runs without errors for landinsg and effort", 
   expect_s3_class(plots[[2]],"girafe")
 })
 
+test_that("Spatial bivariate plot gives warning when no landings rectangles are specified",  {
+
+  myH1RawObject <- prepareTestData()
+  myYear <- 1965
+  myvesselFlag <- "ZW"
+
+  # remove rectangles from landings
+  myH1RawObject[["CL"]]$CLstatRect <- NA
+
+  # Spatial bivariate plot
+  expect_warning(
+    plots <- coverageSpatialBivariate(
+      dataToPlot = myH1RawObject,
+      year = myYear,
+      vesselFlag = myvesselFlag,
+      catchCat = "Lan",
+      landingsVariable = "CLoffWeight",
+      effortVariable = "CEnumFracTrips",
+      samplingVariable = "SAsampWtLive",
+      includeLandings = TRUE,
+      includeEffort = FALSE
+    )
+    ,"No non-NA landings data to plot*")
+
+  # expect 0 girafe objects
+  expect_equal(length(plots),0)
+
+})
+
+test_that("Spatial bivariate plot gives warning when no effort rectangles are specified",  {
+
+  myH1RawObject <- prepareTestData()
+  myYear <- 1965
+  myvesselFlag <- "ZW"
+
+  # remove rectangles from landings
+  myH1RawObject[["CE"]]$CEstatRect <- NA
+
+  # Spatial bivariate plot
+  expect_warning(
+    plots <- coverageSpatialBivariate(
+      dataToPlot = myH1RawObject,
+      year = myYear,
+      vesselFlag = myvesselFlag,
+      catchCat = "Lan",
+      landingsVariable = "CLoffWeight",
+      effortVariable = "CEnumFracTrips",
+      samplingVariable = "SAsampWtLive",
+      includeLandings = FALSE,
+      includeEffort = TRUE
+    )
+    ,"No non-NA effort data to plot*")
+
+  # expect 0 girafe objects
+  expect_equal(length(plots),0)
+
+})
+
+test_that("Spatial bivariate plot gives error when no sample rectangles are specified",  {
+
+  myH1RawObject <- prepareTestData()
+  myYear <- 1965
+  myvesselFlag <- "ZW"
+
+  # remove rectangles from landings
+  myH1RawObject[["SA"]]$SAstatRect <- NA
+
+  # Spatial bivariate plot
+  expect_error(
+    plots <- coverageSpatialBivariate(
+      dataToPlot = myH1RawObject,
+      year = myYear,
+      vesselFlag = myvesselFlag,
+      catchCat = "Lan",
+      landingsVariable = "CLoffWeight",
+      effortVariable = "CEnumFracTrips",
+      samplingVariable = "SAsampWtLive",
+      includeLandings = FALSE,
+      includeEffort = TRUE
+    )
+    ,"No non-NA sample data to plot*")
+
+})
 
 #}) ## end capture.output
