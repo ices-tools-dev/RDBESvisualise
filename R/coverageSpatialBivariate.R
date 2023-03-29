@@ -221,19 +221,20 @@ bivariatePlot <- function(landingsData = NA,
         landingsVariable
       ))))
 
-    df_l <-
-      dplyr::full_join(d1,
-        d2,
-        by = c("CLyear" = "SAyear", "CLstatRect" = "SAstatRect")
-      )
-
     # Check we still have some landings data left to plot after removing NAs
     # - if we don't have then we can't plot landings data
     if (nrow(d1) == 0){
       warning(paste0("No non-NA landings data to plot - check the values ",
-                  "of CLyear, CLstatRect and ", landingsVariable,
-                  " in your input data"))
+                     "of CLyear, CLstatRect and ", landingsVariable,
+                     " in your input data"))
       landings <- FALSE
+    } else {
+      # Join landings to samples
+      df_l <-
+        dplyr::full_join(d1,
+          d2,
+          by = c("CLyear" = "SAyear", "CLstatRect" = "SAstatRect")
+        )
     }
   }
 
@@ -244,12 +245,6 @@ bivariatePlot <- function(landingsData = NA,
         effortVariable
       ))))
 
-    df_e <-
-      dplyr::full_join(d3,
-        d2,
-        by = c("CEyear" = "SAyear", "CEstatRect" = "SAstatRect")
-      )
-
     # Check we still have some effort data left to plot after removing NAs
     # - if we don't have then we can't plot effort data
     if (nrow(d3) == 0){
@@ -257,6 +252,13 @@ bivariatePlot <- function(landingsData = NA,
                      "of CEyear, CEstatRect and ", effortVariable,
                      " in your input data"))
       effort <- FALSE
+    } else {
+      # Join effort to samples
+      df_e <-
+        dplyr::full_join(d3,
+                         d2,
+                         by = c("CEyear" = "SAyear", "CEstatRect" = "SAstatRect")
+        )
     }
   }
 
