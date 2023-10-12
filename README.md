@@ -1,4 +1,4 @@
-`RDBESvisualise`
+`RDBESvisualise` 
 =========
 
 `RDBESvisualise` provides functions to visualise [**Regional DataBase and Estimation System (RDBES)**](https://sboxrdbes.ices.dk/#/) data.
