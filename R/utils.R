@@ -375,8 +375,7 @@ preprocessLandingsDataForCoverage <- function(dataToPlot, verbose) {
   data(wormsSpecies, package = "RDBESvisualise")
   full_name <- wormsSpecies
   full_name <- dplyr::distinct(full_name, Key, .keep_all = TRUE)
-  ld <-
-    dplyr::left_join(ld, full_name, by = c("CLspecCode" = "Key"))
+  ld <- dplyr::left_join(ld, full_name, by = c("CLspecCode" = "Key"))
   names(ld)[names(ld) == "Description"] <- "CLspeciesName"
 
   # return our landings data
