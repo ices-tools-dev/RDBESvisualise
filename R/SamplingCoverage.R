@@ -8,6 +8,8 @@
 #' @param type Type of comparison to be represented by the plot. Possible values are "Spatial", "Time", "Fleet", "Species". 
 #' @param resolution The resolution at which the type is required. Possible values: "ICES Subdivision", "ICES Rectangle", "Year", "Semester", "Quarter", "Month", "ScaleFishery", "SpeciesList", "SpeciesGroupList".
 #' @param year (Optional) Year to be assessed. Default is all years contained in RDBESobj data. 
+#' @param quarter (Optional) Quarter to be assessed - possible choices 1,2,3 or 4
+#' @param vesselFlag (Optional) Registered Country of Vessel - e.g "IE", "ES" or "FR"
 #' @param output_type (Optional) Determines whether the output is tabular or a graphical plot. Possible values are "table" or "plot". Default is "plot". 
 #' @param verbose (Optional) Set to TRUE to print more information. Default is FALSE
 #'
@@ -36,6 +38,8 @@ coverageSpatial <- function(
     type,
     resolution,
     year = NA,
+    quarter = NA, 
+    vesselFlag = NA, 
     output_type = NA, 
     verbose = NA
     ) {
@@ -43,15 +47,25 @@ coverageSpatial <- function(
     ## Data preparation
     ##################################################
     ### Here we prepare the data in order to plot them. 
-    ## P1: Prepare the data in case the variable of interest is related to landing. 
+    ### Prepare the data in case the variable of interest is related to landing. 
     if(contrastVar == "CLoffWeight", "CLsciWeight") {
-    # In this case we need to extract the CL table from the RDBES object. 
-    preprocessLandingsDataForCoverage( 
-        # Through preprocessLandingsDataForCoverage()..
-        RDBESobj, # Extract CL from RDBESobject and merge with wormsSpecies.rda to obtain latin name from Aphia codes. 
+    ## P1: Extract the CL table from the RDBES object. 
+    # Through preprocessLandingsDataForCoverage() extract CL from RDBESobject and merge with wormsSpecies.rda to obtain latin name from Aphia codes.
+    contrastDf <- preprocessLandingsDataForCoverage( 
+        RDBESobj,  
         verbose = verbose 
         )
-       
+
+    ## P2: Additional subsetting of data [year, quarter, vesselFlag currently available]
+    # Through filterLandingsDataForCoverage() we filter the data based on the function's input parameters. 
+    contrastDf <- filterLandingsDataForCoverage(
+        landingsData = contrastDf, 
+        yearToFilter = year,
+        quarterToFilter = quarter,
+        vesselFlag = vesselFlag,
+        verbose = verbose
+        )
+
     }
 
     ## P2: Prepare the data in case the variable of interest is related to effort. 
