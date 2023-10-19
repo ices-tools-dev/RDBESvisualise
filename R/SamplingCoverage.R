@@ -22,7 +22,7 @@
 #' 
 #' }
 
-coverageSpatial <- function(
+SamplingCoverage <- function(
     RDBESobj,
     var = c(
         "CLoffWeight",
@@ -56,7 +56,8 @@ coverageSpatial <- function(
     quarter = NA, 
     vesselFlag = NA, 
     output_type = NA, 
-    verbose = T
+    verbose = T, 
+    showSamples = T
     ) {
 
     ##################################################
@@ -90,23 +91,74 @@ coverageSpatial <- function(
     print("work in progress")
     }
     
+    ## P3: Define the data we have been given
+    
+    if(contrastVar %in% c("CEnumFracTrips", "CEnumDomTrip")) {
+
+        contrast = paste("Effort")
+
+
+    } else if (contrastVar %in% c("CLoffWeight", "CLsciWeight", "CLtotalOfficialLandingsValue")) {
+
+        if(contrastVar %in% c("CLoffWeight", "CLsciWeight")) {
+
+            contrast = paste("Landing - Weight")
+
+        } else {
+
+            contrast = paste("Landing - Value")
+
+        } 
+    } else {
+
+        contrast = NA
+
+    }
+
+    
+
+    if (length(contrastVar) == 1 && is.na(contrastVar)) {
+        landings <- FALSE
+    } else {
+        landings <- TRUE
+    }
+    if (length(effortData) == 1 && is.na(effortData)) {
+        effort <- FALSE
+    } else {
+        effort <- TRUE
+    }
+    if (length(sampleData) == 1 && is.na(sampleData)) {
+        samples <- FALSE
+    } else {
+        samples <- TRUE
+    }
+
+    if (is.na(vesselFlag)) {
+        flagLabel <- "All"
+    } else {
+        flagLabel <- vesselFlag
+    }
+
     ##################################################
     ## Data plotting.
     ##################################################
     ## P3: Plot in case a spatial comparison is required
     if(type == "Spatial"){
 
-        # P3.1 Plot in case a spatial comparison at the ICES Subdivision resolution is required
+        ## P3.1 Plot in case a spatial comparison at the ICES Subdivision resolution is required
         if(resolution == "ICES Subdivision") {
-
-            # P3.1.1 Load shapefile of ICES Subdivision
-            st_read(dsn = paste0(), quiet = T)
 
         }
     
-        # P3.2 Plot in case a spatial comparison at the ICES Subdivision resolution is required
+        ## P3.2 Plot in case a spatial comparison at the ICES Subdivision resolution is required
         if(resolution == "ICES Rectangle") {
             
+            ## P3.2.1 Load shapefile of ICES Subdivision
+            ices_rects <- RDBESvisualise::icesRectSF
+            
+            ## P3.2.2 
+            
+
         }
 
     }
