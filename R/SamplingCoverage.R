@@ -42,6 +42,7 @@ SamplingCoverage <- function(
     var = c(
         "SAsampWtLive",
         "SAnumSamp",
+        # ! N. samples, 
         "SAsampWtMes"
     ),
     contrastVar = c(
@@ -143,81 +144,191 @@ SamplingCoverage <- function(
         flagLabel <- vesselFlag
     }
 
-    ##################################################
-    ## Data plotting.
-    ##################################################
-    ## P3: Plot in case a spatial comparison is required
+    ## P4: Prep. in case a spatial comparison is required
     if(type == "Spatial"){
 
-        ## P3.1 Plot in case a spatial comparison at the ICES Subdivision resolution is required
+        ## P4.1 Prep in case a spatial comparison at the ICES Subdivision resolution is required
         if(resolution == "ICES Subdivision") {
 
         }
     
-        ## P3.2 Plot in case a spatial comparison at the ICES Rectangles resolution is required
+        ## P4.2 Prep. in case a spatial comparison at the ICES Rectangles resolution is required
         if(resolution == "ICES Rectangle") {
             
             if(grepl(contrast, "Landing")) # If the contrast variable is landing
-            ## P3.2.1 Load shapefile of ICES Rectangles
+            ## P4.2.1 Load shapefile of ICES Rectangles
             ices_rects <- RDBESvisualise::icesRectSF
             
-            ## P3.2.2 Remove those records not having an associated rectangle 
+            ## P4.2.2 Remove those records not having an associated rectangle 
             contrastDf_Rect <- contrastDf %>% 
                 dplyr::filter(!(CLstatRect %in% c("-9") | is.na(CLstatRect)))
             
-            ## P3.2.3 Aggregate the data by ICES Rectangle (and other vars, if any)
+            ## P4.2.3 Aggregate the data by ICES Rectangle (and other vars, if any)
             # First we define the grouping variable as the Statistical Rectangle + variables spec. by user
             if(all(is.na(by))) {
                     grp_vars = c("CLstatRect") 
                 } else {
                     grp_vars = c("CLstatRect", by) 
                 }
-
-            # Secondly, depending on the var of interest, we aggregate the data accordingly.     
-            if(contrast == "Landing - Weight") {
             
-                contrastDf_Rect <- contrastDf_Rect %>% 
+            # Then, we aggregate the data accordingly.     
+            contrastDf_Rect <- contrastDf_Rect %>% 
                     group_by_at(grp_vars) %>%
-                    summarize(
-                        CLoffWeight = sum(CLoffWeight, na.rm = T),
-                        CLsciWeight = sum(CLsciWeight, na.rm = T)
-                    )
-                print(contrastDf_Rect)
-            }
+                    dplyr::summarize(
+                        varInt = sum(eval(as.name(contrastVar)), na.rm = T)
+                    ) 
             
-            if(contrast == "Landing - Value") {
+            # Specify the name of the variable of interest
+            #names(contrastDf_Rect)[names(contrastDf_Rect) == "varInt"] <- contrastVar
+            
+            ## P4.2.4 Merge the result with the spatial object
+            # Merge the resulting dataframe with the shapefile relative to the ICES Rectangles
+            contrastDf_Rect <- merge(ices_rects, contrastDf_Rect, by.x = "ICESNAME", by.y = "CLstatRect", all.y = T)
+        }
+    }
 
-                contrastDf_Rect <- contrastDf_Rect %>% 
-                    group_by_at(grp_vars) %>%
-                    summarize(
-                        CLtotalOfficialLandingsValue = sum(CLtotalOfficialLandingsValue, na.rm = T)
-                    )     
-            }
+    ## P5: Prep. in case a temporal comparison is required
+    if(type == "Time"){
 
-
+        ## P5.1 Prep in case a temporal comparison at the year resolution is required
+        if(resolution == "Year") {
+            print("work in progress")
         }
 
+        ## P5.2 Prep in case a temporal comparison at the semester resolution is required
+        if(resolution == "Semester") {
+            print("work in progress")
+        }
+
+        ## P5.3 Prep in case a temporal comparison at the quarter resolution is required
+        if(resolution == "Quarter") {
+            print("work in progress")
+        }
+
+        ## P5.4 Prep in case a temporal comparison at the month resolution is required
+        if(resolution == "Month") {
+            print("work in progress")
+        }
+    
     }
-    if(type == "Time"){
-        print("work in progress")
-    }
+    
+    ## P5: Prep. in case a fleet comparison is required
     if(type == "Fleet"){
         print("work in progress")
     }
+
+    ## P6: Prep. in case a species comparison is required
     if(type == "Species"){
+
+        ## P6.1 Prep in case a species comparison at the species unit resolution is required
+        if(resolution == "Species unit") {
+            print("work in progress")
+        }
+
+        ## P6.2 Prep in case a species comparison at the species group resolution is required
+        if(resolution == "Species group") {
+            print("work in progress")
+        }
+    
+    }
+    
+
+    ##################################################
+    ## Data plotting.
+    ##################################################
+
+    ## P7: Plotting in case a spatial comparison is required
+    if(type == "Spatial"){
+
+        ## P7.1 Define study area
+        # Define countries map 
+        countries <- ne_countries(scale = "medium",
+                       type = 'map_units',
+                       returnclass = "sf")
+
+        # Define study area extremes
+        study_area <- c(st_bbox(contrastDf_Rect))
+        
+        ## P7.1 Plotting in case a spatial comparison at the ICES Subdivision resolution is required
+        if(resolution == "ICES Subdivision") {
+            print("work in progress")
+        }
+    
+        ## P7.2 Plotting in case a spatial comparison at the ICES Rectangles resolution is required
+        if(resolution == "ICES Rectangle") {
+            
+            # P7.2.1 Define a resolution factor 
+            rf = 1 # Value to enlarge the spatial window at which the data are shown. 
+        
+            print( 
+            ggplot() + 
+            geom_sf(
+                data = contrastDf_Rect, 
+                aes(fill = varInt)
+                ) +
+            geom_sf(data = countries, fill = "gray90", color = "black") + 
+            xlim(study_area[1]-rf, study_area[3]+rf) + 
+            ylim(study_area[2]-rf, study_area[4]+rf) + 
+            labs(x = "Lon", y = "Lat", fill = paste(as.name(contrastVar))) + 
+            scale_fill_viridis(option = "viridis") + 
+            theme_bw() 
+           )
+        }
+    }
+
+    ## P8: Prep. in case a temporal comparison is required
+    if(type == "Time"){
+
+        ## P8.1 Prep in case a temporal comparison at the year resolution is required
+        if(resolution == "Year") {
+            print("work in progress")
+        }
+
+        ## P8.2 Prep in case a temporal comparison at the semester resolution is required
+        if(resolution == "Semester") {
+            print("work in progress")
+        }
+
+        ## P8.3 Prep in case a temporal comparison at the quarter resolution is required
+        if(resolution == "Quarter") {
+            print("work in progress")
+        }
+
+        ## P8.4 Prep in case a temporal comparison at the month resolution is required
+        if(resolution == "Month") {
+            print("work in progress")
+        }
+    
+    }
+    
+    ## P9: Prep. in case a fleet comparison is required
+    if(type == "Fleet"){
         print("work in progress")
+    }
+
+    ## P9: Prep. in case a species comparison is required
+    if(type == "Species"){
+
+        ## P9.1 Prep in case a species comparison at the species unit resolution is required
+        if(resolution == "Species unit") {
+            print("work in progress")
+        }
+
+        ## P9.2 Prep in case a species comparison at the species group resolution is required
+        if(resolution == "Species group") {
+            print("work in progress")
+        }
+    
     }
       
 }
-
-
 
 SamplingCoverage(
     RDBESobj = rdbesobj, 
     var = "WeightSampled", 
     contrastVar = "CLoffWeight",
-    by = c("CLyear", "CLmonth"), 
+    #by = c("CLyear", "CLmonth"), 
     type = "Spatial", 
     resolution = "ICES Rectangle"
     )
-
+rm(SamplingCoverage)
