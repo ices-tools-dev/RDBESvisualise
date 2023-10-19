@@ -56,7 +56,7 @@ coverageSpatial <- function(
     quarter = NA, 
     vesselFlag = NA, 
     output_type = NA, 
-    verbose = NA
+    verbose = T
     ) {
 
     ##################################################
@@ -64,22 +64,23 @@ coverageSpatial <- function(
     ##################################################
     ## P1: Prepare the data in case the variable of interest is related to landing. 
     if(contrastVar == "CLoffWeight", "CLsciWeight", "CLtotalOfficialLandingsValue") {
-    ## P1.1: Extract the CL table from the RDBES object. 
-    # Through preprocessLandingsDataForCoverage() extract CL from RDBESobject and merge with wormsSpecies.rda to obtain latin name from Aphia codes.
-    contrastDf <- preprocessLandingsDataForCoverage( 
-        RDBESobj,  
-        verbose = verbose 
-        )
+        
+        ## P1.1: Extract the CL table from the RDBES object. 
+        # Through preprocessLandingsDataForCoverage() extract CL from RDBESobject and merge with wormsSpecies.rda to obtain latin name from Aphia codes.
+        contrastDf <- preprocessLandingsDataForCoverage( 
+            RDBESobj,  
+            verbose = verbose 
+            )
 
-    ## P1.2: Additional subsetting of data [year, quarter, vesselFlag currently available]
-    # Through filterLandingsDataForCoverage() we filter the data based on the function's input parameters. 
-    contrastDf <- filterLandingsDataForCoverage(
-        landingsData = contrastDf, 
-        yearToFilter = year,
-        quarterToFilter = quarter,
-        vesselFlag = vesselFlag,
-        verbose = verbose
-        )
+        ## P1.2: Additional subsetting of data [year, quarter, vesselFlag currently available]
+        # Through filterLandingsDataForCoverage() we filter the data based on the function's input parameters. 
+        contrastDf <- filterLandingsDataForCoverage(
+            landingsData = contrastDf, 
+            yearToFilter = year,
+            quarterToFilter = quarter,
+            vesselFlag = vesselFlag,
+            verbose = verbose
+            )
 
     }
 
@@ -92,7 +93,32 @@ coverageSpatial <- function(
     ##################################################
     ## Data plotting.
     ##################################################
-    ## P1: Plot in case a spatial comparison is required
-    if(type == "spatial")     
+    ## P3: Plot in case a spatial comparison is required
+    if(type == "Spatial"){
+
+        # P3.1 Plot in case a spatial comparison at the ICES Subdivision resolution is required
+        if(resolution == "ICES Subdivision") {
+
+            # P3.1.1 Load shapefile of ICES Subdivision
+            st_read(dsn = paste0(), quiet = T)
+
+        }
+    
+        # P3.2 Plot in case a spatial comparison at the ICES Subdivision resolution is required
+        if(resolution == "ICES Rectangle") {
+            
+        }
+
+    }
+    if(type == "Time"){
+        print("work in progress")
+    }
+    if(type == "Fleet"){
+        print("work in progress")
+    }
+    if(type == "Species"){
+        print("work in progress")
+    }
+      
 }
 
