@@ -34,7 +34,6 @@
 # - coverageSpatial.R: from FishNCo project. Author: unknown. 
 # - preprocessLandingsDataForCoverage: from RDBES project. Author: unknown. 
 # - filterLandingsDataForCoverage: from RDBES project. Author: unknown. 
-# 
 #
 ###################################################################################
 
@@ -73,7 +72,7 @@ SamplingCoverage <- function(
     year = NA,
     quarter = NA, 
     vesselFlag = NA, 
-    showSamples = T
+    showSamples = T,
     output_type = NA, 
     verbose = T
     ) {
@@ -82,7 +81,8 @@ SamplingCoverage <- function(
     ### Data preparation
     ##################################################
     ## P1: Prepare the data in case the variable of interest is related to landing. 
-    if(contrastVar == "CLoffWeight", "CLsciWeight", "CLtotalOfficialLandingsValue") {
+
+    if(contrastVar %in% c("CLoffWeight", "CLsciWeight", "CLtotalOfficialLandingsValue")) {
         
         ## P1.1: Extract the CL table from the RDBES object. 
         # Through preprocessLandingsDataForCoverage() extract CL from RDBESobject and merge with wormsSpecies.rda to obtain latin name from Aphia codes.
@@ -105,7 +105,7 @@ SamplingCoverage <- function(
 
     ## P2: Prepare the data in case the variable of interest is related to effort. 
     # In this case we need to extract the CE table from the RDBES object. 
-    if(contrastVar == "CEnumFracTrips", "CEnumDomTrip") {
+    if(contrastVar %in% c("CEnumFracTrips", "CEnumDomTrip")) {
     print("work in progress")
     }
     
@@ -121,13 +121,13 @@ SamplingCoverage <- function(
 
             contrast = paste("Landing - Weight")
 
-        } else {
+        } else if (contrastVar == "CLtotalOfficialLandingsValue") {
 
             contrast = paste("Landing - Value")
 
         } 
     }
-
+        
     # Print a summary message, if selected. 
     if(verbose == TRUE) {
         print(paste0(
@@ -154,14 +154,46 @@ SamplingCoverage <- function(
 
         }
     
-        ## P3.2 Plot in case a spatial comparison at the ICES Subdivision resolution is required
+        ## P3.2 Plot in case a spatial comparison at the ICES Rectangles resolution is required
         if(resolution == "ICES Rectangle") {
             
-            ## P3.2.1 Load shapefile of ICES Subdivision
+            if(grepl(contrast, "Landing")) # If the contrast variable is landing
+            ## P3.2.1 Load shapefile of ICES Rectangles
             ices_rects <- RDBESvisualise::icesRectSF
             
-            ## P3.2.2 
+            ## P3.2.2 Remove those records not having an associated rectangle 
+            contrastDf_Rect <- contrastDf %>% 
+                dplyr::filter(!(CLstatRect %in% c("-9") | is.na(CLstatRect)))
             
+            ## P3.2.3 Aggregate the data by ICES Rectangle (and other vars, if any)
+            # First we define the grouping variable as the Statistical Rectangle + variables spec. by user
+            if(all(is.na(by))) {
+                    grp_vars = c("CLstatRect") 
+                } else {
+                    grp_vars = c("CLstatRect", by) 
+                }
+
+            # Secondly, depending on the var of interest, we aggregate the data accordingly.     
+            if(contrast == "Landing - Weight") {
+            
+                contrastDf_Rect <- contrastDf_Rect %>% 
+                    group_by_at(grp_vars) %>%
+                    summarize(
+                        CLoffWeight = sum(CLoffWeight, na.rm = T),
+                        CLsciWeight = sum(CLsciWeight, na.rm = T)
+                    )
+                print(contrastDf_Rect)
+            }
+            
+            if(contrast == "Landing - Value") {
+
+                contrastDf_Rect <- contrastDf_Rect %>% 
+                    group_by_at(grp_vars) %>%
+                    summarize(
+                        CLtotalOfficialLandingsValue = sum(CLtotalOfficialLandingsValue, na.rm = T)
+                    )     
+            }
+
 
         }
 
@@ -177,4 +209,15 @@ SamplingCoverage <- function(
     }
       
 }
+
+
+
+SamplingCoverage(
+    RDBESobj = rdbesobj, 
+    var = "WeightSampled", 
+    contrastVar = "CLoffWeight",
+    by = c("CLyear", "CLmonth"), 
+    type = "Spatial", 
+    resolution = "ICES Rectangle"
+    )
 
