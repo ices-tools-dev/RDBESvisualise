@@ -35,8 +35,23 @@ coverageSpatial <- function(
     ),
     contrastVar,
     by = NA,
-    type,
-    resolution,
+    type = c(
+        "Spatial",
+        "Time", 
+        "Fleet", 
+        "Species"
+    ),
+    resolution = c(
+        "ICES Subdivision",
+        "ICES Rectangle", 
+        "Year", 
+        "Semester", 
+        "Quarter", 
+        "Month",
+        "Scale of fishery",
+        "Species unit",
+        "Species group" 
+    ),
     year = NA,
     quarter = NA, 
     vesselFlag = NA, 
@@ -47,7 +62,6 @@ coverageSpatial <- function(
     ##################################################
     ### Data preparation
     ##################################################
-    ### S1: Here we prepare the data in order to plot them. 
     ## P1: Prepare the data in case the variable of interest is related to landing. 
     if(contrastVar == "CLoffWeight", "CLsciWeight", "CLtotalOfficialLandingsValue") {
     ## P1.1: Extract the CL table from the RDBES object. 
@@ -74,11 +88,11 @@ coverageSpatial <- function(
     if(contrastVar == "CEnumFracTrips", "CEnumDomTrip") {
     print("work in progress")
     }
-
     
     ##################################################
     ## Data plotting.
     ##################################################
-    ### Here we plot the data conditionally on type and resolution.     
+    ## P1: Plot in case a spatial comparison is required
+    if(type == "spatial")     
 }
 
