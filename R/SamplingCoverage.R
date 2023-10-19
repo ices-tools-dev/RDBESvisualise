@@ -9,6 +9,7 @@
 #' @param resolution The resolution at which the type is required. Possible values: "ICES Subdivision", "ICES Rectangle", "Year", "Semester", "Quarter", "Month", "ScaleFishery", "SpeciesList", "SpeciesGroupList".
 #' @param year (Optional) Year to be assessed. Default is all years contained in RDBESobj data. 
 #' @param output_type (Optional) Determines whether the output is tabular or a graphical plot. Possible values are "table" or "plot". Default is "plot". 
+#' @param verbose (Optional) Set to TRUE to print more information. Default is FALSE
 #'
 #' @return table or plot depending on user selection. 
 #' @export
@@ -35,16 +36,22 @@ coverageSpatial <- function(
     type,
     resolution,
     year = NA,
-    output_type = NA
+    output_type = NA, 
+    verbose = NA
     ) {
     ##################################################
     ## Data preparation
     ##################################################
     ### Here we prepare the data in order to plot them. 
     ## P1: Prepare the data in case the variable of interest is related to landing. 
-    # In this case we need to extract the CL table from the RDBES object. 
     if(contrastVar == "CLoffWeight", "CLsciWeight") {
-
+    # In this case we need to extract the CL table from the RDBES object. 
+    preprocessLandingsDataForCoverage( 
+        # Through preprocessLandingsDataForCoverage()..
+        RDBESobj, # Extract CL from RDBESobject and merge with wormsSpecies.rda to obtain latin name from Aphia codes. 
+        verbose = verbose 
+        )
+       
     }
 
     ## P2: Prepare the data in case the variable of interest is related to effort. 
