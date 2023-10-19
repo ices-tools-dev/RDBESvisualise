@@ -43,20 +43,21 @@ coverageSpatial <- function(
     output_type = NA, 
     verbose = NA
     ) {
+
     ##################################################
-    ## Data preparation
+    ### Data preparation
     ##################################################
-    ### Here we prepare the data in order to plot them. 
-    ### Prepare the data in case the variable of interest is related to landing. 
+    ### S1: Here we prepare the data in order to plot them. 
+    ## P1: Prepare the data in case the variable of interest is related to landing. 
     if(contrastVar == "CLoffWeight", "CLsciWeight") {
-    ## P1: Extract the CL table from the RDBES object. 
+    ## P1.1: Extract the CL table from the RDBES object. 
     # Through preprocessLandingsDataForCoverage() extract CL from RDBESobject and merge with wormsSpecies.rda to obtain latin name from Aphia codes.
     contrastDf <- preprocessLandingsDataForCoverage( 
         RDBESobj,  
         verbose = verbose 
         )
 
-    ## P2: Additional subsetting of data [year, quarter, vesselFlag currently available]
+    ## P1.2: Additional subsetting of data [year, quarter, vesselFlag currently available]
     # Through filterLandingsDataForCoverage() we filter the data based on the function's input parameters. 
     contrastDf <- filterLandingsDataForCoverage(
         landingsData = contrastDf, 
@@ -70,7 +71,9 @@ coverageSpatial <- function(
 
     ## P2: Prepare the data in case the variable of interest is related to effort. 
     # In this case we need to extract the CE table from the RDBES object. 
-    if(contrastVar == "CEnumFracTrips", "CEnumDomTrip")
+    if(contrastVar == "CEnumFracTrips", "CEnumDomTrip") {
+    print("work in progress")
+    }
 
     
     ##################################################
