@@ -49,7 +49,7 @@ coverageSpatial <- function(
     ##################################################
     ### S1: Here we prepare the data in order to plot them. 
     ## P1: Prepare the data in case the variable of interest is related to landing. 
-    if(contrastVar == "CLoffWeight", "CLsciWeight") {
+    if(contrastVar == "CLoffWeight", "CLsciWeight", "CLtotalOfficialLandingsValue") {
     ## P1.1: Extract the CL table from the RDBES object. 
     # Through preprocessLandingsDataForCoverage() extract CL from RDBESobject and merge with wormsSpecies.rda to obtain latin name from Aphia codes.
     contrastDf <- preprocessLandingsDataForCoverage( 
