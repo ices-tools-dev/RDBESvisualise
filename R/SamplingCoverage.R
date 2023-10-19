@@ -10,6 +10,7 @@
 #' @param year (Optional) Year to be assessed. Default is all years contained in RDBESobj data. 
 #' @param quarter (Optional) Quarter to be assessed - possible choices 1,2,3 or 4
 #' @param vesselFlag (Optional) Registered Country of Vessel - e.g "IE", "ES" or "FR"
+#' @param showSamples (Optional) Determines whether the samples data should be displayed or not. Default is TRUE. 
 #' @param output_type (Optional) Determines whether the output is tabular or a graphical plot. Possible values are "table" or "plot". Default is "plot". 
 #' @param verbose (Optional) Set to TRUE to print more information. Default is FALSE
 #'
@@ -22,18 +23,35 @@
 #' 
 #' }
 
+
+###################################################################################
+# 
+# Note: This function is a generalization of different comparisons between sampling
+# and landings data and between sampling and effort data. 
+# The function code was in part built relying on or merging pre-existing functions, 
+# including: 
+# 
+# - coverageSpatial.R: from FishNCo project. Author: unknown. 
+# - preprocessLandingsDataForCoverage: from RDBES project. Author: unknown. 
+# - filterLandingsDataForCoverage: from RDBES project. Author: unknown. 
+# 
+#
+###################################################################################
+
 SamplingCoverage <- function(
     RDBESobj,
     var = c(
-        "CLoffWeight",
-        "CLsciWeight",
-        "CEnumFracTrips",
-        "CEnumDomTrip", 
         "SAsampWtLive",
         "SAnumSamp",
         "SAsampWtMes"
     ),
-    contrastVar,
+    contrastVar = c(
+        "CLoffWeight",
+        "CLsciWeight",
+        "CLtotalOfficialLandingsValue", 
+        "CEnumFracTrips",
+        "CEnumDomTrip"
+    ),
     by = NA,
     type = c(
         "Spatial",
@@ -55,9 +73,9 @@ SamplingCoverage <- function(
     year = NA,
     quarter = NA, 
     vesselFlag = NA, 
-    output_type = NA, 
-    verbose = T, 
     showSamples = T
+    output_type = NA, 
+    verbose = T
     ) {
 
     ##################################################
@@ -92,13 +110,12 @@ SamplingCoverage <- function(
     }
     
     ## P3: Define the data we have been given
-    
+    # Define set of directions we received from the user in general terms. 
     if(contrastVar %in% c("CEnumFracTrips", "CEnumDomTrip")) {
 
         contrast = paste("Effort")
 
-
-    } else if (contrastVar %in% c("CLoffWeight", "CLsciWeight", "CLtotalOfficialLandingsValue")) {
+    } else {
 
         if(contrastVar %in% c("CLoffWeight", "CLsciWeight")) {
 
@@ -109,30 +126,17 @@ SamplingCoverage <- function(
             contrast = paste("Landing - Value")
 
         } 
-    } else {
-
-        contrast = NA
-
     }
 
+    # Print a summary message, if selected. 
+    if(verbose == TRUE) {
+        print(paste0(
+            "Preparing the comparison of sampling data versus ", 
+            contrast, 
+            " data.")
+            )
+    } 
     
-
-    if (length(contrastVar) == 1 && is.na(contrastVar)) {
-        landings <- FALSE
-    } else {
-        landings <- TRUE
-    }
-    if (length(effortData) == 1 && is.na(effortData)) {
-        effort <- FALSE
-    } else {
-        effort <- TRUE
-    }
-    if (length(sampleData) == 1 && is.na(sampleData)) {
-        samples <- FALSE
-    } else {
-        samples <- TRUE
-    }
-
     if (is.na(vesselFlag)) {
         flagLabel <- "All"
     } else {
