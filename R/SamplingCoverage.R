@@ -26,14 +26,21 @@
 
 ###################################################################################
 # 
-# Note: This function is a generalization of different comparisons between sampling
+# This function is a generalization of different comparisons between sampling
 # and landings data and between sampling and effort data. 
-# The function code was in part built relying on or merging pre-existing functions, 
-# including: 
+# The function code was in part built relying on and/or merging pre-existing 
+# functions, including: 
 # 
-# - coverageSpatial.R: from FishNCo project. Author: unknown. 
-# - preprocessLandingsDataForCoverage: from RDBES project. Author: unknown. 
-# - filterLandingsDataForCoverage: from RDBES project. Author: unknown. 
+# - coverageSpatial.R: from FishNCo project. 
+# - preprocessLandingsDataForCoverage: from RDBES project.
+# - filterLandingsDataForCoverage: from RDBES project. 
+#
+# More info: 
+#
+# - FishNCo report, Annex 1, Section 3 "Biological Data Quality" https://datacollection.jrc.ec.europa.eu/documents/d/dcf/annex-01-deliverable-1-overview-of-the-state-of-play-data-gaps-and-needs-
+# - Second Workshop on Estimation with the RDBES data model, page105, Annex "A3.5" https://doi.org/10.17895/ices.pub.7915
+# 
+# Inquiries: Eros Quesada SLU Aqua Sweden @RDBESvisualise
 #
 ###################################################################################
 
@@ -81,18 +88,29 @@ SamplingCoverage <- function(
     ##################################################
     ### Data preparation
     ##################################################
+
+    ## P1: Extract the sampling data from the RDBES object. 
+    # Through preprocessSampleDataForCoverage() extract sampling data from RDBESobject. 
+    #samplingDf_Rect <- preprocessSampleDataForCoverage( 
+    #    )
+        
+    ## P1.2: Additional subsetting of data [year, quarter, vesselFlag currently available]
+    # Through filterLandingsDataForCoverage() we filter the data based on the function's input parameters. 
+    #samplingDf_Rect <- filterSamplingDataForCoverage(
+    #)
+
     ## P1: Prepare the data in case the variable of interest is related to landing. 
 
     if(contrastVar %in% c("CLoffWeight", "CLsciWeight", "CLtotalOfficialLandingsValue")) {
         
-        ## P1.1: Extract the CL table from the RDBES object. 
+        ## P1.2: Extract the CL table from the RDBES object. 
         # Through preprocessLandingsDataForCoverage() extract CL from RDBESobject and merge with wormsSpecies.rda to obtain latin name from Aphia codes.
         contrastDf <- preprocessLandingsDataForCoverage( 
             RDBESobj,  
             verbose = verbose 
             )
 
-        ## P1.2: Additional subsetting of data [year, quarter, vesselFlag currently available]
+        ## P1.3: Additional subsetting of data [year, quarter, vesselFlag currently available]
         # Through filterLandingsDataForCoverage() we filter the data based on the function's input parameters. 
         contrastDf <- filterLandingsDataForCoverage(
             landingsData = contrastDf, 
@@ -155,15 +173,39 @@ SamplingCoverage <- function(
         ## P4.2 Prep. in case a spatial comparison at the ICES Rectangles resolution is required
         if(resolution == "ICES Rectangle") {
             
-            if(grepl(contrast, "Landing")) # If the contrast variable is landing
             ## P4.2.1 Load shapefile of ICES Rectangles
             ices_rects <- RDBESvisualise::icesRectSF
             
-            ## P4.2.2 Remove those records not having an associated rectangle 
+            ## P4.2.2 Calculate the amount of samples per ICES Rectangle (and other vars, if any))
+            if(all(is.na(by))) {
+                    grp_vars = c("SA") 
+                } else {
+                    grp_vars = c("SArectangle", by) 
+                }
+            
+            # Then, we aggregate the sampling data accordingly.     
+            samplingDf_Rect <- samplingDf_Rect %>% 
+                    group_by_at(grp_vars) %>%
+                    dplyr::summarize(
+                        varInt = sum(eval(as.name(var)), na.rm = T)
+                ) 
+            
+            print(head(samplingDf_Rect))
+
+            # Specify the name of the variable of interest
+            #names(samplingDf_Rect)[names(samplingDf_Rect) == "varInt"] <- var
+
+            ## P4.2.2 Merge the result with the spatial object
+            # Merge the resulting dataframe with the shapefile relative to the ICES Rectangles
+            contrastDf_Rect <- merge(ices_rects, contrastDf_Rect, by.x = "ICESNAME", by.y = "CLstatRect", all.y = T)
+
+            if(grepl(contrast, "Landing")) # If the contrast variable is landing
+            
+            ## P4.2.3 Remove those records not having an associated rectangle 
             contrastDf_Rect <- contrastDf %>% 
                 dplyr::filter(!(CLstatRect %in% c("-9") | is.na(CLstatRect)))
             
-            ## P4.2.3 Aggregate the data by ICES Rectangle (and other vars, if any)
+            ## P4.2.4 Aggregate the data by ICES Rectangle (and other vars, if any)
             # First we define the grouping variable as the Statistical Rectangle + variables spec. by user
             if(all(is.na(by))) {
                     grp_vars = c("CLstatRect") 
@@ -171,7 +213,7 @@ SamplingCoverage <- function(
                     grp_vars = c("CLstatRect", by) 
                 }
             
-            # Then, we aggregate the data accordingly.     
+            # Then, we aggregate the landing data accordingly.     
             contrastDf_Rect <- contrastDf_Rect %>% 
                     group_by_at(grp_vars) %>%
                     dplyr::summarize(
@@ -180,8 +222,8 @@ SamplingCoverage <- function(
             
             # Specify the name of the variable of interest
             #names(contrastDf_Rect)[names(contrastDf_Rect) == "varInt"] <- contrastVar
-            
-            ## P4.2.4 Merge the result with the spatial object
+
+            ## P4.2.5 Merge the result with the spatial object
             # Merge the resulting dataframe with the shapefile relative to the ICES Rectangles
             contrastDf_Rect <- merge(ices_rects, contrastDf_Rect, by.x = "ICESNAME", by.y = "CLstatRect", all.y = T)
         }
@@ -232,7 +274,6 @@ SamplingCoverage <- function(
     
     }
     
-
     ##################################################
     ## Data plotting.
     ##################################################
@@ -325,7 +366,7 @@ SamplingCoverage <- function(
 
 SamplingCoverage(
     RDBESobj = rdbesobj, 
-    var = "WeightSampled", 
+    var = "SAsampWtLive", 
     contrastVar = "CLoffWeight",
     #by = c("CLyear", "CLmonth"), 
     type = "Spatial", 
