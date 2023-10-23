@@ -239,6 +239,71 @@ filterEffortDataForCoverage <- function(effortData,
 
 #' Internal function to prepare sample data for coveragesXXX functions
 #'
+#' @param RDBESobj An RDBESDataObject
+#' @param verbose Set to TRUE to print more information. Default is
+#' FALSE
+#'
+#' @return an RDBESEstObject
+#'
+# This function is a temporary replace for the following preprocessSampleDataForCoverage. 
+# It is basically an adaptation of the preprocessLandingsDataForCoverage function (see below).
+# This function may be deleted when  preprocessSampleDataForCoverage is fixed. 
+preprocessSamplingDataForCoverage <- function(dataToPlot, verbose) {
+
+  if (verbose) {
+    print("Preparing sample data")
+  }
+
+  # get sampling data
+  sa <- dataToPlot[["SA"]]
+
+  # obtain the key to FO, in order to extract time information from there
+  sa <- merge(
+    rdbesobj[["SA"]],
+    RDBEScore::createTableOfRDBESIds(rdbesobj) %>% dplyr::select(SAid, FOid) %>% distinct()
+  )
+
+  # merge the sa with FO keys to the FO, we use FOendDate to extract time information
+
+  if (verbose) {
+    print("Samples are distributed in time according to FO table `FOendDate` column")
+  }
+
+  sa <- merge(
+    sa, 
+    rdbesobj[["FO"]] %>% dplyr::select(FOid, FOendDate), 
+    by = "FOid"
+  )
+  
+  # Split time information in the different components
+  sa <- sa %>% 
+    mutate(
+      year = str_sub(FOendDate, 1,4),
+      month = str_sub(FOendDate, 6,7), 
+      quarter = case_when(
+        month == "01" ~ 1,
+        month == "02" ~ 1,
+        month == "03" ~ 1,
+        month == "04" ~ 2,
+        month == "05" ~ 2,
+        month == "06" ~ 2,
+        month == "07" ~ 3,
+        month == "08" ~ 3,
+        month == "09" ~ 3,
+        month == "10" ~ 4,
+        month == "11" ~ 4,
+        month == "12" ~ 4
+      ), 
+      semester = case_when(
+        quarter %in% c(1,2) ~ 1, 
+        quarter %in% c(3,4) ~ 2  
+    )
+  )
+  sa
+}
+
+#' Internal function to prepare sample data for coveragesXXX functions
+#' NOT WORKING, to be check. 
 #' @param dataToPlot An RDBESDataObject
 #' @param (Optional) Set to TRUE to print more information. Default is
 #' FALSE
