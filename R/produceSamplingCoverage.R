@@ -44,7 +44,7 @@
 #
 ###################################################################################
 
-SamplingCoverage <- function(
+produceSamplingCoverage <- function(
     RDBESobj,
     var = c(
         "SAsampWtLive",
