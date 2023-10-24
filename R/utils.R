@@ -138,7 +138,9 @@ filterSampleDataForCoverage <- function(sampleData,
   sa <- sampleData
 
   # Filter the data based on the function's input parameters
-  if (is.na(yearToFilter) == TRUE && is.na(quarterToFilter) == TRUE) {
+  if (all(unlist(lapply(c(yearToFilter, quarterToFilter, vesselFlag, catchCat), is.na)))){
+    sa1 <- sa
+  } else if (is.na(yearToFilter) == TRUE && is.na(quarterToFilter) == TRUE) {
     if (is.na(vesselFlag) == TRUE) {
       sa1 <- sa %>% dplyr::filter(SAcatchCat %in% catchCat)
     } else {
