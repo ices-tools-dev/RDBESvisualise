@@ -141,16 +141,19 @@ produceSamplingCoverage <- function(
     # Define set of directions we received from the user in general terms. 
     if(contrastVar %in% c("CEnumFracTrips", "CEnumDomTrip")) {
 
+        contrast_type = paste("Effort")
         contrast = paste("Effort")
 
     } else {
 
         if(contrastVar %in% c("CLoffWeight", "CLsciWeight")) {
-
+            
+            contrast_type = paste("Landing")
             contrast = paste("Landing - Weight")
 
         } else if (contrastVar == "CLtotalOfficialLandingsValue") {
-
+            
+            contrast_type = paste("Landing")
             contrast = paste("Landing - Value")
 
         } 
@@ -207,6 +210,8 @@ produceSamplingCoverage <- function(
             } else if (var == "SAamountSamp") { # Else, if the variable is SAamountSamp which is not present in the RDBES SA table
                 
                 samplingDf_Rect <- samplingDf_Rect %>%  # We must count the amount of records 
+                    dplyr::select(c(grp_vars, SSid, SAspeCode)) %>% # We do it taking into account sample, spatial and species information + the variables selected by the user !check 
+                    distinct() %>% # Avoid duplicates !check 
                     group_by_at(grp_vars) %>%
                     dplyr::summarize(
                         varInt = n()
@@ -254,8 +259,12 @@ produceSamplingCoverage <- function(
                 contrastDf_Rect <- contrastDf_Rect %>% select(-all_of(to_drop))
                 samplingDf_Rect <- samplingDf_Rect %>% select(-all_of(to_drop))
                 
-                # Then we perform an outer join
-                Sampling_vs_Contrast <- merge(contrastDf_Rect %>% st_drop_geometry(), samplingDf_Rect, suffixes = c("_contrast","_sampling"), by = "ICESNAME")
+                # Then we perform an outer join to build the polygons [used to fill the rectangles]
+                Sampling_vs_Contrast_plg <- merge(samplingDf_Rect, contrastDf_Rect %>% st_drop_geometry(), suffixes = c("_sampling","_contrast"), by = "ICESNAME")
+                
+                # We can use the result to extract centroids [later used to center the sampling info]
+                Sampling_vs_Contrast_cntr <- Sampling_vs_Contrast_plg %>% st_centroid()
+                
                 
             } else if (contrast == "Effort"){
 
@@ -343,16 +352,42 @@ produceSamplingCoverage <- function(
             print( 
             ggplot() + 
             geom_sf(
-                data = contrastDf_Rect, 
-                aes(fill = varInt)
+                data = Sampling_vs_Contrast_plg, 
+                aes(fill = varInt_contrast)
                 ) +
+            geom_sf(
+                data = Sampling_vs_Contrast_cntr, 
+                aes(size = varInt_sampling),
+                color = "white",
+                shape = 1
+            ) + 
             geom_sf(data = countries, fill = "gray90", color = "black") + 
             xlim(study_area[1]-rf, study_area[3]+rf) + 
             ylim(study_area[2]-rf, study_area[4]+rf) + 
-            labs(x = "Lon", y = "Lat", fill = paste(as.name(contrastVar))) + 
+            labs(
+                x = "Lon", 
+                y = "Lat", 
+                fill = paste0(
+                    "Contrast variable:", as.name(contrastVar), " (", contrast_type, ")"), 
+                size = paste("Sampling variable:", as.name(var))
+                ) + 
             scale_fill_viridis(option = "viridis") + 
-            theme_bw() 
-           )
+            theme_bw() + 
+            theme(
+                legend.position = "bottom",
+                legend.title.align = 0.5, 
+                legend.key.width = unit(1, 'cm'),
+            ) + 
+            guides(
+                fill = guide_colourbar(
+                    title.position="top", title.hjust = 0.5
+                    ),
+                size = guide_legend(
+                    title.position="top", title.hjust = 0.5,
+                    override.aes = list(color = "black")
+                    )
+                )
+           ) 
         }
     }
 
