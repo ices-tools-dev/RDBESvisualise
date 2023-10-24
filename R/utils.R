@@ -59,19 +59,19 @@ as.integer.or.dbl <- function(x) {
 #' Internal function to filter landings data for coverageXXX functions
 #'
 #' @param landingsData A data table of landings data ("CL")
-#' @param year Year to be assessed e.g 2021
-#' @param quarter Quarter to be assessed - possible choices 1,2,3 or 4
-#' @param vesselFlag Registered Country of Vessel - e.g "IE", "ES" or "FR"
+#' @param year (Optional) Year to be assessed e.g 2021
+#' @param quarter (Optional) Quarter to be assessed - possible choices 1,2,3 or 4
+#' @param vesselFlag (Optional) Registered Country of Vessel - e.g "IE", "ES" or "FR"
 #' @param verbose (Optional) Set to TRUE to print more information. Default is
 #' FALSE
 #'
 #' @return A data table of landings data ("CL")
 #'
 filterLandingsDataForCoverage <- function(landingsData,
-                                          yearToFilter,
-                                          quarterToFilter,
-                                          vesselFlag,
-                                          verbose) {
+                                          yearToFilter = NA,
+                                          quarterToFilter = NA,
+                                          vesselFlag = NA,
+                                          verbose = T) {
   if (verbose) {
     print("Filtering landings data")
   }
@@ -116,21 +116,21 @@ filterLandingsDataForCoverage <- function(landingsData,
 #' Internal function to filter sample data for coverageXXX functions
 #'
 #' @param sampleData An RDBESEstObject
-#' @param year Year to be assessed e.g 2021
-#' @param quarter Quarter to be assessed - possible choices 1,2,3 or 4
-#' @param vesselFlag Registered Country of Vessel - e.g "IE", "ES" or "FR".
-#' @param catchCat Sampling catch category - landings, catch or discards
+#' @param year (Optional) Year to be assessed e.g 2021
+#' @param quarter (Optional) Quarter to be assessed - possible choices 1,2,3 or 4
+#' @param vesselFlag (Optional) Registered Country of Vessel - e.g "IE", "ES" or "FR".
+#' @param catchCat (Optional) Sampling catch category - landings, catch or discards
 #' @param verbose (Optional) Set to TRUE to print more information. Default is
 #' FALSE
 #'
 #' @return An RDBESEstObject
 #'
 filterSampleDataForCoverage <- function(sampleData,
-                                        yearToFilter,
-                                        quarterToFilter,
-                                        vesselFlag,
-                                        catchCat,
-                                        verbose) {
+                                        yearToFilter = NA,
+                                        quarterToFilter  = NA,
+                                        vesselFlag  = NA,
+                                        catchCat  = NA,
+                                        verbose  = T) {
   if (verbose) {
     print("Filtering sample data")
   }
