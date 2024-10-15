@@ -1,3 +1,13 @@
+################################################################################
+# 
+# Please note that following script updates the wormsSpecies data 
+# (see data/wormsSpecies.rda) in order to take into account possible updates on 
+# the server side. Hence, it should be run during the pre-release process. 
+#
+# Inquiries: David Currie, Marine Institute (Ireland) @RDBESvisualise
+#
+################################################################################
+
 library(icesVocab)
 wormsSpecies <- icesVocab::getCodeList("SpecWoRMS")
 wormsSpeciesCurrent <- wormsSpecies[!wormsSpecies$Deprecated,]
