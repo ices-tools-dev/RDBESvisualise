@@ -81,7 +81,7 @@ preprocessSamplingDataForCoverage <- function(RDBESDataObject,
         )
       #SD information
       if (generalVar) {
-        SA <- merge(SD, BVar, by = "BVid")
+        SA <- merge(SD|>select(BVid,SDctry), BVar, by = "BVid")
       }
     }
     if (length(RDBESDataObject[["FM"]]) != 0 &&
