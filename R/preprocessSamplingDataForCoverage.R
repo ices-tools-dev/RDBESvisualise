@@ -1,7 +1,7 @@
 #'Function perprocessing the Sampling data for coverage. Function based on
 #'the function with the same name in utils.R. This function extended of data
 #'validation and add variables from Biological Variables table, Frequency
-#'Measure Table and general information occure in DE and SD ex. flagCountry,
+#'Measure Table and general information occure in DE and SD ex. SamplingCountry,
 #'hierarchy.
 #'
 #' @param RDBESDataObject An RDBESDataObject.
