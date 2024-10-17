@@ -17,7 +17,7 @@
 #' @param generalVar set TRUE to add information about SamplingCountry, Hierarchy
 #' and Sampling scheme (ex.Baltic SPF regional) (DE, SD table). The default is FALSE.
 #'
-#' @return Function returns RDBESEstObject.
+#' @return Function returns table.
 #'
 #' @example
 #' RDBESDataObject <- createRDBESDataObject(input = "data-raw/exampleData/H1_2024_10_14.zip")
