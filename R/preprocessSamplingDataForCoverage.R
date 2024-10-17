@@ -2,7 +2,7 @@
 #'the function with the same name in utils.R. This function extended of data
 #'validation and add variables from Biological Variables table, Frequency
 #'Measure Table and general information occure in DE and SD ex. SamplingCountry,
-#'hierarchy.
+#'hierarchy.The function works only for RDBESDataObject of one hierarchy.
 #'
 #' @param RDBESDataObject An RDBESDataObject.
 #' @param validate Set to TRUE if you want validation to be carried out. The
@@ -39,31 +39,61 @@ preprocessSamplingDataForCoverage <- function(RDBESDataObject,
   if (verbose) {
     print("Preparing sample data")
   }
-
-  # obtain the key to FO, in order to extract time information from there
-  SA <- merge(
-    RDBESDataObject[["SA"]],
-    RDBEScore::createTableOfRDBESIds(RDBESDataObject) |> dplyr::select(SAid, FOid, BVid, FMid, DEid, SDid) |> dplyr::distinct()
-  )
-
-  # merge the SA with FO keys to the FO, we use FOendDate to extract time information
-
+#check hierarchy
+  H <- unique(RDBESDataObject[["DE"]]$DEhierarchy)
   if (verbose) {
-    print("Samples are distributed in time according to FO table `FOendDate` column")
+    print(paste0("Upper hierarchy: ", H))
   }
 
-  SA <- merge(SA, RDBESDataObject[["FO"]] |> dplyr::select(FOid, FOendDate), by = "FOid")
-  #year from DE not from FO
+  if (H %in% c(1, 2, 3, 13)) {
+    if (verbose) {
+      print("Samples are distributed in time according to FO table `FOendDate` column")
+    }
+    # obtain the key to FO, in order to extract time information from there
+    SA <- merge(
+      RDBESDataObject[["SA"]],
+      RDBEScore::createTableOfRDBESIds(RDBESDataObject) |> dplyr::select(SAid, FOid, BVid, FMid, DEid, SDid) |> dplyr::distinct()
+    )
+    SA <- merge(SA, RDBESDataObject[["FO"]] |> dplyr::select(FOid, FOendDate), by = "FOid")
+    SA$month <- stringr::str_sub(SA$FOendDate, 6, 7)
+    SA <- SA |> select(-FOid, -FOendDate)
+  }
+  if (H %in% c(4, 5, 6, 7)) {
+    if (verbose) {
+      print(
+        "According to upper hierarchy samples are distributed in time according to OS table `OSsamDate` column"
+      )
+    }
+    # obtain the key to FO, in order to extract time information from there
+    SA <- merge(
+      RDBESDataObject[["SA"]],
+      RDBEScore::createTableOfRDBESIds(RDBESDataObject) |> dplyr::select(SAid, OSid, BVid, FMid, DEid, SDid) |> dplyr::distinct()
+    )
+    SA <- merge(SA, RDBESDataObject[["OS"]] |> dplyr::select(OSid, OSsamDate), by = "OSid")
+    SA$month <- stringr::str_sub(SA$OSsamDate, 6, 7)
+    SA <- SA |> select(-OSid, -OSsamDate)
+  }
+  if (H %in% c(8, 9, 11, 12)) {
+    if (verbose) {
+      print("For Hiererchy 8,9,11,12 will present only year")
+    }
+    SA <- merge(
+      RDBESDataObject[["SA"]],
+      RDBEScore::createTableOfRDBESIds(RDBESDataObject) |> dplyr::select(SAid, BVid, FMid, DEid, SDid) |> dplyr::distinct()
+    )
+  }
+
+  #year from DE
   SA <- merge(SA,
               RDBESDataObject[["DE"]] |> dplyr::select(DEid, DEsampScheme, DEyear, DEhierarchy),
               by = "DEid")
 
   if (generalVar) {
-#add general information
+    #add general information
     SD <- merge(SA, RDBESDataObject[["SD"]] |> dplyr::select(SDid, SDctry), by = "SDid")
   }
   if (bioVar) {
-#add biological variables and frequancy measures
+    #add biological variables and frequancy measures
     #lower hierarchy: A
     if (length(RDBESDataObject[["FM"]]) != 0 &&
         length(RDBESDataObject[["BV"]]) != 0) {
@@ -71,7 +101,7 @@ preprocessSamplingDataForCoverage <- function(RDBESDataObject,
         dplyr::left_join(
           RDBESDataObject[["FM"]] |>
             dplyr::mutate(SAFMid = paste0(SAid, FMid)) |>
-            dplyr::select(SAid, FMid, SAFMid, FMclassMeas, FMnumAtUnit, FMtypeMeas),
+            dplyr::select(SAFMid, FMclassMeas, FMnumAtUnit, FMtypeMeas),
           by = "SAFMid"
         )
       BVar <- FM |>
@@ -81,7 +111,7 @@ preprocessSamplingDataForCoverage <- function(RDBESDataObject,
         )
       #SD information
       if (generalVar) {
-        SA <- merge(SD|>select(BVid,SDctry), BVar, by = "BVid")
+        SA <- merge(SD |> select(BVid, SDctry), BVar, by = "BVid")
       }
     }
     if (length(RDBESDataObject[["FM"]]) != 0 &&
@@ -91,12 +121,12 @@ preprocessSamplingDataForCoverage <- function(RDBESDataObject,
         dplyr::left_join(
           RDBESDataObject[["FM"]] |>
             dplyr::mutate(SAFMid = paste0(SAid, FMid)) |>
-            dplyr::select(SAid, FMid, SAFMid, FMclassMeas, FMnumAtUnit, FMtypeMeas),
+            dplyr::select(SAFMid, FMclassMeas, FMnumAtUnit, FMtypeMeas),
           by = "SAFMid"
         )
       #SD information
       if (generalVar) {
-        SA <- merge(SD |> dplyr::mutate(paste0(SAid, FMid)), BVar, by = "SAFMid")
+        SA <- merge(SD |> dplyr::mutate(SAFMid = paste0(SAid, FMid)), BVar, by = "SAFMid")
       }
     }
     if (length(RDBESDataObject[["FM"]]) == 0 &&
@@ -107,7 +137,6 @@ preprocessSamplingDataForCoverage <- function(RDBESDataObject,
           RDBESDataObject[["BV"]] |>
             dplyr::mutate(SABVid = paste0(SAid, BVid)) |>
             dplyr::select(
-              SAid,
               SABVid,
               BVid,
               BVfishId,
@@ -145,10 +174,10 @@ preprocessSamplingDataForCoverage <- function(RDBESDataObject,
     SA <- BVar |> dplyr::select(-DEid, -SDid) |> dplyr::distinct()
   }
   # Split time information in the different components
+  if (!(H %in% c(8, 9, 11, 12))){
   SA <- SA |>
     dplyr::mutate(
       year = DEyear,
-      month = stringr::str_sub(FOendDate, 6, 7),
       quarter = dplyr::case_when(
         month == "01" ~ 1,
         month == "02" ~ 1,
@@ -163,7 +192,18 @@ preprocessSamplingDataForCoverage <- function(RDBESDataObject,
         month == "11" ~ 4,
         month == "12" ~ 4
       ),
-      semester = dplyr::case_when(quarter %in% c(1, 2) ~ 1, quarter %in% c(3, 4) ~ 2)
+      semester = dplyr::case_when(
+        quarter %in% c(1, 2) ~ 1,
+        quarter %in% c(3, 4) ~ 2)
     )
+  }else{
+    SA <- SA |>
+      dplyr::mutate(
+        year = DEyear,
+        quarter = NA,
+        semester = NA,
+        month = NA
+      )
+  }
   SA
 }
