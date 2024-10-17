@@ -92,15 +92,15 @@ produceSamplingCoverage <- function(
 
     ## P1: Extract the sampling data from the RDBES object. 
     # Through preprocessSampleDataForCoverage() extract sampling data from RDBESobject. 
-    samplingDf_Rect <- preprocessSamplingDataForCoverage( 
+    samplingDf <- preprocessSamplingDataForCoverage( 
         rdbesobj, 
         verbose = T
     )
         
     ## P1.2: Additional subsetting of data [year, quarter, vesselFlag currently available]
     # Through filterSampleDataForCoverage() we filter the data based on the function's input parameters. 
-    samplingDf_Rect <- filterSampleDataForCoverage(
-        sampleData = samplingDf_Rect, 
+    samplingDf <- filterSampleDataForCoverage(
+        sampleData = samplingDf, 
         yearToFilter = year,
         quarterToFilter = quarter,
         vesselFlag = vesselFlag, 
@@ -174,110 +174,145 @@ produceSamplingCoverage <- function(
         flagLabel <- vesselFlag
     }
 
-    ## P5: Prep. in case a spatial comparison is required
-    if(type == "Spatial"){
-
-        ## P4.1 Prep in case a spatial comparison at the ICES Subdivision resolution is required
-        if(resolution == "ICES Subdivision") {
-
-        }
     
-        ## P5.2 Prep. in case a spatial comparison at the ICES Rectangles resolution is required
-        if(resolution == "ICES Rectangle") {
-            
-            ## P5.2.1 Load shapefile of ICES Rectangles
-            ices_rects <- RDBESvisualise::icesRectSF
-            
-            ## P5.2.2 Calculate the amount of samples per ICES Rectangle (and other vars, if any))
-            if(all(is.na(by))) {
-                    grp_vars = c("SAstatRect") 
-                } else {
-                    grp_vars = c("SAstatRect", by) 
-                }
-            
-            # Then, we aggregate the sampling data accordingly.     
-            if(var %in% c(                     # If the variable is in the column already present in the RDBES SA table,
-                "SAsampWtLive",
-                "SAnumSamp",
-                "SAsampWtMes"
-                )    
-            ) {
-                samplingDf_Rect <- samplingDf_Rect %>%  # Then we performed grouped sum of the values appearing in them. 
-                    group_by_at(grp_vars) %>%
-                    dplyr::summarize(
-                        varInt = sum(eval(as.name(var)), na.rm = T)
-                )
-            } else if (var == "SAamountSamp") { # Else, if the variable is SAamountSamp which is not present in the RDBES SA table
-                
-                samplingDf_Rect <- samplingDf_Rect %>%  # We must count the amount of records 
-                    dplyr::select(c(grp_vars, SSid, SAspeCode)) %>% # We do it taking into account sample, spatial and species information + the variables selected by the user !check 
-                    distinct() %>% # Avoid duplicates !check 
-                    group_by_at(grp_vars) %>%
-                    dplyr::summarize(
-                        varInt = n()
-                    )
-                
-            }            
-
-            # Specify the name of the variable of interest
-            #names(samplingDf_Rect)[names(samplingDf_Rect) == "varInt"] <- var
-
-            ## P5.2.2 Merge the result with the spatial object
-            # Merge the resulting dataframe with the shapefile relative to the ICES Rectangles
-            samplingDf_Rect <- merge(ices_rects, samplingDf_Rect, by.x = "ICESNAME", by.y = "SAstatRect", all.y = T)
-
-            if(grepl("Landing", contrast)) { # If the contrast variable is landing
-                ## P5.2.3 Remove those records not having an associated rectangle 
-                contrastDf_Rect <- contrastDf %>% 
-                    dplyr::filter(!(CLstatRect %in% c("-9") | is.na(CLstatRect)))
-                
-                ## P5.2.4 Aggregate the data by ICES Rectangle (and other vars, if any)
-                # First we define the grouping variable as the Statistical Rectangle + variables spec. by user
-                if(all(is.na(by))) {
-                        grp_vars = c("CLstatRect") 
-                    } else {
-                        grp_vars = c("CLstatRect", by) 
-                }
-                
-                # Then, we aggregate the landing data accordingly.     
-                contrastDf_Rect <- contrastDf_Rect %>% 
-                        group_by_at(grp_vars) %>%
-                        dplyr::summarize(
-                            varInt = sum(eval(as.name(contrastVar)), na.rm = T)
-                        ) 
-                
-                # Specify the name of the variable of interest
-                #names(contrastDf_Rect)[names(contrastDf_Rect) == "varInt"] <- contrastVar
-
-                ## P5.2.5 Merge the result with the spatial object
-                # Merge the resulting dataframe with the shapefile relative to the ICES Rectangles
-                contrastDf_Rect <- merge(ices_rects, contrastDf_Rect, by.x = "ICESNAME", by.y = "CLstatRect", all.y = T)
-
-                ## P5.2.6: Link sampling and contrast dataframes, being the latter either based on landing or effort
-                # First we select the column of interest 
-                to_drop <- c("OBJECTID", "ID", "SOUTH", "WEST", "NORTH", "EAST", "AREA_KM2", "stat_x", "stat_y", "Area_27", "Perc", "MaxPer", "RNDMaxPer", "AreasList", "Shape_Leng", "Shape_Le_1", "Shape_Area")
-                contrastDf_Rect <- contrastDf_Rect %>% select(-all_of(to_drop))
-                samplingDf_Rect <- samplingDf_Rect %>% select(-all_of(to_drop))
-                
-                # Then we perform an outer join to build the polygons [used to fill the rectangles]
-                Sampling_vs_Contrast_plg <- merge(samplingDf_Rect, contrastDf_Rect %>% st_drop_geometry(), suffixes = c("_sampling","_contrast"), by = "ICESNAME")
-                
-                # We can use the result to extract centroids [later used to center the sampling info]
-                Sampling_vs_Contrast_cntr <- Sampling_vs_Contrast_plg %>% st_centroid()
-                
-                
-            } else if (contrast == "Effort"){
-
-                print("work in progress")
-            
-            }
-            
-            
-        }
-
+    ## P5: Prepare the by variable depending on case 
+    # P5.1: For sampling 
+      byVar_SA <- case_when(
+        
+        resolution == "ICES Subdivision" ~ "SAarea", 
+        resolution == "ICES Rectangle" ~ "SAstatRect",
+        resolution == "Year" ~ NA, 
+        resolution == "Semester" ~ NA, 
+        resolution == "Quarter" ~ NA, 
+        resolution == "Month" ~ NA, 
+        resolution == "Scale of fishery" ~ NA, 
+        resolution == "Species unit" ~ NA, 
+        resolution == "Species group" ~ NA 
+      
+        )
+    
+    # P5.2 For contrast
+    if(grepl("Landing", contrast)) { # If the contrast variable is landing
+      
+      byVar_CT <- case_when(
+        
+        resolution == "ICES Subdivision" ~ "CLarea", 
+        resolution == "ICES Rectangle" ~ "CLstatRect",
+        resolution == "Year" ~ NA, 
+        resolution == "Semester" ~ NA, 
+        resolution == "Quarter" ~ NA, 
+        resolution == "Month" ~ NA, 
+        resolution == "Scale of fishery" ~ NA, 
+        resolution == "Species unit" ~ NA, 
+        resolution == "Species group" ~ NA 
+        
+      )
+    
+    } else { # If the contrast variable is effort
+      
+      print("work in progress")
+      
     }
+    
+    ## 5.3 Finally define the grouping variables for sampling and contrast 
+    if(all(is.na(by))) { # If only one is present
+      grp_vars_SA = byVar_SA
+      grp_vars_CT = byVar_CT
+    } else { # If more than one is present. 
+      grp_vars_SA = c(byVar_SA, by)
+      grp_vars_CT = c(byVar_CT, by)
+    }
+  
+    
+    ## P7: Prepare sampling and contrast df. 
+    ## P7.1: Sampling data
+    
+      # Aggregate the sampling data according to the variable of interest     
+      if(var %in% c( # If the variable is in the columns already present in the RDBES SA table,
+          "SAsampWtLive",
+          "SAnumSamp",
+          "SAsampWtMes"
+          )
+         ){
+        
+          samplingDf <- samplingDf %>%  # Then we performed grouped sum of the values appearing in them. 
+              group_by_at(grp_vars_SA) %>%
+              dplyr::summarize(
+                  varInt = sum(eval(as.name(var)), na.rm = T)
+              )
+          
+      } else if (var == "SAamountSamp") { # Else, if the variable is SAamountSamp which is not present in the RDBES SA table
+          
+          samplingDf <- samplingDf %>%  # We must count the amount of records 
+              dplyr::select(c(grp_vars_SA, SSid, SAspeCode)) %>% # We do it taking into account sample, spatial and species information + the variables selected by the user !check 
+              distinct() %>% # Avoid duplicates !check 
+              group_by_at(grp_vars_SA) %>%
+              dplyr::summarize(
+                  varInt = n()
+              )
+          
+      }    
+    
+    ## P7.2: Contrast data
+    # Aggregate the contrast data according to the variable of contrast     
+    if(grepl("Landing", contrast)){ # If the contrast variable is landing
+    
+    ## P7.2.1 Remove those records not having an associated rectangle 
+    contrastDf <- contrastDf %>% 
+      dplyr::filter(!(grp_vars_CT %in% c("-9") | is.na(grp_vars_CT))) # To be edited in case length of by > 1
+          
+    ## P7.2.2 Aggregate the data by the grp_vars_CT variable (any other vars, if any)
+    contrastDf <- contrastDf %>% 
+            group_by_at(grp_vars_CT) %>%
+            dplyr::summarize(
+                varInt = sum(eval(as.name(contrastVar)), na.rm = T)
+            ) 
+            
+        } else if (contrast == "Effort"){
 
-    ## P6: Prep. in case a temporal comparison is required
+            print("work in progress")
+        
+        }
+        
+    # 5.3: Finalize the preparation 
+    # Merge the two 
+    Sampling_vs_Contrast_plg <- merge(
+      samplingDf, 
+      contrastDf, 
+      suffix = c("_sampling","_contrast"), 
+      by.x = grp_vars_SA, 
+      by.y = grp_vars_CT, 
+      all = T
+      ) 
+        
+    ## Any additional merge 
+    if(type == "Spatial"){
+    
+      if(resolution == "ICES Rectangle") {
+        
+        ## P5.2.1 Load shapefile of ICES Rectangles
+        ices_rects <- RDBESvisualise::icesRectSF
+        
+        ## Rename the spatial column
+        Sampling_vs_Contrast_plg <- Sampling_vs_Contrast_plg %>% 
+        dplyr::rename(
+          statRect = 1
+        )
+        
+        ## P5.2.5 Merge the result with the spatial object
+        # Merge the resulting dataframe with the shapefile relative to the ICES Rectangles
+        Sampling_vs_Contrast_plg <- merge(ices_rects, Sampling_vs_Contrast_plg, by.x = "ICESNAME", by.y = "statRect", all.y = T)
+        
+        
+        ## We can use the result to extract centroids [later used to center the sampling info]
+        Sampling_vs_Contrast_cntr <- Sampling_vs_Contrast_plg %>% 
+          st_centroid()
+        
+      }
+      
+    }
+      
+    # ## P6: Prep. in case a temporal comparison is required
     if(type == "Time"){
 
         ## P5.1 Prep in case a temporal comparison at the year resolution is required
@@ -299,28 +334,29 @@ produceSamplingCoverage <- function(
         if(resolution == "Month") {
             print("work in progress")
         }
-    
-    }
-    
-    ## P7: Prep. in case a fleet comparison is required
-    if(type == "Fleet"){
-        print("work in progress")
-    }
 
-    ## P8: Prep. in case a species comparison is required
-    if(type == "Species"){
+    } 
 
-        ## P8.1 Prep in case a species comparison at the species unit resolution is required
-        if(resolution == "Species unit") {
-            print("work in progress")
-        }
-
-        ## P8.2 Prep in case a species comparison at the species group resolution is required
-        if(resolution == "Species group") {
-            print("work in progress")
-        }
-    
-    }
+    # 
+    # ## P7: Prep. in case a fleet comparison is required
+    # if(type == "Fleet"){
+    #     print("work in progress")
+    # }
+    # 
+    # ## P8: Prep. in case a species comparison is required
+    # if(type == "Species"){
+    # 
+    #     ## P8.1 Prep in case a species comparison at the species unit resolution is required
+    #     if(resolution == "Species unit") {
+    #         print("work in progress")
+    #     }
+    # 
+    #     ## P8.2 Prep in case a species comparison at the species group resolution is required
+    #     if(resolution == "Species group") {
+    #         print("work in progress")
+    #     }
+    # 
+    # }
     
     ##################################################
     ## Data plotting.
@@ -331,12 +367,14 @@ produceSamplingCoverage <- function(
 
         ## P9.1 Define study area
         # Define countries map 
-        countries <- ne_countries(scale = "medium",
-                       type = 'map_units',
-                       returnclass = "sf")
+        countries <- ne_countries(
+          scale = "medium",
+          type = 'map_units',
+          returnclass = "sf"
+          )
 
         # Define study area extremes
-        study_area <- c(st_bbox(contrastDf_Rect))
+        study_area <- c(st_bbox(Sampling_vs_Contrast_cntr))
         
         ## P9.2 Plotting in case a spatial comparison at the ICES Subdivision resolution is required
         if(resolution == "ICES Subdivision") {
