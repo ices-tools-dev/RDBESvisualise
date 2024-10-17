@@ -101,12 +101,12 @@ preprocessSamplingDataForCoverage <- function(RDBESDataObject,
         dplyr::left_join(
           RDBESDataObject[["FM"]] |>
             dplyr::mutate(SAFMid = paste0(SAid, FMid)) |>
-            dplyr::select(SAFMid, FMclassMeas, FMnumAtUnit, FMtypeMeas),
+            dplyr::select(SAFMid, FMclassMeas, FMnumAtUnit, FMtypeMeas,FMmethod),
           by = "SAFMid"
         )
       BVar <- FM |>
         dplyr::left_join(
-          RDBESDataObject[["BV"]] |> dplyr::select(BVid, BVfishId, BVtypeMeas, BVvalueMeas, BVvalUnitScale),
+          RDBESDataObject[["BV"]] |> dplyr::select(BVid, BVfishId, BVtypeMeas, BVvalueMeas, BVvalUnitScale,BVmethod),
           by = "BVid"
         )
       #SD information
@@ -121,7 +121,7 @@ preprocessSamplingDataForCoverage <- function(RDBESDataObject,
         dplyr::left_join(
           RDBESDataObject[["FM"]] |>
             dplyr::mutate(SAFMid = paste0(SAid, FMid)) |>
-            dplyr::select(SAFMid, FMclassMeas, FMnumAtUnit, FMtypeMeas),
+            dplyr::select(SAFMid, FMclassMeas, FMnumAtUnit, FMtypeMeas, FMmethod),
           by = "SAFMid"
         )
       #SD information
@@ -142,6 +142,7 @@ preprocessSamplingDataForCoverage <- function(RDBESDataObject,
               BVfishId,
               BVtypeMeas,
               BVvalueMeas,
+              BVmethod,
               BVvalUnitScale
             ),
           by = "SABVid"
