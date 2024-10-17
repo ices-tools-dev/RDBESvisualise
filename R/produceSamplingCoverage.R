@@ -388,17 +388,17 @@ produceSamplingCoverage <- function(
             rf = 1 # Value to enlarge the spatial window at which the data are shown. 
         
             print( 
-            ggplot() + 
-            geom_sf(
+            ggplot() +
+              geom_sf(
                 data = Sampling_vs_Contrast_plg, 
                 aes(fill = varInt_contrast)
-                ) +
-            geom_sf(
+              ) + 
+              {if(showSamples)geom_sf(
                 data = Sampling_vs_Contrast_cntr, 
                 aes(size = varInt_sampling),
                 color = "white",
                 shape = 1
-            ) + 
+              )} + 
             geom_sf(data = countries, fill = "gray90", color = "black") + 
             xlim(study_area[1]-rf, study_area[3]+rf) + 
             ylim(study_area[2]-rf, study_area[4]+rf) + 
