@@ -10,8 +10,8 @@
 #' res <- sampledOrNotsampled(RDBESDataObject)
 #' print(res)
 
-#RDBESDataObject <- RDBEScore::createRDBESDataObject(input  = "C:/Users/wischnewski/WGRDBES-EST/data/ZW_data")
-#RDBESDataObject <- RDBEScore::createRDBESDataObject(input  = "C:/Users/wischnewski/WGRDBES-EST/data/German_NS_H1_data")
+
+#my data: RDBESDataObject <- RDBEScore::createRDBESDataObject(input  = "C:/Users/wischnewski/WGRDBES-EST/data/German_NS_H1_data")
 
 sampledOrNotsampled <- function(RDBESDataObject,
                                 year = NA, 
@@ -80,15 +80,21 @@ list.prop <- lapply(names.tables.H1, prop)
 
 list.prop <- setNames(list.prop, paste0(names.tables.H1,"_percentage"))
 
-# doesn't work yet
-#plot_prop <- function(g) {xx <- (g%>%ungroup()%>%select(ends_with("samp")));
-#yy <- colnames(g%>%ungroup()%>%select(ends_with("tage")));
-#ggplot(g, aes(x=xx, y = yy, 
- #             fill=xx)) +
-  #  geom_col(position = "dodge") + 
-  #facet_wrap(~DEyear) + 
-   # labs(y = "% Sampled/Not Sampled", x = "Yes/No")
-#}
+# works, but has to be changed/improved
+plot_prop <- function(g) {
+p <- ggplot(g, aes(x=!!sym(colnames(g%>%ungroup()%>%select(ends_with("samp")))), 
+                        y=!!sym(colnames(g%>%ungroup()%>%select(ends_with("Percentage")))),
+                   fill=!!sym(colnames(g%>%ungroup()%>%select(ends_with("samp")))))) +
+  geom_col(position = "dodge") + 
+  facet_wrap(~DEyear) + 
+  labs(y = "% Sampled/Not Sampled", x = "Yes/No")
+
+dev.new()
+
+plot(p)
+}
+
+lapply(list.prop, plot_prop)
 
 return(list.prop)
 
