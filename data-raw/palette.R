@@ -19,7 +19,7 @@ combined_palette <- c(palette1, palette2, palette3, palette4, palette5)
 # reads RDBES data
 # library(RDBEScore)
 # RDBESDataObject <- createRDBESDataObject(input = "D:/RCG-RDBES-Overviews/RegionalOverviews/data_RDBES/001_raw/CL Landing RDBES RCG NANASEA Baltic year 2021-2023 2024_05_28.zip")
-RDBESDataObject <- data.table::fread(input = "D:/RCG-RDBES-Overviews/RegionalOverviews/data_RDBES/001_raw/RDBES_CL/CommercialLanding.csv")
+RDBESDataObject <- data.table::fread(input = "D:/RCG-RDBES-Overviews/RegionalOverviews/data_RDBES/001_raw/CL Landing RDBES RCG NANASEA Baltic year 2021-2023 2024_05_28/CommercialLanding.csv")
 
 #CL <- RDBESDataObject[["CL"]]
 CL <- RDBESDataObject
