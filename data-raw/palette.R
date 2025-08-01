@@ -17,15 +17,24 @@ combined_palette <- c(palette1, palette2, palette3, palette4, palette5)
 #barplot(rep(1, length(combined_palette)), col = combined_palette, border = NA, space = 0, main = "Pallete")
 
 # reads RDBES data
-library(RDBEScore)
-RDBESDataObject <- createRDBESDataObject(input = "D:/RCG-RDBES-Overviews/RegionalOverviews/data_RDBES/001_raw/CL Landing RDBES RCG NANASEA Baltic year 2021-2023 2024_05_28.zip")
+# library(RDBEScore)
+# RDBESDataObject <- createRDBESDataObject(input = "D:/RCG-RDBES-Overviews/RegionalOverviews/data_RDBES/001_raw/CL Landing RDBES RCG NANASEA Baltic year 2021-2023 2024_05_28.zip")
+RDBESDataObject <- data.table::fread(input = "D:/RCG-RDBES-Overviews/RegionalOverviews/data_RDBES/001_raw/RDBES_CL/CommercialLanding.csv")
 
-CL <- RDBESDataObject[["CL"]]
+#CL <- RDBESDataObject[["CL"]]
+CL <- RDBESDataObject
+#more countries
+country_outside27<- c('AO','CA','CG','CI','CL','CV','FK','FO','GA','GF','GL','GN',
+                      'GP','GW','IS','IT','MA','MQ','MR','MU','NA','NG','NZ','PA',
+                      'PE','RE','SC','SN','UY','YT','ZA'
+)
 
-names(combined_palette) <- levels(as.factor(CL$CLvesFlagCou))
+countries <- c(unique(CL$CLvesselFlagCountry), country_outside27)
+
+names(combined_palette) <- levels(as.factor(countries))
 
 #extend vector
-country_extended <- c(levels(factor(CL$CLvesFlagCou)), rep(NA, length(combined_palette)-length(levels(factor(CL$CLvesFlagCou)))))
+country_extended <- c(levels(factor(countries)), rep(NA, length(combined_palette)-length(levels(factor(countries)))))
 
 #palette in data frame
 palette <- data.frame(country = country_extended,
