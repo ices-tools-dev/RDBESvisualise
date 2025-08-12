@@ -31,6 +31,11 @@ country_outside27<- c('AO','CA','CG','CI','CL','CV','FK','FO','GA','GF','GL','GN
 
 countries <- c(unique(CL$CLvesselFlagCountry), country_outside27)
 
+#non-EU countries
+country_nonEU <- c('GB','NO')
+
+countries <- c(countries, country_nonEU)
+
 names(combined_palette) <- levels(as.factor(countries))
 
 #extend vector
