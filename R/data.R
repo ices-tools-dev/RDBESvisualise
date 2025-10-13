@@ -22,6 +22,16 @@
 #' }
 #' @source ICES
 "icesRectSF"
+#' ICES statistical areas
+#'
+#' An sf object containing spatial information for ICES statistical areas
+#'
+#' @format A data frame containing spatial information
+#' \describe{
+#'   \item{Area_Full}{Name of the ICES statistical area}...
+#' }
+#' @source ICES: https://gis.ices.dk/geonetwork/srv/api/records/c784a0a3-752f-4b50-b02f-f225f6c815eb
+"icesAreaSF"
 #' Shoreline spatial data
 #'
 #' A data frame containing spatial information for shorelines
