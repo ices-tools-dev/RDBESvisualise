@@ -6,26 +6,26 @@
 \usage{
 filterSampleDataForCoverage(
   sampleData,
-  yearToFilter,
-  quarterToFilter,
-  vesselFlag,
-  catchCat,
-  verbose
+  yearToFilter = NA,
+  quarterToFilter = NA,
+  vesselFlag = NA,
+  catchCat = NA,
+  verbose = T
 )
 }
 \arguments{
 \item{sampleData}{An RDBESEstObject}
 
-\item{vesselFlag}{Registered Country of Vessel - e.g "IE", "ES" or "FR".}
+\item{vesselFlag}{(Optional) Registered Country of Vessel - e.g "IE", "ES" or "FR".}
 
-\item{catchCat}{Sampling catch category - landings, catch or discards}
+\item{catchCat}{(Optional) Sampling catch category - landings, catch or discards}
 
 \item{verbose}{(Optional) Set to TRUE to print more information. Default is
 FALSE}
 
-\item{year}{Year to be assessed e.g 2021}
+\item{year}{(Optional) Year to be assessed e.g 2021}
 
-\item{quarter}{Quarter to be assessed - possible choices 1,2,3 or 4}
+\item{quarter}{(Optional) Quarter to be assessed - possible choices 1,2,3 or 4}
 }
 \value{
 An RDBESEstObject

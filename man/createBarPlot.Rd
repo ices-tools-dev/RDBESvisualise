@@ -4,7 +4,13 @@
 \alias{createBarPlot}
 \title{Internal function to create a bar plot}
 \usage{
-createBarPlot(dataToPlot, title, plotQuarters = FALSE, showLegend = FALSE)
+createBarPlot(
+  dataToPlot,
+  title,
+  plotQuarters = FALSE,
+  showLegend = FALSE,
+  paletteToUse = "paletteForPlotting"
+)
 }
 \arguments{
 \item{dataToPlot}{The data to plot}

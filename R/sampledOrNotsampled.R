@@ -100,7 +100,3 @@ return(list.prop)
 
 }
 
-
-res <- sampledOrNotsampled(RDBESDataObject)
-print(res)
-

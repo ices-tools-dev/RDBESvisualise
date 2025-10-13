@@ -2,7 +2,8 @@
 % Please edit documentation in R/utils.R
 \name{preprocessSampleDataForCoverage}
 \alias{preprocessSampleDataForCoverage}
-\title{Internal function to prepare sample data for coveragesXXX functions}
+\title{Internal function to prepare sample data for coveragesXXX functions
+NOT WORKING, to be check.}
 \usage{
 preprocessSampleDataForCoverage(dataToPlot, verbose)
 }
@@ -17,4 +18,5 @@ an RDBESEstObject
 }
 \description{
 Internal function to prepare sample data for coveragesXXX functions
+NOT WORKING, to be check.
 }
