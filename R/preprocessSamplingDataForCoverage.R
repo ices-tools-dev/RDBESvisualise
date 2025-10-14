@@ -52,7 +52,7 @@ preprocessSamplingDataForCoverage <- function(RDBESDataObject,
     # obtain the key to FO, in order to extract time information from there
     SA <- merge(
       RDBESDataObject[["SA"]],
-      RDBEScore::createTableOfRDBESIds(RDBESDataObject) |> dplyr::select(SAid, FOid, BVid, FMid, DEid, SDid) |> dplyr::distinct()
+      RDBEScore:::createTableOfRDBESIds(RDBESDataObject) |> dplyr::select(SAid, FOid, BVid, FMid, DEid, SDid) |> dplyr::distinct()
     )
     SA <- merge(SA, RDBESDataObject[["FO"]] |> dplyr::select(FOid, FOendDate), by = "FOid")
     SA$month <- stringr::str_sub(SA$FOendDate, 6, 7)

@@ -40,3 +40,6 @@ vignettes/*.pdf
 
 # FishNCo raw test data
 FishNCo/testData/RegionalTestData/*
+
+# Data
+data-raw

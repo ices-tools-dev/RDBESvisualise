@@ -290,21 +290,43 @@ produceSamplingCoverage <- function(
     
       if(resolution == "ICES Rectangle") {
         
-        ## P5.2.1 Load shapefile of ICES Rectangles
+        ## P5.3.1 Load shapefile of ICES Rectangles
         ices_rects <- RDBESvisualise::icesRectSF
         
-        ## Rename the spatial column
+        ## P5.3.2 Rename the spatial column
         Sampling_vs_Contrast_plg <- Sampling_vs_Contrast_plg %>% 
         dplyr::rename(
           statRect = 1
         )
         
-        ## P5.2.5 Merge the result with the spatial object
+        ## P5.3.3 Merge the result with the spatial object
         # Merge the resulting dataframe with the shapefile relative to the ICES Rectangles
         Sampling_vs_Contrast_plg <- merge(ices_rects, Sampling_vs_Contrast_plg, by.x = "ICESNAME", by.y = "statRect", all.y = T)
         
         
-        ## We can use the result to extract centroids [later used to center the sampling info]
+        ## P5.3.4  We can use the result to extract centroids [later used to center the sampling info]
+        Sampling_vs_Contrast_cntr <- Sampling_vs_Contrast_plg %>% 
+          st_centroid()
+        
+      }
+      
+      if(resolution == "ICES Area") {
+        
+        ## P5.3.5  Load shapefile of ICES Rectangles
+        ices_areas <- RDBESvisualise::icesAreaSF
+        
+        ## P5.3.6  Rename the spatial column
+        Sampling_vs_Contrast_plg <- Sampling_vs_Contrast_plg %>% 
+          dplyr::rename(
+            statArea = 1
+          )
+        
+        ## P5.3.6 Merge the result with the spatial object
+        # Merge the resulting dataframe with the shapefile relative to the ICES Rectangles
+        Sampling_vs_Contrast_plg <- merge(ices_areas, Sampling_vs_Contrast_plg, by.x = "ICESNAME", by.y = "statArea", all.y = T)
+        
+        
+        ## P5.3.7 We can use the result to extract centroids [later used to center the sampling info]
         Sampling_vs_Contrast_cntr <- Sampling_vs_Contrast_plg %>% 
           st_centroid()
         

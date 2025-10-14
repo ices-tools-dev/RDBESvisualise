@@ -262,7 +262,7 @@ preprocessSamplingDataForCoverage <- function(dataToPlot, verbose) {
   # obtain the key to FO, in order to extract time information from there
   sa <- merge(
     rdbesobj[["SA"]],
-    RDBEScore::createTableOfRDBESIds(rdbesobj) %>% dplyr::select(SAid, FOid) %>% distinct()
+    RDBEScore:::createTableOfRDBESIds(rdbesobj) %>% dplyr::select(SAid, FOid) %>% distinct()
   )
 
   # merge the sa with FO keys to the FO, we use FOendDate to extract time information
