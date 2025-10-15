@@ -463,9 +463,9 @@ preprocessEffortDataForCoverage <- function(dataToPlot, verbose) {
 
   # get effort
   ef <- dataToPlot[["CE"]][, c(
-    "CEvesFlagCou", "CEyear", "CEquar", "CEMonth",
+    "CEvesFlagCou", "CEyear", "CEquar", "CEmonth",
     "CEstatRect", "CEmetier6", "CEvesLenCat", "CEnumFracTrips",
-    "CEnumDomTrip", "CEoffDaySea", "CESciDaySea", "CEoffFishDay",
+    "CEnumDomTrip", "CEoffDaySea", "CEsciDaySea", "CEoffFishDay",
     "CEsciFishDay", "CEoffNumHaulSet", "CEsciNumHaulSet", "CEoffVesFishHour",
     "CEsciVesFishHour", "CEoffSoakMeterHour", "CEsciSoakMeterHour",
     "CEoffkWDaySea", "CEscikWDaySea", "CEoffkWFishDay",
