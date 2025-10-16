@@ -67,7 +67,7 @@ preprocessSamplingDataForCoverage <- function(RDBESDataObject,
     # obtain the key to FO, in order to extract time information from there
     SA <- merge(
       RDBESDataObject[["SA"]],
-      RDBEScore::createTableOfRDBESIds(RDBESDataObject) |> dplyr::select(SAid, OSid, BVid, FMid, DEid, SDid) |> dplyr::distinct()
+      RDBEScore:::createTableOfRDBESIds(RDBESDataObject) |> dplyr::select(SAid, OSid, BVid, FMid, DEid, SDid) |> dplyr::distinct()
     )
     SA <- merge(SA, RDBESDataObject[["OS"]] |> dplyr::select(OSid, OSsamDate), by = "OSid")
     SA$month <- stringr::str_sub(SA$OSsamDate, 6, 7)
@@ -79,7 +79,7 @@ preprocessSamplingDataForCoverage <- function(RDBESDataObject,
     }
     SA <- merge(
       RDBESDataObject[["SA"]],
-      RDBEScore::createTableOfRDBESIds(RDBESDataObject) |> dplyr::select(SAid, BVid, FMid, DEid, SDid) |> dplyr::distinct()
+      RDBEScore:::createTableOfRDBESIds(RDBESDataObject) |> dplyr::select(SAid, BVid, FMid, DEid, SDid) |> dplyr::distinct()
     )
   }
 
@@ -106,7 +106,7 @@ preprocessSamplingDataForCoverage <- function(RDBESDataObject,
         )
       BVar <- FM |>
         dplyr::left_join(
-          RDBESDataObject[["BV"]] |> dplyr::select(BVid, BVfishId, BVtypeMeas, BVvalueMeas, BVvalUnitScale,BVmethod),
+          RDBESDataObject[["BV"]] |> dplyr::select(BVid, BVfishId, BVtypeMeas, BVvalueMeas, BVvalUnitScale,BVspecType),
           by = "BVid"
         )
       #SD information
@@ -142,7 +142,7 @@ preprocessSamplingDataForCoverage <- function(RDBESDataObject,
               BVfishId,
               BVtypeMeas,
               BVvalueMeas,
-              BVmethod,
+              BVspecType,
               BVvalUnitScale
             ),
           by = "SABVid"
