@@ -8,99 +8,168 @@
 #' columns with many factorlevels can be put in the end to get a new plot pr level.
 #' @param output_type Should the output be a bar plot or a table, written to the environment)
 
-amountByGroup <- function(RDBESobj = myH1RawObject,
-                          var = "CEnumDomTrip",
-                          valBy = c("CEmetier6"),
-                          output_type = "plot"){
+amountByGroup <- function(
+    data,
+    var,
+    valBy = NULL,
+    filters = NULL,
+    output_type = c("plot", "table"),
+    title = NULL,
+    xlab = NULL,
+    ylab = NULL,
+    asPct = FALSE,        # if TRUE convert the summarized value to percent of total
+    verbose = TRUE
+) {
 
+  # Dependencies
+  if (!requireNamespace("data.table", quietly = TRUE)) stop("Please install data.table")
+  if (!requireNamespace("ggplot2", quietly = TRUE)) stop("Please install ggplot2")
+  library(data.table)
+  library(ggplot2)
 
-  #Check that all inputted columns are from the same table
-  if (length(unique(c(substr(var, 1, 2), substr(valBy, 1, 2)))) > 1){
-    print("Only Columns from the Same Table is Allowed in this Function")
-  } else{
+  output_type <- match.arg(output_type)
 
-    #pick data
-    dat <- RDBESobj[[substr(var, 1, 2)]]
+  # Basic checks
+  if (missing(data)) stop("Please provide 'data' (one RDBES table, e.g. RDBESobj$CE).")
+  if (missing(var) || !is.character(var) || length(var) != 1) stop("'var' must be a single column name (string).")
+  if (is.null(valBy) || !is.character(valBy)) stop("'valBy' must be a character vector of grouping column names (at least one).")
+  if (!all(valBy %in% names(data))) stop(paste("Not all 'valBy' columns are present in data. Missing:",
+                                               paste(setdiff(valBy, names(data)), collapse = ", ")))
 
-    #if data is from these two hierarchies, the occurrence frequency is outputted, else normal barplot of data
-    if (substr(var, 1, 2) %in% c("SA", "BV")){
-      dat <- data.frame(dat)
-      dat <- data.frame(table(dat[, c(var, valBy)]))
-      valBy <- c("Freq", valBy)
-    } else{
-      dat <- dat[, lapply(.SD, sum), by = valBy, .SDcols = var]
+  dt <- as.data.table(data)
 
-      #Format columns specefically for SA
-      if(substr(var, 1, 2) == "SA"){
-        dat$CLspecCode <- as.factor(dat$CLspecCode)
-        dat$CLoffWeight <- dat$CLoffWeight/1000
-        dat$CLsciWeight <- dat$CLsciWeight/1000
-      }
-    }
-
-    if (output_type == "plot") {
-
-      #plot theme
-      thm <- theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1),)
-      lbs <- labs(title = paste0(var, " by ", toString(valBy)), x = valBy[1], y = var)
-
-      #plot the data
-      dat <- data.frame(dat)
-      p <- ggplot(data=dat, aes(x=dat[, valBy[1]], y=dat[, var])) +
-        geom_bar(stat="identity")+
-        lbs +
-        thm
-
-      #sequence to build a more complex plot depending on number of inputted 'valBy' variables
-      if (length(valBy) == 1){
-        p
-
-      } else if (length(valBy) == 2){
-        p <- p + facet_wrap(~dat[, valBy[2]])
-
-        p
-
-      } else if (length(valBy) == 3 & #only use facet grid if factor level is fewer then 5, else loop over
-                 length(unique(dat[, valBy[2]])) < 5 &
-                 length(unique(dat[, valBy[3]])) < 5){
-
-        p <- p + facet_grid(dat[, valBy[3]] ~ dat[, valBy[2]])
-
-        p
-
-      } else if (length(valBy) > 2){
-
-        for(i in sort(unique(dat[, valBy[length(valBy)]]))) {
-          dat$v3 <- dat[, valBy[length(valBy)]]
-          dat2 <- dat[dat$v3 == i, ]
-
-          p <- ggplot(data=dat2, aes(x=dat2[, valBy[1]], y=dat2[, var])) +
-            geom_bar(stat="identity")+
-            lbs +
-            ggtitle(paste0(var, " by ", toString(valBy[1:(length(valBy)-1)]),
-                           " for ", valBy[length(valBy)], " ", i)) +
-            thm
-
-          if (length(valBy) == 3)
-            p <- p + facet_wrap(~dat2[, valBy[2]])
-
-          if (length(valBy) == 4)
-            p <- p + facet_grid(dat2[, valBy[3]] ~ dat2[, valBy[2]])
-
-          print(p)
+  # Apply filters (filters is a named list: list(ColName = value_or_vector, ...)
+  if (!is.null(filters)) {
+    if (!is.list(filters)) stop("'filters' must be a named list, e.g. list(CEYear = 2022, CLspecCode = 'COD')")
+    for (col in names(filters)) {
+      if (col %in% names(dt)) {
+        vals <- filters[[col]]
+        # allow NA in filters[[col]]? If NA, do nothing. Otherwise subset
+        if (!(length(vals) == 1 && is.na(vals))) {
+          dt <- dt[get(col) %in% vals]
+          if (verbose) message(sprintf("Filter applied: %s in %s", paste(vals, collapse = ","), col))
         }
-        print("Multiple Plots May Have Been Generated")
-
+      } else {
+        warning(sprintf("Filter column '%s' not found in data — ignored.", col))
       }
-
-    } else if(output_type == "table") {
-      assign(
-        x = paste0("tbl_", var, "_", toString(valBy, sep = "_") ),
-        value = dat,
-        envir = .GlobalEnv)
-
-    } else {
-      print("Output Type Not Available")
     }
   }
+
+  if (nrow(dt) == 0) {
+    warning("No rows left after applying filters. Returning empty table.")
+    if (output_type == "table") return(dt[, ..c(valBy, var)])
+    if (output_type == "plot") return(invisible(NULL))
+  }
+
+  # Decide summary mode:
+  first2 <- substr(var, 1, 2)
+  # CASE A: categorical occurrence counts for e.g. SA/BV
+  if (first2 %in% c("SA", "BV")) {
+    # make sure grouping includes var (count combos)
+    groupCols <- unique(c(var, valBy))
+    summary_dt <- dt[, .N, by = groupCols]
+    setnames(summary_dt, "N", "Freq")
+    summary_var <- "Freq"
+  } else {
+    # CASE B: numeric sum
+    if (!is.numeric(dt[[var]])) {
+      stop(sprintf("Variable '%s' is not numeric. For non-SA/BV columns var must be numeric to sum.", var))
+    }
+    groupCols <- valBy
+    summary_dt <- dt[, .(value = sum(get(var), na.rm = TRUE)), by = groupCols]
+    setnames(summary_dt, "value", var)
+    summary_var <- var
+  }
+
+  # Optionally convert to percentages (percentage of the whole summary table total)
+  if (asPct) {
+    total_sum <- sum(summary_dt[[summary_var]], na.rm = TRUE)
+    if (total_sum == 0) {
+      warning("Total sum is 0 — percentages will be NA or 0.")
+      summary_dt[[summary_var]] <- NA_real_
+    } else {
+      summary_dt[[summary_var]] <- 100 * summary_dt[[summary_var]] / total_sum
+    }
+    # adjust y label default if not provided
+    if (is.null(ylab)) ylab <- "Percent (%)"
+  }
+
+  # If the user asked for the table, return it
+  if (output_type == "table") {
+    # Return a data.table (invisible) but also print a message if verbose
+    if (verbose) message("Returning summary table (data.table).")
+    return(summary_dt[])}
+  else{
+    print("Output Type Not Available")
+    }
+
+
+  # ---------- Plotting ----------
+  # Prepare labels
+  if (is.null(title)) title <- paste0(var, " by ", paste(valBy, collapse = ", "))
+  if (is.null(xlab)) xlab <- valBy[1]
+  if (is.null(ylab)) ylab <- summary_var
+
+  # Convert grouping columns to factors for consistent plotting (preserve order)
+  for (g in valBy) {
+    if (!is.factor(summary_dt[[g]])) summary_dt[[g]] <- as.factor(summary_dt[[g]])
+  }
+
+  # Basic plot for first level grouping
+  p_base <- ggplot(summary_dt, aes_string(x = valBy[1], y = summary_var)) +
+    geom_bar(stat = "identity") +
+    labs(title = title, x = xlab, y = ylab) +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+  # Add faceting logic:
+  if (length(valBy) == 1) {
+    p <- p_base
+    print(p)
+
+  } else if (length(valBy) == 2) {
+    # second var used as facet
+    facet_formula <- as.formula(paste("~", valBy[2]))
+    p <- p_base + facet_wrap(facet_formula, scales = "free_y")
+    print(p)
+
+  } else if (length(valBy) == 3 &&  #only use facet grid if factor level is fewer then 5, else loop over
+             length(unique(summary_dt[[valBy[2]]])) < 5 &&
+             length(unique(summary_dt[[valBy[3]]])) < 5) {
+    # small factor levels -> facet_grid rows ~ cols
+    facetf <- as.formula(paste(valBy[3], "~", valBy[2]))
+    p <- p_base + facet_grid(facetf, scales = "free_y")
+    print(p)
+
+  } else if (length(valBy) > 2) {
+    # fallback: loop over the last valBy
+    lastVar <- valBy[length(valBy)]
+    otherVars <- valBy[-length(valBy)]
+    lv_levels <- sort(unique(summary_dt[[lastVar]]))
+
+    for (lv in lv_levels) {
+      sub_dt <- summary_dt[summary_dt[[lastVar]] == lv, ]
+      if (nrow(sub_dt) == 0) next
+      p_tmp <- ggplot(sub_dt, aes_string(x = otherVars[1], y = summary_var)) +
+        geom_bar(stat = "identity") +
+        labs(title = paste0(title, " — ", lastVar, ": ", lv),
+             x = xlab,
+             y = ylab) +
+        theme_minimal() +
+        theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+      if (length(otherVars) == 2) {
+        p_tmp <- p_tmp + facet_wrap(as.formula(paste("~", otherVars[2])), scales = "free_y")
+      } else if (length(otherVars) == 3 &&
+                 length(unique(sub_dt[[otherVars[2]]])) < 5 &&
+                 length(unique(sub_dt[[otherVars[3]]])) < 5) {
+        p_tmp <- p_tmp + facet_grid(as.formula(paste(otherVars[3], "~", otherVars[2])), scales = "free_y")
+      }
+
+      print(p_tmp)
+    }
+    message("Multiple plots (one per level of the last grouping variable) were generated.")
+  }
+
+  invisible(summary_dt[])
 }
