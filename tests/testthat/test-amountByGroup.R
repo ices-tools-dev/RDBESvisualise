@@ -11,15 +11,23 @@
 #   • Input validation and error handling
 # =====================================================================
 
+# First basic check: the function should exist in package namespace
+test_that("amountByGroup exists", {
+  expect_true(exists("amountByGroup", mode = "function"))
+})
+
+# ------------------------------------------------------------------
+# PURPOSE:
+#   Verify that numeric variables are summed correctly by the grouping columns.
+# ------------------------------------------------------------------
 test_that("amountByGroup correctly summarises numeric variables", {
-  # ------------------------------------------------------------------
-  # PURPOSE:
-  #   Verify that numeric variables are summed correctly by the grouping columns.
-  # ------------------------------------------------------------------
+
+
+  ## Mock data
   library(data.table)
   dt <- data.table(
     Year = c(2022, 2022, 2023, 2023),
-    Flag = c("PT", "SE", "PT", "SE"),
+    Flag = c("XT", "SY", "XT", "SY"),
     Catch = c(10, 20, 30, 40)
   )
 
@@ -37,16 +45,16 @@ test_that("amountByGroup correctly summarises numeric variables", {
   expect_equal(sum(res$Catch), sum(dt$Catch))
 })
 
-
+# ------------------------------------------------------------------
+# PURPOSE:
+#   Verify that non-numeric variables produce frequency counts per group.
+# ------------------------------------------------------------------
 test_that("amountByGroup correctly counts categorical variables", {
-  # ------------------------------------------------------------------
-  # PURPOSE:
-  #   Verify that non-numeric variables produce frequency counts per group.
-  # ------------------------------------------------------------------
+
   library(data.table)
   dt <- data.table(
     Year = c(2022, 2022, 2023, 2023, 2023),
-    Species = c("COD", "HAD", "COD", "HAD", "COD")
+    Species = c("HKE", "HOM", "HKE", "HOM", "HKE")
   )
 
   res <- amountByGroup(
@@ -63,16 +71,16 @@ test_that("amountByGroup correctly counts categorical variables", {
   expect_equal(sum(res$Freq), nrow(dt)) # total count should match input rows
 })
 
-
+# ------------------------------------------------------------------
+# PURPOSE:
+#   Confirm that the 'filters' argument correctly subsets the input table.
+# ------------------------------------------------------------------
 test_that("amountByGroup applies filters correctly", {
-  # ------------------------------------------------------------------
-  # PURPOSE:
-  #   Confirm that the 'filters' argument correctly subsets the input table.
-  # ------------------------------------------------------------------
+
   library(data.table)
   dt <- data.table(
     Year = c(2022, 2022, 2023),
-    Flag = c("PT", "SE", "PT"),
+    Flag = c("XT", "SY", "XT"),
     Catch = c(10, 20, 30)
   )
 
@@ -80,29 +88,29 @@ test_that("amountByGroup applies filters correctly", {
     data = dt,
     var = "Catch",
     valBy = "Year",
-    filters = list(Flag = "PT"),
+    filters = list(Flag = "XT"),
     output_type = "table",
     verbose = FALSE
   )
 
   # CHECKS
   expect_equal(unique(res$Year), c(2022, 2023))
-  expect_equal(sum(res$Catch), 40) # only PT rows (10 + 30)
+  expect_equal(sum(res$Catch), 40) # only XT rows (10 + 30)
 })
 
-
+# ------------------------------------------------------------------
+# PURPOSE:
+#   Ensure function can summarise both numeric (sum) and categorical (counts)
+#   in the same call, returning a list with separate data.tables.
+# ------------------------------------------------------------------
 test_that("amountByGroup handles mixed numeric and categorical variables", {
-  # ------------------------------------------------------------------
-  # PURPOSE:
-  #   Ensure function can summarise both numeric (sum) and categorical (counts)
-  #   in the same call, returning a list with separate data.tables.
-  # ------------------------------------------------------------------
+
   library(data.table)
   dt <- data.table(
     Year = c(2022, 2022, 2023, 2023),
-    Flag = c("PT", "SE", "PT", "SE"),
+    Flag = c("XT", "SY", "XT", "SY"),
     Catch = c(10, 20, 30, 40),
-    Species = c("COD", "HAD", "COD", "HAD")
+    Species = c("HKE", "HOM", "HKE", "HOM")
   )
 
   res <- amountByGroup(
@@ -120,13 +128,66 @@ test_that("amountByGroup handles mixed numeric and categorical variables", {
   expect_s3_class(res$categorical, "data.table")
 })
 
+# ------------------------------------------------------------------
+# PURPOSE:
+#   Ensure function is working and consistent for numeric plot output.
+# ------------------------------------------------------------------
+test_that("amountByGroup produces a ggplot for numeric variable", {
 
+  data <- data.table(
+    Year = rep(2020:2021, each = 3),
+    Catch = c(100, 200, 150, 50, 75, 125)
+  )
+
+  # Should not error
+  expect_no_error({
+    res <- amountByGroup(
+      data = data,
+      var = "Catch",
+      valBy = "Year",
+      output_type = "plot",
+      verbose = FALSE
+    )
+  })
+
+  # Check that res is still returned invisibly as a data.table
+  expect_s3_class(res, "data.table")
+})
+
+# ------------------------------------------------------------------
+# PURPOSE:
+#   Ensure function is working and consistent for categorical plot output.
+# ------------------------------------------------------------------
+test_that("amountByGroup produces ggplot for categorical variable", {
+
+  data <- data.table(
+    CatchCat = c('Lan','Lan','Dis','Lan'),
+    Species = c("Hake", "HorseMackerel", "Hake", "Megrim")
+  )
+
+  expect_no_error({
+    res <- amountByGroup(
+      data = data,
+      var = "Species",
+      valBy = "CatchCat",
+      output_type = "plot",
+      verbose = FALSE
+    )
+  })
+
+  # check result table
+  expect_s3_class(res, "data.table")
+  expect_true("Freq" %in% names(res))
+})
+
+
+# ------------------------------------------------------------------
+# PURPOSE:
+#   Verify that 'assign_to_global = TRUE' creates an object in .GlobalEnv
+#   with the correct auto-generated name pattern.
+# ------------------------------------------------------------------
 test_that("amountByGroup assigns output table to global environment when requested", {
-  # ------------------------------------------------------------------
-  # PURPOSE:
-  #   Verify that 'assign_to_global = TRUE' creates an object in .GlobalEnv
-  #   with the correct auto-generated name pattern.
-  # ------------------------------------------------------------------
+
   library(data.table)
   dt <- data.table(Year = c(2022, 2023), Catch = c(10, 30))
 
@@ -145,12 +206,12 @@ test_that("amountByGroup assigns output table to global environment when request
   rm(list = grep("^tbl_Catch_by_Year$", ls(.GlobalEnv), value = TRUE), envir = .GlobalEnv)
 })
 
-
+# ------------------------------------------------------------------
+# PURPOSE:
+#   Verify the function does not crash when the dataset contains NA values.
+# ------------------------------------------------------------------
 test_that("amountByGroup gracefully handles missing or NA data", {
-  # ------------------------------------------------------------------
-  # PURPOSE:
-  #   Verify the function does not crash when the dataset contains NA values.
-  # ------------------------------------------------------------------
+
   library(data.table)
   dt <- data.table(
     Year = c(2022, 2022, NA),
@@ -169,12 +230,12 @@ test_that("amountByGroup gracefully handles missing or NA data", {
   expect_true(all(is.finite(res$Catch) | is.na(res$Catch)))
 })
 
-
+# ------------------------------------------------------------------
+# PURPOSE:
+#   Confirm proper error messages for missing or invalid parameters.
+# ------------------------------------------------------------------
 test_that("amountByGroup throws informative errors for invalid inputs", {
-  # ------------------------------------------------------------------
-  # PURPOSE:
-  #   Confirm proper error messages for missing or invalid parameters.
-  # ------------------------------------------------------------------
+
   library(data.table)
   dt <- data.table(Year = 2022, Catch = 10)
 
@@ -182,3 +243,4 @@ test_that("amountByGroup throws informative errors for invalid inputs", {
   expect_error(amountByGroup(data = dt, var = 123, valBy = "Year"), "must be a character vector")
   expect_error(amountByGroup(data = dt, var = "Catch", valBy = "Missing"), "missing from 'data'")
 })
+
