@@ -131,6 +131,7 @@ res_cat
 
 Each row represents a combination of categorical variable (`Species`) and the grouping variables (`Year`), with a frequency column (`Freq`).
 
+
 ### 3. Multiple numeric variables (wide table)
 
 Multiple numeric variables can be summarise at once, producing a *wide* table.
@@ -188,7 +189,6 @@ res_mixed
 In this case, the function returns a list:
 
   * `$numeric` → summed numeric variables
-
   * `$categorical` → frequency tables for categorical variables
 
 This keeps outputs explicit and avoids ambiguous table structures.
@@ -218,6 +218,7 @@ Filters use standard `%in%` logic and may contain multiple values:
 filters = list(Year = c(2021, 2022))
 
 ```
+
 
 ### 6. Percentages instead of absolute values
 
@@ -291,12 +292,9 @@ plot_CE
 
 Notes:
 
-  * Numeric variables → bar plot of summed values
-
+  * Numeric variables → bar plot of summed value
   * Categorical variables → bar plot of frequencies
-
   * When multiple variables are supplied, one plot per variable is generated
-
   * The function still invisibly returns the underlying summary table
 
 
@@ -308,10 +306,10 @@ When `output_type = "plot"` and more than one variable is supplied in `var`,
 This applies to:
 
   * Multiple numeric variables
-
   * Mixed numeric + categorical variables
 
 Each plot is generated independently to keep the output clear and interpretable.
+
 
 #### 8.1 Multiple numeric variables
 

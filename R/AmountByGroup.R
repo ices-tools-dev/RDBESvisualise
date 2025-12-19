@@ -169,8 +169,8 @@ amountByGroup <- function(
           )
         }
 
-
         print(p)
+
         if (verbose) message("Plot generated for numerical variable.")
         return(invisible(summary_dt[]))
       }
@@ -198,7 +198,9 @@ amountByGroup <- function(
         if (length(valBy) == 2 && !(i %in% valBy)) {
           p <- p + facet_wrap(as.formula(paste("~", valBy[2])), scales = "free_y")
         }
+
         print(p)
+
         if (verbose) message("Plot generated for categorical variable.")
         return(invisible(cnt_dt[]))
       }
@@ -254,7 +256,7 @@ amountByGroup <- function(
             theme_minimal() +
             theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
-         ## Faceting (new)
+         ## Faceting
 
       if (length(valBy) == 2) {
           p <- p + facet_wrap(as.formula(paste("~", valBy[2])), scales = "free_y")

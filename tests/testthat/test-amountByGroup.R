@@ -9,7 +9,8 @@
 #   • Global assignment behavior
 #   • NA handling
 #   • Input validation and error handling
-#   • Regression test: multi-variable numeric plots → faceting
+#   • Multi-variable numeric plots → faceting
+#   * Mixed numeric and categorical plots - faceting
 # =====================================================================
 
 # First basic check: the function should exist in package namespace
