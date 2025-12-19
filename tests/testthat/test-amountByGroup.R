@@ -9,6 +9,7 @@
 #   • Global assignment behavior
 #   • NA handling
 #   • Input validation and error handling
+#   • Regression test: multi-variable numeric plots → faceting
 # =====================================================================
 
 # First basic check: the function should exist in package namespace
@@ -21,7 +22,6 @@ test_that("amountByGroup exists", {
 #   Verify that numeric variables are summed correctly by the grouping columns.
 # ------------------------------------------------------------------
 test_that("amountByGroup correctly summarises numeric variables", {
-
 
   ## Mock data
   library(data.table)
@@ -40,7 +40,7 @@ test_that("amountByGroup correctly summarises numeric variables", {
   )
 
   # CHECKS
-  expect_s3_class(res, "data.table")
+  expect_s3_class(res, "data.table") # checks that the object returned by your function (res) is of S3 class "data.table"
   expect_true(all(c("Year", "Catch") %in% names(res)))
   expect_equal(sum(res$Catch), sum(dt$Catch))
 })
@@ -243,4 +243,87 @@ test_that("amountByGroup throws informative errors for invalid inputs", {
   expect_error(amountByGroup(data = dt, var = 123, valBy = "Year"), "must be a character vector")
   expect_error(amountByGroup(data = dt, var = "Catch", valBy = "Missing"), "missing from 'data'")
 })
+
+# ------------------------------------------------------------------
+# PURPOSE:
+#   Confirm proper faceting for multi-variable numeric plots.
+# ------------------------------------------------------------------
+test_that("multi-variable numeric plotting applies faceting when valBy has two variables", {
+
+  skip_if_not_installed("ggplot2")
+  skip_if_not_installed("data.table")
+
+  library(data.table)
+  library(ggplot2)
+
+  # ---- minimal reproducible data ----
+  dt <- data.table(
+    Year = c(2021, 2021, 2022, 2022),
+    Quarter = c("Q1", "Q2", "Q1", "Q2"),
+    WeightKg = c(100, 200, 150, 250),
+    ValueEUR = c(1000, 2000, 1500, 2500)
+  )
+
+  # Run the function (side-effect: creates plots)
+  expect_silent(
+    amountByGroup(
+      data = dt,
+      var = c("WeightKg", "ValueEUR"),
+      valBy = c("Year", "Quarter"),
+      output_type = "plot",
+      verbose = FALSE
+    )
+  )
+
+  # Retrieve the last plot produced
+  p <- last_plot()
+
+  # Basic sanity
+  expect_s3_class(p, "ggplot")
+
+  # REGRESSION CHECK: must be faceted
+  expect_false(
+    inherits(p$facet, "FacetNull"),
+    info = "Expected faceting when valBy has two variables, but no facet was found."
+  )
+})
+
+# ------------------------------------------------------------------
+# PURPOSE:
+#   Confirm proper faceting for mixed-variable plots.
+# ------------------------------------------------------------------
+
+test_that("single numeric variable with two valBy facets correctly", {
+
+  library(data.table)
+  library(ggplot2)
+
+  dt <- data.table(
+    Year = c(2021, 2021, 2022, 2022),
+    Quarter = c("Q1", "Q2", "Q1", "Q2"),
+    WeightKg = c(100, 200, 150, 250)
+  )
+
+  expect_silent(
+    amountByGroup(
+      data = dt,
+      var = "WeightKg",
+      valBy = c("Year", "Quarter"),
+      output_type = "plot",
+      verbose = FALSE
+    )
+  )
+
+  p <- last_plot()
+
+  expect_s3_class(p, "ggplot")
+  expect_false(
+    inherits(p$facet, "FacetNull"),
+    info = "Expected faceting for single numeric variable with multiple valBy"
+  )
+})
+
+
+
+
 

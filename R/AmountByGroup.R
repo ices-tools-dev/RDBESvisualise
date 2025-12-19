@@ -3,7 +3,7 @@
 #' `amountByGroup()` provides a convenient way to summarise data tables
 #' that may contain both numeric and categorical variables. The function
 #' supports flexible filtering, percentage conversion, grouped summaries,
-#' and optional plotting. Designed for RDBES-like datasets or similar.
+#' and optional plotting. Designed for RDBES datasets or similar.
 #'
 #' @details
 #' **Main features:**
@@ -160,6 +160,16 @@ amountByGroup <- function(
                x = xvar, y = ifelse(asPct, paste0(i, " (%)"), i)) +
           theme_minimal() +
           theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+    # ADD FACETING
+        if (length(valBy) >= 2) {
+          p <- p + facet_wrap(
+            as.formula(paste("~", valBy[2])),
+            scales = "free_y"
+          )
+        }
+
+
         print(p)
         if (verbose) message("Plot generated for numerical variable.")
         return(invisible(summary_dt[]))
@@ -236,11 +246,29 @@ amountByGroup <- function(
           yvar <- i
           p <- ggplot(plt_dt, aes_string(x = xvar, y = yvar)) +
             geom_bar(stat = "identity") +
-            labs(title = paste0(i, " by ", paste(valBy, collapse = ", ")),
-                 x = xvar, y = ifelse(asPct, paste0(i, " (%)"), i)) +
+            labs(
+              title = paste0(i, " by ", paste(valBy, collapse = ", ")),
+              x = xvar,
+              y = ifelse(asPct, paste0(i, " (%)"), i)
+            ) +
             theme_minimal() +
             theme(axis.text.x = element_text(angle = 45, hjust = 1))
-          print(p)
+
+         ## Faceting (new)
+
+      if (length(valBy) == 2) {
+          p <- p + facet_wrap(as.formula(paste("~", valBy[2])), scales = "free_y")
+      } else if (length(valBy) >= 3) {
+        if (length(unique(plt_dt[[valBy[2]]])) < 8 &&
+            length(unique(plt_dt[[valBy[3]]])) < 8) {
+          p <- p + facet_grid(
+            as.formula(paste(valBy[3], "~", valBy[2])),
+            scales = "free_y"
+          )
+        }
+        }
+
+       print(p)
         }
       }
 
