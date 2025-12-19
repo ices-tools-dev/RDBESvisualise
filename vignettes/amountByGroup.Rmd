@@ -13,11 +13,14 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
+<<<<<<< HEAD
 
 library(RDBESvisualise)
 library(RDBEScore)
 library(data.table)
 
+=======
+>>>>>>> Ana
 ```
 
 ## Introduction 
@@ -49,12 +52,24 @@ It supports:
 **Note**: The function intentionally does not perform joins or lookups — all preparation
 (e.g. species code → species name) should be done before calling it.
 
+<<<<<<< HEAD
+=======
+```{r}
+library(RDBEScore)
+library(RDBESvisualise)
+```
+
+>>>>>>> Ana
 
 ### Example data
 
 For illustration, small examples of reproducible datasets, similar to RDBES data, are created.
 
 ```{r example data}
+<<<<<<< HEAD
+=======
+library(data.table)
+>>>>>>> Ana
 
 CL <- data.table(
   Year = c('2021', '2021', '2021', '2021', '2022', '2022', '2021', '2021'),
@@ -130,6 +145,10 @@ res_cat
 
 Each row represents a combination of categorical variable (`Species`) and the grouping variables (`Year`), with a frequency column (`Freq`).
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> Ana
 ### 3. Multiple numeric variables (wide table)
 
 Multiple numeric variables can be summarise at once, producing a *wide* table.
@@ -187,7 +206,10 @@ res_mixed
 In this case, the function returns a list:
 
   * `$numeric` → summed numeric variables
+<<<<<<< HEAD
 
+=======
+>>>>>>> Ana
   * `$categorical` → frequency tables for categorical variables
 
 This keeps outputs explicit and avoids ambiguous table structures.
@@ -218,6 +240,10 @@ filters = list(Year = c(2021, 2022))
 
 ```
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> Ana
 ### 6. Percentages instead of absolute values
 
 For numeric variables, results can be expressed as percentages of the total.
@@ -290,12 +316,18 @@ plot_CE
 
 Notes:
 
+<<<<<<< HEAD
   * Numeric variables → bar plot of summed values
 
   * Categorical variables → bar plot of frequencies
 
   * When multiple variables are supplied, one plot per variable is generated
 
+=======
+  * Numeric variables → bar plot of summed value
+  * Categorical variables → bar plot of frequencies
+  * When multiple variables are supplied, one plot per variable is generated
+>>>>>>> Ana
   * The function still invisibly returns the underlying summary table
 
 
@@ -307,11 +339,18 @@ When `output_type = "plot"` and more than one variable is supplied in `var`,
 This applies to:
 
   * Multiple numeric variables
+<<<<<<< HEAD
 
+=======
+>>>>>>> Ana
   * Mixed numeric + categorical variables
 
 Each plot is generated independently to keep the output clear and interpretable.
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> Ana
 #### 8.1 Multiple numeric variables
 
 When all variables in `var` are numeric, one bar plot is produced for each variable,
@@ -429,4 +468,8 @@ preparation tool.
 In those cases, prepare the data first, then call `amountByGroup()`.
 
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> Ana
 #END
