@@ -14,9 +14,6 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 
-library(RDBEScore)
-library(RDBESvisualise)
-
 ```
 
 ## Introduction 
