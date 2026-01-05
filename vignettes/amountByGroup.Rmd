@@ -14,11 +14,8 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 
-
-library(RDBESvisualise)
 library(RDBEScore)
-library(data.table)
-
+library(RDBESvisualise)
 
 ```
 
@@ -105,7 +102,7 @@ print(SA)
 
 ### 1. Summarise a single numeric variable
 
-The simplest use case is to sum a numeric column by one grouping variable.
+The simplest use case of the function \code{amountByGroup} is to sum a numeric column by one grouping variable.
 
 ```{r single numeric}
 
