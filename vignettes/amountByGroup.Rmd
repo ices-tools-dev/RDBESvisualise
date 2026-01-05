@@ -14,7 +14,10 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> ad9cef10614c925cce13c49081c2b05a1bcf57a1
 ```
 
 ## Introduction 
