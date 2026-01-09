@@ -145,7 +145,7 @@ amountByGroup <- function(
 
     if (is.numeric(dt[[i]])) {
 
-      summary_dt <- dt[, .(value = sum(get(i), na.rm = TRUE)), by = valBy]
+      summary_dt <- dt[, list(value = sum(get(i), na.rm = TRUE)), by = valBy]
       data.table::setnames(summary_dt, "value", i)
 
       if (asPct) {
