@@ -86,7 +86,7 @@ Authors@R:
   person(given  = "Colin",
            family = "Millar",
            role   = "cre",
-           email  = "colin.millar@ices.dk"         
+           email  = "colin.millar@ices.dk")         
            )
 Description: 
     Provides utility functions to summarise and visualise data from Regional Database and Estimation System (RDBES).
