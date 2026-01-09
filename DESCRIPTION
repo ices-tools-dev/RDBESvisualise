@@ -41,7 +41,8 @@ Authors@R:
     person(given = "Ana Cláudia", 
            family = "Fernandes", 
            role = c("aut"), 
-           email = "acfernandes@ipma.pt"),
+           email = "acfernandes@ipma.pt"), 
+		   comment = c(ORCID = "0000-0001-6041-8140")),
     person(given = "Katarzyna", 
            family = "Krakówka", 
            role = c("aut"), 
@@ -83,9 +84,8 @@ Authors@R:
            role = c("ctb"), 
            email = "jostou@aqua.dtu.dk")	   
            )
-Maintainer: Colin Millar <colin.millar@ices.dk>
 Description: 
-    RDBESvisualise provides utility functions to summarise and visualise Regional DataBase and Estimation System (RDBES) data.
+    Provides utility functions to summarise and visualise Regional Database and Estimation System (RDBES) data.
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
