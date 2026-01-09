@@ -41,7 +41,7 @@ Authors@R:
     person(given = "Ana Cláudia", 
            family = "Fernandes", 
            role = c("aut"), 
-           email = "acfernandes@ipma.pt"), 
+           email = "acfernandes@ipma.pt", 
 		   comment = c(ORCID = "0000-0001-6041-8140")),
     person(given = "Katarzyna", 
            family = "Krakówka", 
