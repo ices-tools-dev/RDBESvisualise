@@ -1,0 +1,435 @@
+---
+title: "Amount by Group function"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Amount by Group function}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+
+```
+
+## Introduction 
+
+`amountByGroup()` is a utility function designed to summarise data from a single data table by one or more grouping variables, and it requires the user to specify the variables of interest to produce the outputs. 
+
+It is particularly suited for workflows where:
+  * Tables are previously prepared (e.g. joins, recoding, lookups done before)
+  * Both numeric and categorical variables need to be summarised
+  * The same summarisation logic should be reused across different tables
+  
+The function works on one table at a time and produces either summary tables
+or simple bar plots.
+
+It supports:
+
+* Numeric variables -> summarised by `sum()`, with optional percentage conversion (`asPct = TRUE`).
+* Categorical variables -> summarised as frequency counts.
+* Multiple variables can be summarised at once:
+ + Numeric variables -> aggregated together in *wide format*.
+ + Categorical variables -> produce frequency tables by group.
+* Filters can be applied prior to summarisation using a named list.
+* Results can be optionally assigned to the global environment using `assign_to_global = TRUE`.
+* Output options:
+ + `"table"`: returns a data.table (or list of tables if mixed types). (Output type used by default)
+ + `"plot"`: generates one or more ggplot2 visualisations.
+* Safe use inside packages 
+
+**Note**: The function intentionally does not perform joins or lookups — all preparation
+(e.g. species code → species name) should be done before calling it.
+
+
+```{r}
+library(RDBEScore)
+library(RDBESvisualise)
+```
+
+
+### Example data
+
+For illustration, small examples of reproducible datasets, similar to RDBES data, are created.
+
+```{r example data}
+
+library(data.table)
+
+
+CL <- data.table(
+  Year = c('2021', '2021', '2021', '2021', '2022', '2022', '2021', '2021'),
+  Quarter = c(1, 1, 2, 1, 2, 2, 1, 2),
+  Country = c('ZW','ZW','ST','ST','ST','YM','YM','YM'),
+  Species = c("COD", "HKE", "COD", "COD", "HKE", "HKE", "COD", "HKE"),
+  WeightKg = c(100, 50, 200, 120, 80, 30, 10, 100),
+  ValueEUR = c(300, 150, 600, 360, 240, 100, 50, 150)
+  )
+
+CE <- data.table(
+  Year = c('2021', '2021', '2021', '2021', '2022', '2022', '2021', '2021'),
+  Quarter = c(1, 1, 2, 1, 2, 2, 1, 2),
+  Country = c('ZW','ZW','ST','ST','ST','YM','YM','YM'),
+  Area = c('34.7','34.5','34.7','34.5','34.5','34.7','34.7','34.5'),
+  NumDomTrip = c(3500, 300, 2010, 500, 250, 2600, 5000, 1000)
+)
+
+SA <- data.table(
+  Year = c('2021', '2021', '2021', '2022', '2022'),
+  Quarter = c(1, 1, 2, 1, 2),
+  Species = c("COD", "HKE", "COD", "COD", "HKE"),
+  CatchCategory = c("Lan", "Lan", "Dis", "Lan", "Dis"),
+  totalWtMes = c(100, 50, 20, 120, 80),
+  sampWtMes = c(20, 50, 20, 120, 30)
+)
+```
+
+
+```{r print datasets}
+print(CL)
+
+print(CE)
+
+print(SA)
+```
+
+### 1. Summarise a single numeric variable
+
+The simplest use case of the function \code{amountByGroup} is to sum a numeric column by one grouping variable.
+
+```{r single numeric}
+
+res_num <- amountByGroup(
+data = CL,
+var = "WeightKg",
+valBy = "Year"
+)
+
+res_num
+
+```
+
+This returns a `data.table` with total weight per year.
+
+
+### 2. Summarise a single categorical variable
+
+If the variable is non-numeric, `amountByGroup()` automatically computes
+frequencie counts.
+
+```{r single categorical}
+
+res_cat <- amountByGroup(
+data = CL,
+var = "Species",
+valBy = "Year"
+)
+
+res_cat
+
+```
+
+Each row represents a combination of categorical variable (`Species`) and the grouping variables (`Year`), with a frequency column (`Freq`).
+
+### 3. Multiple numeric variables (wide table)
+
+Multiple numeric variables can be summarise at once, producing a *wide* table.
+
+Example with CL table: 
+
+```{r multiple numeric CL}
+
+CLres_multi_num <- amountByGroup(
+data = CL,
+var = c("WeightKg", "ValueEUR"),
+valBy = c("Year", "Species")
+)
+
+CLres_multi_num
+
+```
+
+Example with SA table:
+
+```{r multiple numeric SA}
+
+SAres_multi_num <- amountByGroup(
+data = SA,
+var = c("totalWtMes", "sampWtMes"),
+valBy = c("Species", "CatchCategory")
+)
+
+SAres_multi_num
+
+```
+
+Each numeric variable is summed independently by the grouping variables.
+
+
+### 4. Mixed numeric and categorical variables
+
+Numeric and categorical variables can be supplied together.
+
+```{r mixed variables}
+
+res_mixed <- amountByGroup(
+data = CE,
+var = c("NumDomTrip", "Area"),
+valBy = "Year"
+)
+
+str(res_mixed)
+
+res_mixed
+
+```
+
+
+In this case, the function returns a list:
+
+  * `$numeric` → summed numeric variables
+
+  * `$categorical` → frequency tables for categorical variables
+
+This keeps outputs explicit and avoids ambiguous table structures.
+
+
+### 5. Applying filters
+
+Filters are applied before summarising.
+
+```{r applying filters}
+
+res_filtered <- amountByGroup(
+data = CE,
+var = "NumDomTrip",
+valBy = "Country",
+filters = list(Year = 2021)
+)
+
+res_filtered
+
+```
+
+Filters use standard `%in%` logic and may contain multiple values: 
+
+```{r multiple filters}
+
+filters = list(Year = c(2021, 2022))
+
+```
+
+### 6. Percentages instead of absolute values
+
+For numeric variables, results can be expressed as percentages of the total.
+
+Example with SA table:
+```{r percentages SA}
+
+SA_res_pct <- amountByGroup(
+data = SA,
+var = "totalWtMes",
+valBy = "CatchCategory",
+asPct = TRUE
+)
+
+SA_res_pct
+
+```
+
+Example with CE table:
+
+```{r percentages CE}
+
+CE_res_pct <- amountByGroup(
+data = CE,
+var = "NumDomTrip",
+valBy = "Area",
+filters = list(Year=2021),
+asPct = TRUE
+)
+
+CE_res_pct
+
+```
+
+Percentages are computed per variable, not per group.
+
+### 7. Plot output
+
+Setting `output_type = "plot"` produces bar charts.
+
+Example with SA table: 
+
+```{r plot numeric SA}
+
+plot_SA <- amountByGroup(
+data = SA,
+var = "sampWtMes",
+valBy = "Species",
+output_type = "plot"
+)
+
+plot_SA
+
+```
+
+Example with CE table: 
+
+```{r plot numeric CE}
+
+plot_CE <- amountByGroup(
+data = CE,
+var = "NumDomTrip",
+valBy = "Country",
+output_type = "plot"
+)
+
+plot_CE
+
+```
+
+Notes:
+
+  * Numeric variables → bar plot of summed values
+  * Categorical variables → bar plot of frequencies
+  * When multiple variables are supplied, one plot per variable is generated
+  * Numeric variables → bar plot of summed value
+  * Categorical variables → bar plot of frequencies
+  * When multiple variables are supplied, one plot per variable is generated
+  * The function still invisibly returns the underlying summary table
+
+
+### 8. Plotting multiple variables
+
+When `output_type = "plot"` and more than one variable is supplied in `var`,
+`amountByGroup()` produces one plot per variable, printed sequentially.
+
+This applies to:
+
+  * Multiple numeric variables
+  * Mixed numeric + categorical variables
+
+Each plot is generated independently to keep the output clear and interpretable.
+
+#### 8.1 Multiple numeric variables
+
+When all variables in `var` are numeric, one bar plot is produced for each variable,
+using the same grouping variables.
+
+```{r plot multiple numeric}
+
+plot_multi_numeric <- amountByGroup(
+data = CL,
+var = c("WeightKg", "ValueEUR"),
+valBy = c("Year", "Country"),
+output_type = "plot"
+)
+
+plot_multi_numeric
+
+```
+
+This results in:
+
+  * One plot for `WeightKg` by `Year` (faceted by `Country`)
+  * One plot for `ValueEUR`  by `Year` (faceted by `Country`)
+
+The plots are printed in sequence and the underlying summary table is still returned invisibly.
+
+
+#### 8.2 Mixed numeric and categorical variables
+
+Numeric and categorical variables can be plotted together, and each variable is handled according to its type:
+  * Numeric variables → summed bar plots
+  * Categorical variables → frequency (count) bar plots
+  
+```{r plot mixed variables}
+
+plot_mixed_var <- amountByGroup(
+data = CL,
+var = c("WeightKg", "Species"),
+valBy = "Year",
+output_type = "plot"
+)
+
+plot_mixed_var
+
+```  
+  
+This produces:
+  1. A bar plot of total `WeightKg` by `Year`
+  2. A bar plot of counts of `Species` by `Year`
+
+This explicit separation avoids mixing incompatible summaries in the same figure.  
+  
+##### Faceting behaviour
+
+When more than one grouping variable is supplied in `valBy`:
+  * The first grouping variable is used on the x-axis
+  * Additional grouping variables may be used for faceting (when applicable)
+
+For example:
+
+```{r plot facet variables}
+
+plot_facet <-  amountByGroup(
+data = CE,
+var = c("NumDomTrip"),
+valBy = c("Country","Area"),
+output_type = "plot"
+)
+
+plot_facet
+
+```
+
+This produces a plot where:
+  * `xvar <- "Year"`
+  * `facet_wrap(~ Quarter)` is now applied
+  * Result: one panel per `Area` , as expected
+
+
+### 9. Assigning results to the global environment
+
+For interactive workflows, results can be automatically assigned:
+
+```{r assign results}
+
+amountByGroup(
+data = CL,
+var = "WeightKg",
+valBy = "Year",
+assign_to_global = TRUE
+)
+
+```
+
+This creates an object named *tbl_WeightKg_by_Year*
+
+
+### Design philosophy
+
+  * One table in, one summary out
+  * No hidden joins or recoding
+  * Explicit handling of numeric vs categorical variables
+  * Predictable output structures
+  * Predictable and reusable outputs
+  
+The function is intended as a final summarisation layer, not as a data
+preparation tool.
+
+
+### When not to use this function
+
+  * When you need joins or code-to-label translations
+  * When you need model-based summaries
+  * When you need long-format reshaping for downstream modeling
+
+In those cases, prepare the data first, then call `amountByGroup()`.
+
+#END
