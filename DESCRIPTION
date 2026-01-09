@@ -83,7 +83,6 @@ Authors@R:
            role = c("ctb"), 
            email = "jostou@aqua.dtu.dk")	   
            )
-
 Maintainer: Colin Millar <colin.millar@ices.dk>
 Description: 
     RDBESvisualise provides utility functions to summarise and visualise Regional DataBase and Estimation System (RDBES) data.
