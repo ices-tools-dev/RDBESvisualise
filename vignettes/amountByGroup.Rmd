@@ -119,7 +119,7 @@ This returns a `data.table` with total weight per year.
 ### 2. Summarise a single categorical variable
 
 If the variable is non-numeric, `amountByGroup()` automatically computes
-frequencie counts.
+frequency counts.
 
 ```{r single categorical}
 
