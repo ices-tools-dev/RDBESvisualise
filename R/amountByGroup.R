@@ -164,7 +164,7 @@ amountByGroup <- function(
       if (output_type == "plot") {
         p <- ggplot2::ggplot(
           summary_dt,
-          ggplot2::aes_string(x = valBy[1], y = i)
+          ggplot2::aes(x = .data[[valBy[1]]], y = .data[[i]])
         ) +
           ggplot2::geom_bar(stat = "identity") +
           ggplot2::labs(
@@ -208,7 +208,7 @@ amountByGroup <- function(
         xvar <- if (!(i %in% valBy)) valBy[1] else i
         p <- ggplot2::ggplot(
           cnt_dt,
-          ggplot2::aes_string(x = xvar, y = "Freq")
+          ggplot2::aes(x = .data[[xvar]], y = .data[["Freq"]])
         ) +
           ggplot2::geom_bar(stat = "identity") +
           ggplot2::labs(
@@ -290,7 +290,7 @@ amountByGroup <- function(
 
           p <- ggplot2::ggplot(
             plt_dt,
-            ggplot2::aes_string(x = valBy[1], y = i)
+            ggplot2::aes(x = .data[[valBy[1]]], y = .data[[i]])
           ) +
             ggplot2::geom_bar(stat = "identity") +
             ggplot2::labs(
@@ -332,7 +332,7 @@ amountByGroup <- function(
 
           p <- ggplot2::ggplot(
             cnt_dt,
-            ggplot2::aes_string(x = xvar, y = "Freq")
+            ggplot2::aes(x = .data[[xvar]], y = .data[["Freq"]])
           ) +
             ggplot2::geom_bar(stat = "identity") +
             ggplot2::labs(
