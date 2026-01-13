@@ -389,8 +389,8 @@ plot_facet
 ```
 
 This produces a plot where:
-  * `xvar <- "Year"`
-  * `facet_wrap(~ Quarter)` is now applied
+  * `xvar <- "Country"`
+  * `facet_wrap(~ Area)` is now applied
   * Result: one panel per `Area` , as expected
 
 
