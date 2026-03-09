@@ -43,7 +43,7 @@ References
 ----------
 
 * Regional Database & Estimation System:
-https://sboxrdbes.ices.dk/
+https://rdbes.ices.dk/
 
 * Working Group on Governance of the Regional Database & Estimation System:
 https://www.ices.dk/community/groups/Pages/WGRDBESGOV.aspx

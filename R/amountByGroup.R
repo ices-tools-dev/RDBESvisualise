@@ -115,7 +115,7 @@ amountByGroup <- function(
         }
       } else {
         warning(sprintf(
-          "Filter column '%s' not found in data — ignored.",
+          "Filter column '%s' not found in data - ignored.",
           col
         ))
       }
@@ -145,7 +145,7 @@ amountByGroup <- function(
 
     if (is.numeric(dt[[i]])) {
 
-      summary_dt <- dt[, .(value = sum(get(i), na.rm = TRUE)), by = valBy]
+      summary_dt <- dt[, list(value = sum(.SD[[1]], na.rm = TRUE)), by = valBy, .SDcols = i]
       data.table::setnames(summary_dt, "value", i)
 
       if (asPct) {
@@ -164,7 +164,7 @@ amountByGroup <- function(
       if (output_type == "plot") {
         p <- ggplot2::ggplot(
           summary_dt,
-          ggplot2::aes_string(x = valBy[1], y = i)
+          ggplot2::aes(x = .data[[valBy[1]]], y = .data[[i]])
         ) +
           ggplot2::geom_bar(stat = "identity") +
           ggplot2::labs(
@@ -208,7 +208,7 @@ amountByGroup <- function(
         xvar <- if (!(i %in% valBy)) valBy[1] else i
         p <- ggplot2::ggplot(
           cnt_dt,
-          ggplot2::aes_string(x = xvar, y = "Freq")
+          ggplot2::aes(x = .data[[xvar]], y = .data[["Freq"]])
         ) +
           ggplot2::geom_bar(stat = "identity") +
           ggplot2::labs(
@@ -246,7 +246,7 @@ amountByGroup <- function(
     cat_vars <- setdiff(var, num_vars)
     summary_list <- list()
 
-    # numeric vars → sum
+    # numeric vars -> sum
     if (length(num_vars) > 0) {
       summary_list[["numeric"]] <-
         dt[, lapply(.SD, sum, na.rm = TRUE),
@@ -261,7 +261,7 @@ amountByGroup <- function(
         }
       }
     }
-    # categorical vars → count combinations
+    # categorical vars -> count combinations
     if (length(cat_vars) > 0) {
       summary_list[["categorical"]] <-
         dt[, .N, by = c(valBy, cat_vars)]
@@ -290,7 +290,7 @@ amountByGroup <- function(
 
           p <- ggplot2::ggplot(
             plt_dt,
-            ggplot2::aes_string(x = valBy[1], y = i)
+            ggplot2::aes(x = .data[[valBy[1]]], y = .data[[i]])
           ) +
             ggplot2::geom_bar(stat = "identity") +
             ggplot2::labs(
@@ -332,7 +332,7 @@ amountByGroup <- function(
 
           p <- ggplot2::ggplot(
             cnt_dt,
-            ggplot2::aes_string(x = xvar, y = "Freq")
+            ggplot2::aes(x = .data[[xvar]], y = .data[["Freq"]])
           ) +
             ggplot2::geom_bar(stat = "identity") +
             ggplot2::labs(

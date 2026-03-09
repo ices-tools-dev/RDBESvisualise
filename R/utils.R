@@ -17,7 +17,7 @@ globalVariables(c(
   "LandingsGearCount", "LandingsGearCountQuar",
   "totalSpeCountAll", "SamplingCountYear", "totalGearYear",
   "long", "lat", "group", "mean_quartiles_land",
-  "mean_quantiles_land", "X", "Y", "bi_class"
+  "mean_quantiles_land", "X", "Y", "bi_class",'.SD', '.data','.N','..var'
 ))
 
 # Palette developed by the RCGs

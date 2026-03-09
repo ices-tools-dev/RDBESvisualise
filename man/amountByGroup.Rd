@@ -2,7 +2,7 @@
 % Please edit documentation in R/amountByGroup.R
 \name{amountByGroup}
 \alias{amountByGroup}
-\title{Summarise one or more columns by grouping variables (numeric + categorical)}
+\title{Summarise numeric and categorical variables by grouping variables}
 \usage{
 amountByGroup(
   data,
@@ -16,54 +16,51 @@ amountByGroup(
 )
 }
 \arguments{
-\item{data}{data.frame or data.table — the table to summarise.}
+\item{data}{A \code{data.frame} or \code{data.table}.}
 
-\item{var}{character vector — one or more column names to summarise.
-Can include both numeric and categorical variables.}
+\item{var}{Character vector of column names to summarise.}
 
-\item{valBy}{character vector — one or more grouping column names.}
+\item{valBy}{Character vector of grouping variables.}
 
-\item{filters}{named list (optional) — subsets before summarising,
-e.g. `list(Year = 2022, Flag = c("XX","YY"))`.}
+\item{filters}{Optional named list of filters applied before aggregation.}
 
-\item{output_type}{character, one of `"table"` or `"plot"` (default: `"table"`).}
+\item{output_type}{One of \code{"table"} or \code{"plot"}.}
 
-\item{asPct}{logical — if `TRUE`, convert numeric summaries to percentages.}
+\item{asPct}{Logical; if \code{TRUE}, numeric summaries are converted to percentages.}
 
-\item{assign_to_global}{logical — if `TRUE`, assign output table to `.GlobalEnv`.}
+\item{assign_to_global}{Logical; if \code{TRUE}, assigns result to \code{.GlobalEnv}.}
 
-\item{verbose}{logical — print progress messages (default `TRUE`).}
+\item{verbose}{Logical; print progress messages.}
 }
 \value{
-Invisibly returns either:
-  - a single `data.table` (if only numeric or only categorical vars),
-  - or a list with `$numeric` and `$categorical` components (if mixed).
+Invisibly returns a \code{data.table} or a list of tables.
 }
 \description{
-`amountByGroup()` provides a convenient way to summarise data tables
-that may contain both numeric and categorical variables. The function
-supports flexible filtering, percentage conversion, grouped summaries,
-and optional plotting. Designed for RDBES datasets or similar.
+\code{amountByGroup()} summarises one or more variables (numeric and/or
+categorical) by one or more grouping variables. Numeric variables are
+aggregated using sums, while categorical variables are summarised as
+frequency counts. The function supports flexible filtering, percentage
+conversion, grouped summaries, and optional plotting. Designed for RDBES
+datasets or similar.
 }
 \details{
-**Main features:**
-* Works with both numeric and categorical variables.
-* Numeric variables are summarised by `sum()`, with optional
-  percentage conversion (`asPct = TRUE`).
-* Categorical variables are summarised as frequency counts.
-* Multiple variables can be summarised at once:
-  - Numeric variables are aggregated together in *wide format*.
-  - Categorical variables produce frequency tables by group.
-* Filters can be applied prior to summarisation using a named list.
-* Results can be optionally assigned to the global environment
-  using `assign_to_global = TRUE`.
-* Output options:
-  - `"table"`: returns a data.table (or list of tables if mixed types).
-  - `"plot"`: generates one or more ggplot2 visualisations.
+Main features:
+\itemize{
+\item Numeric variables are summed (optionally converted to percentages).
+\item Categorical variables are counted as frequencies.
+\item Multiple variables can be summarised simultaneously.
+\item Optional filtering prior to aggregation.
+\item Optional plotting using ggplot2.
+}
 
-**Examples of usage:**
-```
-# Summarise one numeric variable by year and flag
+When both numeric and categorical variables are supplied, the result
+is returned as a list with components \code{$numeric} and
+\code{$categorical}.
+}
+\examples{
+\dontrun{
+
+Summarise one numeric variable by year and flag
 tbl1 <- amountByGroup(
   data = landings,
   var = "LiveWeight",
@@ -73,7 +70,7 @@ tbl1 <- amountByGroup(
   output_type = "table"
 )
 
-# Summarise a categorical variable (species name)
+Summarise a categorical variable (species name)
 tbl2 <- amountByGroup(
   data = landings,
   var = "SpeciesName",
@@ -81,15 +78,12 @@ tbl2 <- amountByGroup(
   output_type = "plot"
 )
 
-# Summarise multiple numeric + categorical variables together
+Summarise multiple numeric + categorical variables together
 tbl3 <- amountByGroup(
   data = landings,
   var = c("Weight", "NumSamp", "SpeciesName"),
   valBy = c("Year", "FlagCountry"),
   output_type = "table"
 )
-```
-
-**Note:** When both numeric and categorical variables are passed,
-the output is a list with two components: `$numeric` and `$categorical`.
+}
 }

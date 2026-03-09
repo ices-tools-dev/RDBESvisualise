@@ -1,29 +1,118 @@
 Package: RDBESvisualise
 Type: Package
-Title: Visualisation functions for the ICES Regional Database and Estimation System (RDBES)
-Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
+Title: Visualisation and Summarisation Tools for RDBES Data
+Version: 0.1.1
+Authors@R: 
+    c(
+    person(given = "David", 
+           family = "Currie", 
+           role = c("aut"), 
+           comment = c(ORCID = "0000-0002-3523-6895")),
+    person(given = "Richard",
+           family = "Meitern",
+           role =  c("aut"),
+           email = "richard.meitern@ut.ee",
+           comment = c(ORCID = "0000-0002-2600-3002")),
+    person(given = "Nuno", 
+           family = "Prista", 
+           role = c("aut"), 
+		   email = "nuno.prista@slu.se", 
+		   comment = c(ORCID = "0000-0002-5145-7241")),
+    person(given = "Nicholas", 
+           family = "Carey", 
+           role = c("aut"),
+           email = "nicholas.carey@gov.scot"),
+    person(given = "Petri", 
+           family = "Sarvamaa", 
+           role = c("aut"), 
+           email = "Petri.Sarvamaa@luke.fi"),
+    person(given = "Kirsten", 
+           family = "Birch Håkansson", 
+           role = c("aut"), 
+           email = "kih@aqua.dtu.dk"),
+    person(given = "Karolina", 
+           family = "Molla Gazi", 
+           role = c("aut"), 
+           email = "karolina.mollagazi@wur.nl"),	
+    person(given = "Julia", 
+           family = "Wischnewski", 
+           role = c("aut"), 
+           email = "julia.wischnewski@thuenen.de"),			   
+    person(given = "Ana Cláudia", 
+           family = "Fernandes", 
+           role = c("aut"), 
+           email = "acfernandes@ipma.pt", 
+		   comment = c(ORCID = "0000-0001-6041-8140")),
+    person(given = "Katarzyna", 
+           family = "Krakówka", 
+           role = c("aut"), 
+           email = "kkrakowka@mir.gdynia.pl"),
+    person(given = "Marta", 
+           family = "Szymańska", 
+           role = c("aut"), 
+           email = "msuska@mir.gdynia.pl"),	 
+	person(given = "Nicolas", 
+           family = "Goñi", 
+           role = c("aut"), 
+           email = "nicolas.goni@luke.fi"),	
+	person(given = "Annica", 
+           family = "de Groote", 
+           role = c("ctb"), 
+           email = "annica.isaksson.de.groote@slu.se"),		   
+	person(given = "Jonathan", 
+           family = "Ball", 
+           role = c("ctb"), 
+           email = "johnathan.ball@cefas.co.uk"),
+	person(given = "Jonathan", 
+           family = "Rault", 
+           role = c("ctb"), 
+           email = "Jonathan.Rault@ifremer.fr"),
+	person(given = "Antti", 
+           family = "Sykkö", 
+           role = c("ctb"), 
+           email = "antti.sykko@luke.fi"),
+	person(given = "Liz", 
+           family = "Clarke", 
+           role = c("ctb"), 
+           email = "Liz.Clarke@gov.scot"),
+	person(given = "Eros", 
+           family = "Quesada", 
+           role = c("ctb"), 
+           email = "eros.quesada@slu.se"),
+	person(given = "Jonathan", 
+           family = "Stounberg", 
+           role = c("ctb"), 
+           email = "jostou@aqua.dtu.dk"),
+  person(given  = "Colin",
+           family = "Millar",
+           role   = "cre",
+           email  = "colin.millar@ices.dk")         
+           )
+Description: 
+    Provides utility functions to summarise and visualise data from Regional Database and Estimation System (RDBES).
 License: GPL-3 + file LICENSE
 Encoding: UTF-8
 LazyData: true
+RoxygenNote: 7.3.3
+Roxygen: list(markdown = TRUE)
+Suggests: 
+    knitr,
+    rmarkdown,
+    testthat
+Depends: 
+    R (>= 4.1)
 Imports: 
     dplyr, 
     data.table,
     lubridate,
     ggiraph,
-    ggplot2,
+    ggplot2,   
     plotly,
     magrittr,
     htmltools,
     rlang,
     purrr,
-    biscale
+    biscale,
+    sf,
+    RDBEScore
 VignetteBuilder: knitr
-Depends: 
-    R (>= 2.10),
-    RDBEScore,
-    sf
-RoxygenNote: 7.2.3
