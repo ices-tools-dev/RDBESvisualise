@@ -115,7 +115,7 @@ amountByGroup <- function(
         }
       } else {
         warning(sprintf(
-          "Filter column '%s' not found in data — ignored.",
+          "Filter column '%s' not found in data - ignored.",
           col
         ))
       }
@@ -246,7 +246,7 @@ amountByGroup <- function(
     cat_vars <- setdiff(var, num_vars)
     summary_list <- list()
 
-    # numeric vars → sum
+    # numeric vars -> sum
     if (length(num_vars) > 0) {
       summary_list[["numeric"]] <-
         dt[, lapply(.SD, sum, na.rm = TRUE),
@@ -261,7 +261,7 @@ amountByGroup <- function(
         }
       }
     }
-    # categorical vars → count combinations
+    # categorical vars -> count combinations
     if (length(cat_vars) > 0) {
       summary_list[["categorical"]] <-
         dt[, .N, by = c(valBy, cat_vars)]

@@ -1,7 +1,7 @@
 Package: RDBESvisualise
 Type: Package
 Title: Visualisation and Summarisation Tools for RDBES Data
-Version: 0.1.0
+Version: 0.1.1
 Authors@R: 
     c(
     person(given = "David", 
@@ -103,5 +103,7 @@ Depends:
     R (>= 4.1)
 Imports: 
     data.table,
-    ggplot2
+    ggplot2,
+    magrittr,
+    RDBEScore
 VignetteBuilder: knitr
