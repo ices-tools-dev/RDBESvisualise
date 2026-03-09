@@ -1,0 +1,316 @@
+#capture.output({  ## suppresses printing of console output when running test()
+
+prepareTestData <- function(){
+
+  # Prepare some test data
+  myH1RawObject <-
+    RDBEScore::createRDBESDataObject(rdbesExtractPath = "h1_v_1_19_13")
+  # Generate some quarters for CL (test data is all Q1)
+  set.seed(1)
+  myH1RawObject[['CL']]$CLquar <-
+    as.integer(runif(nrow(myH1RawObject[['CL']]), min = 1, max= 4.99))
+  # Generate some quarters for CE (test data is all Q1)
+  set.seed(1)
+  myH1RawObject[['CE']]$CEquar <-
+    as.integer(runif(nrow(myH1RawObject[['CE']]), min = 1, max= 4.99))
+  # Generate some values for SAsampWtLive (test data is all blank)
+  set.seed(1)
+  myH1RawObject[['SA']]$SAsampWtLive <-
+    as.integer(runif(nrow(myH1RawObject[['SA']]), min = 1, max= 200))
+  # Generate some stat rectagnle values (test data value is all NA)
+  set.seed(1)
+  myH1RawObject[['SA']]$SAstatRect <-
+    sample(unique(myH1RawObject[['CL']]$CLstatRect),
+           size = nrow(myH1RawObject[['SA']]),
+           replace = TRUE)
+
+  myH1RawObject
+
+}
+
+test_that("Spatial plot runs without errors for landings only",  {
+
+  myH1RawObject <- prepareTestData()
+  myYear <- 1965
+  myvesselFlag <- "ZW"
+
+  # Spatial plot
+  expect_error(
+    plots <- coverageSpatial(
+        dataToPlot = myH1RawObject,
+        year = myYear,
+        vesselFlag = myvesselFlag,
+        catchCat = "Lan",
+        landingsVariable = "CLoffWeight",
+        effortVariable = "CEnumFracTrips",
+        samplingVariable = "SAsampWtLive",
+        includeLandings = TRUE,
+        includeEffort = FALSE,
+        includeSamples = FALSE
+      )
+    ,NA)
+
+  # expect 1 girafe object
+  expect_equal(length(plots),1)
+  expect_s3_class(plots[[1]],"girafe")
+})
+
+test_that("Spatial plot runs without errors for effort only",  {
+
+  myH1RawObject <- prepareTestData()
+  myYear <- 1965
+  myvesselFlag <- "ZW"
+
+  # Spatial plot
+  expect_error(
+    plots <- coverageSpatial(
+      dataToPlot = myH1RawObject,
+      year = myYear,
+      vesselFlag = myvesselFlag,
+      catchCat = "Lan",
+      landingsVariable = "CLoffWeight",
+      effortVariable = "CEnumFracTrips",
+      samplingVariable = "SAsampWtLive",
+      includeLandings = FALSE,
+      includeEffort = TRUE,
+      includeSamples = FALSE
+    )
+    ,NA)
+
+  # expect 1 girafe object
+  expect_equal(length(plots),1)
+  expect_s3_class(plots[[1]],"girafe")
+})
+
+test_that("Spatial plot runs without errors for samples only",  {
+
+  myH1RawObject <- prepareTestData()
+  myYear <- 1965
+  myvesselFlag <- "ZW"
+
+  # Spatial plot
+  expect_error(
+    plots <- coverageSpatial(
+      dataToPlot = myH1RawObject,
+      year = myYear,
+      vesselFlag = myvesselFlag,
+      catchCat = "Lan",
+      landingsVariable = "CLoffWeight",
+      effortVariable = "CEnumFracTrips",
+      samplingVariable = "SAsampWtLive",
+      includeLandings = FALSE,
+      includeEffort = FALSE,
+      includeSamples = TRUE
+    )
+    ,NA)
+
+  # expect 1 girafe object
+  expect_equal(length(plots),1)
+  expect_s3_class(plots[[1]],"girafe")
+})
+
+test_that("Spatial plot runs without errors for landing and samples",  {
+
+  myH1RawObject <- prepareTestData()
+  myYear <- 1965
+  myvesselFlag <- "ZW"
+
+  # Spatial plot
+  expect_error(
+    plots <- coverageSpatial(
+      dataToPlot = myH1RawObject,
+      year = myYear,
+      vesselFlag = myvesselFlag,
+      catchCat = "Lan",
+      landingsVariable = "CLoffWeight",
+      effortVariable = "CEnumFracTrips",
+      samplingVariable = "SAsampWtLive",
+      includeLandings = TRUE,
+      includeEffort = FALSE,
+      includeSamples = TRUE
+    )
+    ,NA)
+
+  # expect 2 girafe objects
+  expect_equal(length(plots),2)
+  expect_s3_class(plots[[1]],"girafe")
+  expect_s3_class(plots[[2]],"girafe")
+})
+
+test_that("Spatial plot runs without errors for effort and samples",  {
+
+  myH1RawObject <- prepareTestData()
+  myYear <- 1965
+  myvesselFlag <- "ZW"
+
+  # Spatial plot
+  expect_error(
+    plots <- coverageSpatial(
+      dataToPlot = myH1RawObject,
+      year = myYear,
+      vesselFlag = myvesselFlag,
+      catchCat = "Lan",
+      landingsVariable = "CLoffWeight",
+      effortVariable = "CEnumFracTrips",
+      samplingVariable = "SAsampWtLive",
+      includeLandings = FALSE,
+      includeEffort = TRUE,
+      includeSamples = TRUE
+    )
+    ,NA)
+
+  # expect 2 girafe objects
+  expect_equal(length(plots),2)
+  expect_s3_class(plots[[1]],"girafe")
+  expect_s3_class(plots[[2]],"girafe")
+})
+
+test_that("Spatial plot runs without errors for landinsg and effort",  {
+
+  myH1RawObject <- prepareTestData()
+  myYear <- 1965
+  myvesselFlag <- "ZW"
+
+  # Spatial plot
+  expect_error(
+    plots <- coverageSpatial(
+      dataToPlot = myH1RawObject,
+      year = myYear,
+      vesselFlag = myvesselFlag,
+      catchCat = "Lan",
+      landingsVariable = "CLoffWeight",
+      effortVariable = "CEnumFracTrips",
+      samplingVariable = "SAsampWtLive",
+      includeLandings = TRUE,
+      includeEffort = TRUE,
+      includeSamples = FALSE
+    )
+    ,NA)
+
+  # expect 2 girafe objects
+  expect_equal(length(plots),2)
+  expect_s3_class(plots[[1]],"girafe")
+  expect_s3_class(plots[[2]],"girafe")
+})
+
+test_that("Spatial plot runs without errors for landings, effort, and samples",  {
+
+  myH1RawObject <- prepareTestData()
+  myYear <- 1965
+  myvesselFlag <- "ZW"
+
+  # Spatial plot
+  expect_error(
+    plots <- coverageSpatial(
+      dataToPlot = myH1RawObject,
+      year = myYear,
+      vesselFlag = myvesselFlag,
+      catchCat = "Lan",
+      landingsVariable = "CLoffWeight",
+      effortVariable = "CEnumFracTrips",
+      samplingVariable = "SAsampWtLive",
+      includeLandings = TRUE,
+      includeEffort = TRUE,
+      includeSamples = TRUE
+    )
+    ,NA)
+
+  # expect 3 girafe objects
+  expect_equal(length(plots),3)
+  expect_s3_class(plots[[1]],"girafe")
+  expect_s3_class(plots[[2]],"girafe")
+  expect_s3_class(plots[[3]],"girafe")
+})
+
+test_that("Spatial plot gives warning when no landings rectangles are specified",  {
+
+  myH1RawObject <- prepareTestData()
+  myYear <- 1965
+  myvesselFlag <- "ZW"
+
+  # remove rectangles from landings
+  myH1RawObject[["CL"]]$CLstatRect <- NA
+
+  # Spatial bivariate plot
+  expect_warning(
+    plots <- coverageSpatial(
+      dataToPlot = myH1RawObject,
+      year = myYear,
+      vesselFlag = myvesselFlag,
+      catchCat = "Lan",
+      landingsVariable = "CLoffWeight",
+      effortVariable = "CEnumFracTrips",
+      samplingVariable = "SAsampWtLive",
+      includeLandings = TRUE,
+      includeEffort = FALSE,
+      includeSamples = TRUE
+    )
+    ,"No non-NA landings data to plot*")
+
+  # expect 1 girafe objects
+  expect_equal(length(plots),1)
+
+})
+
+test_that("Spatial plot gives warning when no effort rectangles are specified",  {
+
+  myH1RawObject <- prepareTestData()
+  myYear <- 1965
+  myvesselFlag <- "ZW"
+
+  # remove rectangles from landings
+  myH1RawObject[["CE"]]$CEstatRect <- NA
+
+  # Spatial bivariate plot
+  expect_warning(
+    plots <- coverageSpatial(
+      dataToPlot = myH1RawObject,
+      year = myYear,
+      vesselFlag = myvesselFlag,
+      catchCat = "Lan",
+      landingsVariable = "CLoffWeight",
+      effortVariable = "CEnumFracTrips",
+      samplingVariable = "SAsampWtLive",
+      includeLandings = FALSE,
+      includeEffort = TRUE,
+      includeSamples = TRUE
+    )
+    ,"No non-NA effort data to plot*")
+
+  # expect 1 girafe objects
+  expect_equal(length(plots),1)
+
+})
+
+test_that("Spatial plot gives warning when no sample rectangles are specified",  {
+
+  myH1RawObject <- prepareTestData()
+  myYear <- 1965
+  myvesselFlag <- "ZW"
+
+  # remove rectangles from landings
+  myH1RawObject[["SA"]]$SAstatRect <- NA
+
+  # Spatial bivariate plot
+  expect_warning(
+    plots <- coverageSpatial(
+      dataToPlot = myH1RawObject,
+      year = myYear,
+      vesselFlag = myvesselFlag,
+      catchCat = "Lan",
+      landingsVariable = "CLoffWeight",
+      effortVariable = "CEnumFracTrips",
+      samplingVariable = "SAsampWtLive",
+      includeLandings = FALSE,
+      includeEffort = TRUE,
+      includeSamples = TRUE
+    )
+    ,"No non-NA sample data to plot*")
+
+  # expect 1 girafe objects
+  expect_equal(length(plots),1)
+
+})
+
+
+#}) ## end capture.output

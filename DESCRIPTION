@@ -90,7 +90,7 @@ Authors@R:
            )
 Description: 
     Provides utility functions to summarise and visualise data from Regional Database and Estimation System (RDBES).
-License: GPL-3
+License: GPL-3 + file LICENSE
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.3.3
@@ -102,8 +102,17 @@ Suggests:
 Depends: 
     R (>= 4.1)
 Imports: 
+    dplyr, 
     data.table,
-    ggplot2,
+    lubridate,
+    ggiraph,
+    ggplot2,   
+    plotly,
     magrittr,
+    htmltools,
+    rlang,
+    purrr,
+    biscale,
+    sf,
     RDBEScore
 VignetteBuilder: knitr
