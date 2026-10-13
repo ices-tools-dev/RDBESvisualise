@@ -40,7 +40,6 @@ library(remotes)
 install_github("ices-tools-dev/RDBESvisualise", build_vignettes = TRUE)
 ```
 
-
 Usage
 -----
 
@@ -176,7 +175,7 @@ capture.output({  ## suppresses printing of console output when running test()
 **Meaning of the fields**
 
 - **AI-assisted:** `Yes` if AI tools were used to generate or substantially modify the current code or test, otherwise `No`. Routine autocomplete or minor wording corrections do not need to be reported.
-- **Review:** Github usernames of people who have checked and accepted the current implementation or test. The original contributor records one approval after checking their own work. Each additional reviewer who approves the current version is added.
+- **Review:** GitHub usernames of people who have checked and accepted the current implementation or test. The original contributor records one approval after checking their own work. Each additional reviewer who approves the current version is added.
 - **Notes/scope (optional):** Briefly describe what has been verified, for example specific RDBES sampling hierarchies, datasets, reference calculations, or known limitations. Include data versions or dates when relevant.
 
 **Updating review**
@@ -187,7 +186,7 @@ When another person reviews the code or test and approves it without changes, ad
 # Review: janesmith, johnbrown
 ```
 
-If a reviewer wants to modify the code substantially they are expected to raise an issue to inform others about it. Previous reviewers should be assigned to that issue and informed about the new issue. 
+If a reviewer wants to modify the code substantially, they are expected to raise an issue to inform others about it. Previous reviewers should be assigned to that issue and informed about the new issue. 
 
 Review for functions and tests are maintained separately. A change to one does not automatically invalidate approval of the other, unless its correctness is affected.
 
