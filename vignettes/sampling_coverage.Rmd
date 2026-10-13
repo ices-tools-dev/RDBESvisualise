@@ -30,12 +30,21 @@ library(RDBESvisualise)
 ```{r}
 
   # Create an RDBESDataObject
-  myH1RawObject <-
-    RDBEScore::createRDBESDataObject(rdbesExtractPath = "../tests/testthat/h1_v_1_19_13")
+  #myH1RawObject <-
+  #  RDBEScore::createRDBESDataObject(rdbesExtractPath = "../tests/testthat/h1_v_1_19_13")
+  myH1RawObject <- RDBEScore::createRDBESDataObject(input = "../tests/testthat/h1_v_20250211")
   
   # Generate some quarters for CL (test data is all Q1)
   set.seed(1)
   myH1RawObject[['CL']]$CLquar <- as.integer(runif(nrow(myH1RawObject[['CL']]), min = 1, max= 4.99))
+  
+  # Generate some random species to make the plots more interesting
+  mySpecies <- data.frame(speciesCode = c(107254,127146,125802,127136,126484,126437,105812,105814,126439,126555), speciesCodeFAO = c('NEP','MEG','MON','WIT','HKE','HAD','DGH','LSD','WHB','MON'))
+  
+  set.seed(1)
+  randomSpecs <- as.integer(runif(nrow(myH1RawObject[['CL']]), min = 1, max= nrow(mySpecies)+0.99))
+  myH1RawObject[['CL']]$CLspecCode <- mySpecies$speciesCode[randomSpecs]
+  myH1RawObject[['CL']]$CLspecFAO <- mySpecies$speciesCodeFAO[randomSpecs]
   
   # Generate some quarters for CE (test data is all Q1)
   set.seed(1)
@@ -50,6 +59,12 @@ library(RDBESvisualise)
   set.seed(1)
   myH1RawObject[['SA']]$SAstatRect <- sample(unique(myH1RawObject[['CL']]$CLstatRect), size = nrow(myH1RawObject[['SA']]), replace = TRUE)
 
+  # Generate some random species to make the plots more interesting
+  set.seed(1)
+  randomSpecs <- as.integer(runif(nrow(myH1RawObject[['SA']]), min = 1, max= nrow(mySpecies)+0.99))
+  myH1RawObject[['SA']]$SAspeCode <- mySpecies$speciesCode[randomSpecs]
+  myH1RawObject[['SA']]$SAspeCodeFAO <- mySpecies$speciesCodeFAO[randomSpecs]
+  
 
 ```
 
