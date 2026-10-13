@@ -22,7 +22,7 @@ The aim of this document is to provide examples of the different plots that can 
 ## Load the package
 
 ```{r setup}
-library(RDBESvisualise)
+#library(RDBESvisualise)
 ```
 
 ## Prepare some test data
@@ -64,6 +64,13 @@ library(RDBESvisualise)
   randomSpecs <- as.integer(runif(nrow(myH1RawObject[['SA']]), min = 1, max= nrow(mySpecies)+0.99))
   myH1RawObject[['SA']]$SAspeCode <- mySpecies$speciesCode[randomSpecs]
   myH1RawObject[['SA']]$SAspeCodeFAO <- mySpecies$speciesCodeFAO[randomSpecs]
+  
+  # Generate some random gears to make plots more interesting
+  myGear <- c('OTT','OTB','SSC','TBB','GNS','PTM','OTM')
+  set.seed(1)
+  randomGears <- as.integer(runif(nrow(myH1RawObject[['SA']]), min = 1, max= length(myGear)+0.99))
+  myH1RawObject[['SA']]$SAgear <- myGear[randomGears]
+
   
 
 ```
@@ -141,7 +148,7 @@ The following output shows the top gears used in landings and sampling landings 
 
 ```
 
-The following output shows the top gears used in effort and sampling landings - the bars represent relative gear count values per plot.
+The following output shows the top gears used in effort and landings in Q2 - the bars represent relative gear count values per plot.
 
 
 
@@ -153,7 +160,7 @@ The following output shows the top gears used in effort and sampling landings - 
   myPlots <- coverageByGear(
       dataToPlot = myH1RawObject,
       year = myYear,
-      quarter = 1,
+      quarter = 2,
       vesselFlag = myvesselFlag,
       catchCat = "Lan",
       landingsVariable = "CLoffWeight",
