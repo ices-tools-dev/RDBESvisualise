@@ -313,6 +313,11 @@ preprocessSamplingDataForCoverage <- function(dataToPlot, verbose) {
 #' @return an RDBESEstObject
 #'
 preprocessSampleDataForCoverage <- function(dataToPlot, verbose) {
+
+  # For testing
+  #dataToPlot <- myH1RawObject
+  #verbose <- FALSE
+
   if (verbose) {
     print("Preparing sample data")
   }
@@ -399,7 +404,7 @@ preprocessSampleDataForCoverage <- function(dataToPlot, verbose) {
   # Append the species names
 
   # Ensure specode is an integer
-  sa$SAspeCode <- as.integer(sa$SAspeCode)
+  sa$SAspeCode <- as.integer(as.character(sa$SAspeCode))
   # Add an extra column called "specCode" to be consisten with CL
   sa$SAspecCode <- sa$SAspeCode
   full_name <- RDBESvisualise::wormsSpecies
@@ -508,6 +513,21 @@ barPlotsByGroupingVariable <- function(landingsData = NA,
                                        groupingVariable,
                                        topN = NA,
                                        plotQuarters = FALSE) {
+
+  # For testing
+  # landingsData = ld1
+  # effortData = ef1
+  # sampleData = sa1
+  # vesselFlag <- "ZW"
+  # catchCat <- "Lan"
+  # quarter <- NA
+  # landingsVariable <- "CLoffWeight"
+  # effortVariable <- "CEnumFracTrips"
+  # samplingVariable <- "SAsampWtMes"
+  # groupingVariable <- "speciesName"
+  # topN <- NA
+  # plotQuarters <- FALSE
+
   regExToFind <- paste0("^..", groupingVariable, "$")
 
   if (is.na(vesselFlag)) {
@@ -741,6 +761,13 @@ createBarPlot <- function(dataToPlot,
                           showLegend = FALSE,
                           paletteToUse = "paletteForPlotting") {
 
+  # for testing
+  # dataToPlot = ds
+  # title = samplingVariable
+  # plotQuarters = plotQuarters
+  # showLegend = showPlotLegend
+  # paletteToUse = gvColours
+
   if (plotQuarters) {
     formulaForColour <- "~ as.character(quarter)"
     legendText <- "<b> Quarter: </b>"
@@ -783,18 +810,23 @@ createBarPlot <- function(dataToPlot,
 #' @return A data frame ready for createBarPlot()
 #'
 formatDataForBarPlotsByGroupingVariable <- function(dataToFormat, topN) {
+
+  # For testing
+  #dataToFormat <- sampleData
+  #topN <- topN
+
   # Calculate sum per group,year,quarter
   d1 <- dataToFormat %>%
     dplyr::group_by(year, quarter, groupingVariable) %>%
-    dplyr::mutate(sumByGroupYearQuarter = sum(variableToSum))
+    dplyr::mutate(sumByGroupYearQuarter = sum(variableToSum, na.rm = TRUE))
   # Calculate sum per group,year
   d1 <- d1 %>%
     dplyr::group_by(year, groupingVariable) %>%
-    dplyr::mutate(sumByGroupYear = sum(variableToSum))
+    dplyr::mutate(sumByGroupYear = sum(variableToSum, na.rm = TRUE))
   # Calculate sum per year
   d1 <- d1 %>%
     dplyr::group_by(year) %>%
-    dplyr::mutate(sumByYear = sum(variableToSum))
+    dplyr::mutate(sumByYear = sum(variableToSum, na.rm = TRUE))
   # Calculate a relative figure
   d1 <- d1 %>%
     dplyr::mutate(

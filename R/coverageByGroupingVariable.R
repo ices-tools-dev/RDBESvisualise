@@ -27,18 +27,28 @@
 #' \dontrun{
 #'
 #' myH1RawObject <- RDBEScore::createRDBESDataObject(
-#'   rdbesExtractPath = "../tests/testthat/h1_v_1_19_13"
-#' )
+#'                   input = "./tests/testthat/h1_v_20250211")
 #'
 #' myYear <- 1965
 #' myvesselFlag <- "ZW"
 #'
-#' myPlots <- coverageLandingsByGear(
-#'   dataToPlot = myH1RawObject,
-#'   year = myYear,
-#'   vesselFlag = myvesselFlag,
-#'   catchCat = "Lan"
+#' myPlots <- coverageByGroupingVariable(dataToPlot = myH1RawObject,
+#' year = myYear,
+#' quarter = NA,
+#' vesselFlag = myvesselFlag,
+#' landingsVariable = "CLoffWeight",
+#' effortVariable = "CEnumFracTrips",
+#' samplingVariable = "SAsampWtLive",
+#' groupingVariable = "speciesName",
+#' catchCat = "Lan",
+#' includeLandings = TRUE,
+#' includeEffort = FALSE,
+#' includeSamples = TRUE,
+#' topN = NA,
+#' plotQuarters = FALSE,
+#' verbose = FALSE
 #' )
+#'
 #'
 #' myPlots[1]
 #' }
@@ -71,6 +81,26 @@ coverageByGroupingVariable <- function(dataToPlot,
                            topN = NA,
                            plotQuarters = FALSE,
                            verbose = FALSE) {
+
+  # For testing
+
+  #myH1RawObject <- RDBEScore::createRDBESDataObject(input = "./tests/testthat/h1_v_20250211")
+  # dataToPlot <- myH1RawObject
+  # year <- 1965
+  # quarter <- NA
+  # vesselFlag <- "ZW"
+  # landingsVariable <- "CLoffWeight"
+  # effortVariable <- "CEnumFracTrips"
+  # samplingVariable <- "SAsampWtMes"
+  # groupingVariable <- "speciesName"
+  # catchCat <- "Lan"
+  # includeLandings <- TRUE
+  # includeEffort <- FALSE
+  # includeSamples <- TRUE
+  # topN <- NA
+  # plotQuarters <- FALSE
+  # verbose <- FALSE
+
   # STEP 0) VALIDATE INPUTS
 
   # check the parameters are valid before we do anything
@@ -125,6 +155,7 @@ coverageByGroupingVariable <- function(dataToPlot,
 
   # Samples
   if (includeSamples) {
+    #sa <- preprocessSampleDataForCoverage(dataToPlot, verbose = verbose)
     sa <- preprocessSampleDataForCoverage(dataToPlot, verbose = verbose)
     sa1 <- filterSampleDataForCoverage(sa,
       year = year,
