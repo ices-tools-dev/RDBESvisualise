@@ -7,7 +7,7 @@
 [![CRAN Total](http://cranlogs.r-pkg.org/badges/grand-total/RDBESvisualise)](https://cran.r-project.org/package=RDBESvisualise)
 -->
 
-[<img align="right" alt="ICES Logo" width="17%" height="17%" src="https://www.ices.dk/SiteCollectionImages/ICES%20logos/ICES%20logo%20acronym_small.jpg">](http://ices.dk)
+[<img align="right" alt="ICES Logo" width="14%" height="14%" src="https://www.ices.dk/SiteCollectionImages/ICES%20logos/ICES%20logo%20acronym_small.jpg">](http://ices.dk)
 
 `RDBESvisualise`
 =========
