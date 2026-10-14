@@ -26,31 +26,23 @@
 #' @examples
 #' \dontrun{
 #'
-#' myH1RawObject <- RDBEScore::createRDBESDataObject(
-#'                   input = "./tests/testthat/h1_v_20250211")
+#'  myH1RawObject <- RDBEScore::createRDBESDataObject(input = "tests/testthat/h1_v_20250211")
 #'
-#' myYear <- 1965
-#' myvesselFlag <- "ZW"
+#'  myPlots <- coverageByGroupingVariable(dataToPlot = myH1RawObject,
+#'                                        year = 1965,
+#'                                        quarter = NA,
+#'                                        vesselFlag = "ZW",
+#'                                        landingsVariable = "CLoffWeight",
+#'                                        effortVariable = "CEnumFracTrips",
+#'                                        samplingVariable = "SAsampWtMes",
+#'                                        groupingVariable = "gear",
+#'                                        catchCat = "Lan",
+#'                                        includeLandings = TRUE,
+#'                                        includeEffort = TRUE,
+#'                                        includeSamples = TRUE,
+#'                                        verbose = FALSE)
+#'  myPlots[1]
 #'
-#' myPlots <- coverageByGroupingVariable(dataToPlot = myH1RawObject,
-#' year = myYear,
-#' quarter = NA,
-#' vesselFlag = myvesselFlag,
-#' landingsVariable = "CLoffWeight",
-#' effortVariable = "CEnumFracTrips",
-#' samplingVariable = "SAsampWtLive",
-#' groupingVariable = "speciesName",
-#' catchCat = "Lan",
-#' includeLandings = TRUE,
-#' includeEffort = FALSE,
-#' includeSamples = TRUE,
-#' topN = NA,
-#' plotQuarters = FALSE,
-#' verbose = FALSE
-#' )
-#'
-#'
-#' myPlots[1]
 #' }
 coverageByGroupingVariable <- function(dataToPlot,
                            year = NA,

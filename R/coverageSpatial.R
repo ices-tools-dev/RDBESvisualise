@@ -1,6 +1,6 @@
 #' Provides graphical outputs which compare the statistical
-#' rectangle where landings occured to the statistical rectangles where
-#' sampling occured. The relative amounts of landings/samples are
+#' rectangle where landings/effort occurred to the statistical rectangles where
+#' sampling occurred. The relative amounts of landings/samples are
 #' shown by i) coloured rectangles for landings, and ii) circles for
 #' sampling.
 #'
@@ -20,23 +20,21 @@
 #' @examples
 #' \dontrun{
 #'
-#' myH1RawObject <- RDBEScore::createRDBESDataObject(
-#'   rdbesExtractPath = "../tests/testthat/h1_v_1_19_13"
-#' )
+#'  myH1RawObject <- RDBEScore::createRDBESDataObject(input = "tests/testthat/h1_v_20250211")
 #'
-#' myYear <- 1965
-#' myvesselFlag <- "ZW"
-#'
-#' myPlots <- coverageLandingsSpatial(
-#'   dataToPlot = myH1RawObject,
-#'   year = myYear,
-#'   vesselFlag = myvesselFlag,
-#'   catchCat = "Lan",
-#'   commercialVariable = "CLoffWeight",
-#'   samplingVariable = "SAsampWtLive"
-#' )
-#'
-#' myPlots[1]
+#'  myPlots <- coverageSpatial(
+#'    dataToPlot = myH1RawObject,
+#'    year = 1965,
+#'    vesselFlag = "ZW",
+#'    catchCat = "Lan",
+#'    landingsVariable = "CLoffWeight",
+#'    effortVariable = "CEnumFracTrips",
+#'    samplingVariable = "SAsampWtMes",
+#'    includeLandings = TRUE,
+#'    includeEffort = TRUE,
+#'    includeSamples = TRUE
+#'  )
+#'  myPlots[1]
 #' }
 coverageSpatial <- function(dataToPlot,
                             year,
