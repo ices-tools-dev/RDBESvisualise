@@ -321,10 +321,6 @@ preprocessSampleDataForCoverage <- function(dataToPlot, verbose) {
   if (length(dataToPlot[["VD"]]) == 0 & is.null(dataToPlot[["VD"]])){
     stop("No VD data present in sample data - this is required")
   }
-  # Check that FO is present - stop with an error if not
-  if (length(dataToPlot[["FO"]]) == 0 & is.null(dataToPlot[["FO"]])){
-    stop("No FO data present in sample data - this is required")
-  }
 
   if (verbose) {
     print("Preparing sample data")
@@ -352,13 +348,48 @@ preprocessSampleDataForCoverage <- function(dataToPlot, verbose) {
   # Join to VD to get Vessel flag country
   sa <- dplyr::left_join(sa, dataToPlot[["VD"]], by = "VDid")
 
-  # Get the year and quarter of the sample from FO
-  sa$SAyear <-
-    as.integer(format(as.Date(sa$FOendDate, format = "%Y-%m-%d"), "%Y"))
-  sa$SAquar <-
-    as.integer(lubridate::quarter(as.Date(sa$FOendDate, format = "%Y-%m-%d")))
-  sa$SAmonth <-
-    as.integer(lubridate::month(as.Date(sa$FOendDate, format = "%Y-%m-%d")))
+  # Get the year, quarter, month of the sample data from the best table -
+  # check the tables in the following order: FO, FT, LE, OS, DE
+  if (length(dataToPlot[["FO"]])>0 && nrow(dataToPlot[["FO"]]) > 0){
+    # Get the year and quarter of the sample from FO
+    sa$SAyear <-
+      as.integer(format(as.Date(sa$FOendDate, format = "%Y-%m-%d"), "%Y"))
+    sa$SAquar <-
+      as.integer(lubridate::quarter(as.Date(sa$FOendDate, format = "%Y-%m-%d")))
+    sa$SAmonth <-
+      as.integer(lubridate::month(as.Date(sa$FOendDate, format = "%Y-%m-%d")))
+  } else if(length(dataToPlot[["FT"]])>0 && nrow(dataToPlot[["FT"]]) > 0) {
+    # Get the year and quarter of the sample from FT
+    sa$SAyear <-
+      as.integer(format(as.Date(sa$FTarvDate, format = "%Y-%m-%d"), "%Y"))
+    sa$SAquar <-
+      as.integer(lubridate::quarter(as.Date(sa$FTarvDate, format = "%Y-%m-%d")))
+    sa$SAmonth <-
+      as.integer(lubridate::month(as.Date(sa$FTarvDate, format = "%Y-%m-%d")))
+  } else if(length(dataToPlot[["LE"]])>0 && nrow(dataToPlot[["LE"]]) > 0) {
+    # Get the year and quarter of the sample from LE
+    sa$SAyear <-
+      as.integer(format(as.Date(sa$LEdate, format = "%Y-%m-%d"), "%Y"))
+    sa$SAquar <-
+      as.integer(lubridate::quarter(as.Date(sa$LEdate, format = "%Y-%m-%d")))
+    sa$SAmonth <-
+      as.integer(lubridate::month(as.Date(sa$LEdate, format = "%Y-%m-%d")))
+  } else if (length(dataToPlot[["OS"]])>0 && nrow(dataToPlot[["OS"]]) > 0){
+    # Get the year and quarter of the sample from OS
+    sa$SAyear <-
+      as.integer(format(as.Date(sa$OSsamDate, format = "%Y-%m-%d"), "%Y"))
+    sa$SAquar <-
+      as.integer(lubridate::quarter(as.Date(sa$OSsamDate, format = "%Y-%m-%d")))
+    sa$SAmonth <-
+      as.integer(lubridate::month(as.Date(sa$OSsamDate, format = "%Y-%m-%d")))
+  } else if (length(dataToPlot[["DE"]])>0 && nrow(dataToPlot[["DE"]]) > 0){
+    # Get the year of the sample from DE
+    sa$SAyear <- sa$DEyear
+    sa$SAquar <- NA
+    sa$SAmonth <- NA
+  } else{
+    stop("Could not determine which value to use for the sampling date")
+  }
 
   # Get only necessary columns from the sample data
 
@@ -371,7 +402,7 @@ preprocessSampleDataForCoverage <- function(dataToPlot, verbose) {
   for (myCol in colsToCheck) {
     myColValues <- unique(datatoPlot_EstOb[, myCol, with = FALSE])[[1]]
     myColValues <- myColValues[!is.na(myColValues)]
-    if (myColValues == "SA") {
+    if (length(myColValues)==1 && myColValues == "SA") {
       correctCol <- myCol
       suNumber <- gsub("su", "", correctCol)
       suNumber <- gsub("table", "", suNumber)
@@ -391,10 +422,12 @@ preprocessSampleDataForCoverage <- function(dataToPlot, verbose) {
   # SA, FO, LE
   sa$SAgear <- as.character(sa$SAgear)
 
-  # If SAgear is NA or an empty string then use FOgear instead
-  sa$SAgear <- ifelse(is.na(sa$SAgear) | sa$SAgear == "",
-                        as.character(sa$FOgear),
-                        sa$SAgear)
+  # If SAgear is NA or an empty string then use FOgear instead (if it exists)
+  if ("FOgear" %in% names(sa)){
+    sa$SAgear <- ifelse(is.na(sa$SAgear) | sa$SAgear == "",
+                          as.character(sa$FOgear),
+                          sa$SAgear)
+  }
 
   # If we still have NA or empty gear values then try LEgear (if it exists)
   if ("LEgear" %in% names(sa)){
