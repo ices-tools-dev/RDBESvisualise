@@ -4,7 +4,7 @@ prepareTestData <- function(){
 
   # Prepare some test data
   myH1RawObject <-
-    RDBEScore::createRDBESDataObject(rdbesExtractPath = "h1_v_1_19_13")
+    RDBEScore::createRDBESDataObject(input = "h1_v_20250211")
   # Generate some quarters for CL (test data is all Q1)
   set.seed(1)
   myH1RawObject[['CL']]$CLquar <-
