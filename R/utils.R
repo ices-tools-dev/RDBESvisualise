@@ -656,7 +656,8 @@ barPlotsByGroupingVariable <- function(landingsData = NA,
       ds <- d2 %>% dplyr::filter(year == y[i])
       ds <- ds[-1]
       uniqueGVValues <- c(uniqueGVValues,
-                          unique(ds$groupingVariable))
+                          unique(as.character(ds$groupingVariable)))
+                          #unique(ds$groupingVariable))
       uniqueGVValues <- unique(uniqueGVValues)
     }
     if(effort){
