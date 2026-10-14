@@ -305,7 +305,6 @@ preprocessSamplingDataForCoverage <- function(dataToPlot, verbose) {
 }
 
 #' Internal function to prepare sample data for coveragesXXX functions
-#' NOT WORKING, to be check.
 #' @param dataToPlot An RDBESDataObject
 #' @param (Optional) Set to TRUE to print more information. Default is
 #' FALSE
