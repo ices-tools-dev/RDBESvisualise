@@ -1,5 +1,5 @@
-#' Provides graphical outputs to compare the fishing gears
-#' in effort to those in the sample data.
+#' Provides graphical outputs to compare the landings, effort, and sample
+#' data.
 #'
 #' @param dataToPlot RDBES data to be plotted (as an RDBESDataObject)
 #' @param year Year to be assessed e.g 2021
@@ -155,7 +155,6 @@ coverageByGroupingVariable <- function(dataToPlot,
 
   # Samples
   if (includeSamples) {
-    #sa <- preprocessSampleDataForCoverage(dataToPlot, verbose = verbose)
     sa <- preprocessSampleDataForCoverage(dataToPlot, verbose = verbose)
     sa1 <- filterSampleDataForCoverage(sa,
       year = year,
