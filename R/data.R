@@ -75,3 +75,21 @@
 #' @format A character vector
 #' @source WGRDBES-EST
 "allowedSamplingVariable"
+#' ICES statistical rectangles with their ICES areas and RCG regions
+#'
+#' One row per ICES statistical rectangle. Built from [icesRectSF] and
+#' [icesAreaSF] by `data-raw/icesStatRecLookup.R`.
+#'
+#' @format A data frame:
+#' \describe{
+#'   \item{StatRec}{ICES statistical rectangle, e.g. "41F6"}
+#'   \item{Area}{ICES area covering most of the rectangle, e.g. "27.4.b"}
+#'   \item{SubDivision}{e.g. "27.3.d.28"; NA where the area has no subdivision}
+#'   \item{Division}{e.g. "27.3.d"}
+#'   \item{SubArea}{e.g. "27.3"}
+#'   \item{FAOArea}{"27"}
+#'   \item{Region}{RCG region: "BA", "NSEA" or "NAtl"}
+#'   \item{AreasList}{All ICES areas the rectangle overlaps, e.g. "7.d, 7.e"}
+#' }
+#' @source ICES Spatial Facility, via icesRectSF and icesAreaSF
+"icesStatRecLookup"
