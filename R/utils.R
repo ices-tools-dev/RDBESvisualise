@@ -387,6 +387,22 @@ preprocessSampleDataForCoverage <- function(dataToPlot, verbose) {
   sa <- sa %>% dplyr::rename("SAnumTotal" = paste0("su", suNumber, "numTotal"))
   sa <- sa %>% dplyr::rename("SAnumSamp" = paste0("su", suNumber, "numSamp"))
 
+  # Process the gear information - use gear data from the following tables:
+  # SA, FO, LE
+  sa$SAgear <- as.character(sa$SAgear)
+
+  # If SAgear is NA or an empty string then use FOgear instead
+  sa$SAgear <- ifelse(is.na(sa$SAgear) | sa$SAgear == "",
+                        as.character(sa$FOgear),
+                        sa$SAgear)
+
+  # If we still have NA or empty gear values then try LEgear (if it exists)
+  if ("LEgear" %in% names(sa)){
+    sa$SAgear <- ifelse(is.na(sa$SAgear) | sa$SAgear == "",
+                        as.character(sa$LEgear),
+                        sa$SAgear)
+  }
+
   # Get the columns we want
   sa <- sa[, c(
     "SAstatRect", "SAyear", "SAquar", "SAmonth", "SAmetier5",
@@ -664,8 +680,14 @@ barPlotsByGroupingVariable <- function(landingsData = NA,
     if(samples){
       ds <- d2 %>% dplyr::filter(year == y[i])
       ds <- ds[-1]
-      uniqueGVValues <- c(uniqueGVValues,
-                          unique(as.character(ds$groupingVariable)))
+      # Handle the values differently if they are a factor or not
+      if(is.factor(ds$groupingVariable)){
+        myValues <- as.character(ds$groupingVariable)
+      } else {
+        myValues <- ds$groupingVariable
+      }
+      uniqueGVValues <- c(uniqueGVValues,unique(myValues))
+                          #unique(as.character(ds$groupingVariable)))
                           #unique(ds$groupingVariable))
       uniqueGVValues <- unique(uniqueGVValues)
     }
