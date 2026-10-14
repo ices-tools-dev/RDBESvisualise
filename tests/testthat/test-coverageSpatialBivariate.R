@@ -1,4 +1,4 @@
-#capture.output({  ## suppresses printing of console output when running test()
+capture.output({  ## suppresses printing of console output when running test()
 
 prepareTestData <- function(){
 
@@ -194,4 +194,4 @@ test_that("Spatial bivariate plot gives error when no sample rectangles are spec
 
 })
 
-#}) ## end capture.output
+}) ## end capture.output

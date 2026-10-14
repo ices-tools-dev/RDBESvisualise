@@ -1,4 +1,4 @@
-#capture.output({  ## suppresses printing of console output when running test()
+capture.output({  ## suppresses printing of console output when running test()
 
 prepareTestData <- function(){
 
@@ -313,4 +313,4 @@ test_that("Spatial plot gives warning when no sample rectangles are specified", 
 })
 
 
-#}) ## end capture.output
+}) ## end capture.output

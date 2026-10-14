@@ -1,4 +1,4 @@
-#capture.output({  ## suppresses printing of console output when running test()
+capture.output({  ## suppresses printing of console output when running test()
 
 prepareTestData <- function(){
 
@@ -105,4 +105,4 @@ test_that("Species plot runs without errors for just samples",  {
 
 
 
-#}) ## end capture.output
+}) ## end capture.output
