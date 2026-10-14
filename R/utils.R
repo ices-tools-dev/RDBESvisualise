@@ -317,6 +317,15 @@ preprocessSampleDataForCoverage <- function(dataToPlot, verbose) {
   #dataToPlot <- myH1RawObject
   #verbose <- FALSE
 
+  # Check that VD is present - stop with an error if not
+  if (length(dataToPlot[["VD"]]) == 0 & is.null(dataToPlot[["VD"]])){
+    stop("No VD data present in sample data - this is required")
+  }
+  # Check that FO is present - stop with an error if not
+  if (length(dataToPlot[["FO"]]) == 0 & is.null(dataToPlot[["FO"]])){
+    stop("No FO data present in sample data - this is required")
+  }
+
   if (verbose) {
     print("Preparing sample data")
   }
