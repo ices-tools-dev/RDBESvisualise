@@ -483,6 +483,12 @@ preprocessSampleDataForCoverage <- function(dataToPlot, verbose) {
 #' @return A data table of landings data ("CL")
 #'
 preprocessLandingsDataForCoverage <- function(dataToPlot, verbose) {
+
+  # Check that CL is present - stop with an error if not
+  if (length(dataToPlot[["CL"]]) == 0 & is.null(dataToPlot[["CL"]])){
+    stop("No CL data present in data - this is required")
+  }
+
   if (verbose) {
     print("Preparing landings data")
   }
@@ -519,6 +525,12 @@ preprocessLandingsDataForCoverage <- function(dataToPlot, verbose) {
 #' @return A data table of effort data ("CE")
 #'
 preprocessEffortDataForCoverage <- function(dataToPlot, verbose) {
+
+  # Check that CE is present - stop with an error if not
+  if (length(dataToPlot[["CE"]]) == 0 & is.null(dataToPlot[["CE"]])){
+    stop("No CE data present in data - this is required")
+  }
+
   if (verbose) {
     print("Preparing effort data")
   }

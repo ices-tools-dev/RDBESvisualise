@@ -295,15 +295,15 @@ test_that("Gear plot stops with error if you try to plot sample data with null V
 
 })
 
-test_that("Gear plot stops with error if you try to plot sample data with null FO table",  {
+test_that("Gear plot stops with error if you try to plot landings data with null CL table",  {
 
   myH1RawObject <- prepareTestData()
-  # Remove FO data
+  # Remove CL data
   myNewH1 <- RDBEScore::newRDBESDataObject (DE = myH1RawObject[["DE"]],
                                             SD = myH1RawObject[["SD"]],
                                             VS = myH1RawObject[["VS"]],
                                             FT = myH1RawObject[["FT"]],
-                                            FO = NULL,
+                                            FO = myH1RawObject[["FO"]],
                                             TE = myH1RawObject[["TE"]],
                                             LO = myH1RawObject[["LO"]],
                                             OS = myH1RawObject[["OS"]],
@@ -312,10 +312,10 @@ test_that("Gear plot stops with error if you try to plot sample data with null F
                                             SA = myH1RawObject[["SA"]],
                                             FM = myH1RawObject[["FM"]],
                                             BV = myH1RawObject[["BV"]],
-                                            VD = myH1RawObject[["BV"]],
+                                            VD = myH1RawObject[["VD"]],
                                             SL = myH1RawObject[["SL"]],
                                             IS = myH1RawObject[["IS"]],
-                                            CL = myH1RawObject[["CL"]],
+                                            CL = NULL,
                                             CE = myH1RawObject[["CE"]])
 
 
@@ -336,8 +336,52 @@ test_that("Gear plot stops with error if you try to plot sample data with null F
       includeEffort = TRUE,
       includeSamples = TRUE,
     )
-    ,"No FO data present in sample data - this is required")
+    ,"No CL data present in data - this is required")
 
+})
+
+test_that("Gear plot stops with error if you try to plot effort data with null CE table",  {
+
+  myH1RawObject <- prepareTestData()
+  # Remove CE data
+  myNewH1 <- RDBEScore::newRDBESDataObject (DE = myH1RawObject[["DE"]],
+                                            SD = myH1RawObject[["SD"]],
+                                            VS = myH1RawObject[["VS"]],
+                                            FT = myH1RawObject[["FT"]],
+                                            FO = myH1RawObject[["FO"]],
+                                            TE = myH1RawObject[["TE"]],
+                                            LO = myH1RawObject[["LO"]],
+                                            OS = myH1RawObject[["OS"]],
+                                            LE = myH1RawObject[["LE"]],
+                                            SS = myH1RawObject[["SS"]],
+                                            SA = myH1RawObject[["SA"]],
+                                            FM = myH1RawObject[["FM"]],
+                                            BV = myH1RawObject[["BV"]],
+                                            VD = myH1RawObject[["VD"]],
+                                            SL = myH1RawObject[["SL"]],
+                                            IS = myH1RawObject[["IS"]],
+                                            CL = myH1RawObject[["CL"]],
+                                            CE = NULL)
+
+
+  myYear <- 1965
+  myvesselFlag <- "ZW"
+
+  # Gear plot
+  expect_error(
+    plots <- coverageByGear(
+      dataToPlot = myNewH1,
+      year = myYear,
+      vesselFlag = myvesselFlag,
+      catchCat = "Lan",
+      landingsVariable = "CLoffWeight",
+      effortVariable = "CEnumFracTrips",
+      samplingVariable = "SAsampWtLive",
+      includeLandings = TRUE,
+      includeEffort = TRUE,
+      includeSamples = TRUE,
+    )
+    ,"No CE data present in data - this is required")
 
 })
 
