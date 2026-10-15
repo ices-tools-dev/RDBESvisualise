@@ -1,8 +1,10 @@
 ---
-title: "Vignette RDBESvisualise"
-output: rmarkdown::html_vignette
+title: "Getting started with RDBESvisualise"
+output:
+  rmarkdown::html_vignette:
+    toc: true
 vignette: >
-  %\VignetteIndexEntry{Roadmap_RDBESvisualise}
+  %\VignetteIndexEntry{Getting started with RDBESvisualise}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -10,242 +12,266 @@ vignette: >
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>",
+  fig.width = 7,
+  fig.height = 4.5
 )
 ```
 
 ## Introduction
 
-The package is conceived as a set of functions that are exported in order to allow the end user to explore the data and also to give the possibility to produce a final overview (in .Rmd format) built on them. The package works on an RDBES object created by the RDBEScore::CreateRDBESDataObject using test data files. 
+RDBESvisualise summarises and visualises data in the RDBES format. All
+functions take an `RDBESDataObject` created with
+`RDBEScore::createRDBESDataObject()`, check it and return a table or a plot.
 
-### 1. Functions to be exported
+This vignette shows one example for each exported function. It uses the
+example data of the RDBEScore package, which are test data and not real
+sampling data:
 
-These functions are available for the end user. They are used as well by developers in the production of final overviews (RMarkdown documents). These functions refer to: subsetting the data of interest for the user, visualization of data and checking it to identify problems that may affect the estimation process. 
-The functions from this package are meant to provide tools to summarize the data through visualization (i.e. plots and tables) and assist the estimation process by providing a summary of the methods, coverages (highlighting gaps in the data for relevant factors) and sampling sizes among others. 
-  
-  These functions are built with the following main parameters: 
-    x   = rdbesobject
-    by = the variable to split the data. Value can be one single value or a vector of values for 2D grid plot. 
-    output_type = should the output be represented as a plot or a table. 
-    … = additional parameters specific for the different functions. 
+| Data | Hierarchy | Main tables with data |
+|:-----|:----------|:----------------------|
+| `H1Example` | 1 | DE, SD, VS, FT, FO, SS, SA, FM, BV, VD |
+| `H5Example` | 5 | DE, SD, FT, OS, LE, SS, SA, FM, BV, VD, CL, CE |
+| `H7Example` | 7 | DE, SD, OS, LE, SS, SA, BV |
+| `H8ExampleEE1` | 8 | DE, SD, VS, TE, LE, SS, SA, BV, VD, CL, CE |
 
-The plots will be static and built in *ggplot* in the first version. Future version might include interactive plots and an additional parameter to the function call specifying the nature of the plot. 
+The functions are:
 
-A stop() should be considered if the levels of the factor selected for the *by* parameters are too many.  
+| Topic | Function |
+|:------|:---------|
+| Amounts by group | `amountByGroup()` |
+| Sampling design | `summariseSelectionMethod()`, `summariseSampledNonSampled()` |
+| Biological variables | `summariseBiologicalVariables()` |
+| Sampling coverage | `produceSamplingCoverage()`, `coverageBySpecies()`, `coverageByGear()`, `coverageTemporal()`, `coverageSpatial()`, `coverageSpatialBivariate()` |
 
-The functions here included are:
- 1.1. *AmountByGroup* function
- 1.2. *SamplingCoverage* function
- 1.3. *SelectionMethod* function
- 1.4. *SampledNonSampled* function
- 1.5. *SummaryBiologicalVar* function
- 1.6. *other...*
-
-
-## Load packages
-
-```{r setup}
+```{r setup, message = FALSE}
 library(RDBESvisualise)
 library(RDBEScore)
 ```
 
-## Read and prepare the data
+## Amounts by group
 
-The data to be used by this package is produced with the `createRDBESDataObject` function from the *RDBEScore* package, that includes sampling, landings and effort data. This function gets the information from the data folder where the data tables are and converts them into an R object to be used by this package. Depending on the information of interest of the end user, some data manipulations may be required. Some of them can be included in the functions themselves, but it may also be needed the end user to subset/manipulate the data for the purpose of the analysis.
+`amountByGroup()` sums numeric variables and counts categorical variables by
+one or more grouping variables. With an `RDBESDataObject` the table is chosen
+from the prefix of the first variable, here the landings (CL).
 
-
-## Define Data for Functions
-
-These examples use test data in the Hierarchy 1 RDBES format.
-
-```{r,warning=FALSE,message=FALSE,}
-
-  # Load the test data
-  testData <- RDBEScore::createRDBESDataObject(input = "data-raw/exampleData/H1_2024_10_14.zip") 
-  # validate the data
-  RDBEScore::validateRDBESDataObject(testData)
-
+```{r amountByGroup}
+landings <- amountByGroup(H8ExampleEE1,
+  var = "CLoffWeight",
+  valBy = c("CLquar", "CLvesLenCat"),
+  verbose = FALSE
+)
+landings
 ```
 
+## Sampling design
 
-### Manipulation of the data - TO BE DONE in `utils.R`
+`summariseSelectionMethod()` shows the percentage of the units selected with
+each selection method, by table.
 
-  Include the translation for some of the variables to be presented in the outputs (e.g. species names) or subsets the data of interest to be included in the report.
-
-
-## 1.1. *AmountByGroup* function. 
-
-This functions requires the user to specify a variable of interest and produce a barplot. 
-The function allows to use landing, effort and sampling data. 
-The user can addionally use one or add more grouping variables. 
-
-Parameters of the function: 
-
-  RDBESobj    = RDBESobject to be explored (CL, CE or tables from CS). 
-  var = Variable of interest (to be plotted). 
-  by =  One (or more) factor(s) to split the data. 
-  year = year(s) to filter the data.  
-  output_type: one of (table | plot).
-
-The output of the function depends on the user selection. There are three main group of outputs depending on the nature of the data to be visualized. 
-
-  - Effort: if the user chooses effort related columns, the function can represent hours, days at sea, power (kW), number of trips, etc…. Possible splitting variables are in this case: area, metier, vessel length, quarter. 
-
-  - Landing: if the user chooses landing related columns, the function can represent weight and value. 
-Possible splitting variables are in this case: area, metier, vessel length, species (group of species?), catch category[LAN, DIS, REGDIS, BMS], landing country. 
-
-  - Sampling: if the user chooses sampling data, the function can represent 
-
-  i. n trips
-  ii. n samples
-  iii. n auction days
-  iv. n species sampled
-  v. n individuals sampled
-  vi. weight sampled
-
-Possible splitting variables in this case are:  Species, Area[ICES Division, ICES Sd., ICES Rect], Time [Year, Semester, Quarter, Month].
-
-
-```{r manipulationRDBESdataObject}
-  # Data manipulation to have the info needed for the function use (E.g get species scientific name from Aphia code)
-  # Subsetting of the data
- 
+```{r selectionMethod}
+summariseSelectionMethod(H1Example, output_type = "table")
+summariseSelectionMethod(H1Example)
 ```
 
-### Summary information of the data in RDBES
+`summariseSampledNonSampled()` shows the percentage of the units that were
+sampled and, for the units that were not sampled, the reasons. Missing or
+empty values are shown as "(missing)": in this example data no reason is
+given for the species that were not sampled.
 
-
-Provides barplots of the inputted table column, summed by up until 4 factors,
-inserted as the column names from the same table.
-
-```{r AmountByGroup function,warning=FALSE,message=FALSE}
-
-## code under development
-#amountByGroup(RDBESobj = testData,  var = "CEnumDomTrip", valBy = c("CEmetier6"), #output_type = "plot")
-
+```{r sampledNonSampled}
+summariseSampledNonSampled(H1Example)
 ```
 
+## Biological variables
 
-## 1.2. *SamplingCoverage* function 
+`summariseBiologicalVariables()` counts the individuals with each type of
+measurement and summarises the values. Length, weight and age are summarised
+as numbers, sex and maturity as categories. The data can be split by any
+column of the tables above BV, for example by species.
 
-This function requires the user to specify data containing the sampling and the population data for contrast (one of landing (CL) or effort (CE) data). The user should also specify the type of comparison and the resolution of the comparisons to be performed as follows: 
-
-  - Spatial:
-    i. ICES Subdivision
-    ii. ICES Rectangle
-  - Time: 
-    i. Year
-    ii. Semester
-    iii. Quarter
-    iv. Month 
-  - Fleet:
-    i. Scale of the fishery (length vessel discriminate large and small)  
-  - Species:
-    i. Species list
-    ii. Group list (e.g. Cephalopods). 
-
-The parameters of this function are: 
-
-  RDBESobj  = RDBESobject to be explored. 
-  var = weight sampled/number samples/individuals sampled. 
-  contrastVar = is a variable related to landing or effort selected by the user. 
-  by =  one (or more) factor(s) to split the data. 
-  type =  one of spatial, time, fleet, species. 
-  resolution = is conditional on type. 
-  year = year(s) to filter the data. 
-  output_type = one of table | plot. 
-
-The function output provides information on the distribution of the number of samples versus landing or effort unit across the levels of the factors selected by the user.
-
-Different types of outputs can be expected: 
-  If output_type == “table” the output is a table. 
-  If output_type == “plot” the output is an heatmap. 
-  If the type == “effort”, the output consist of one plot illustrating the number of sampled trips versus the number of trips that were performed by the fleet. 
-  If the type == “landing”, the output consists of two plots: 
-    - one plot illustrating the number of samples versus the weight landed. 
-    - one plot illustrating either the weight sampled (the default option) or the number of individuals sampled (if the weight is not available) versus the weight landed.
-
-### Summary information of the sampling coverage
-
-```{r SamplingCoverage function, warning=FALSE, message=FALSE}
-
-## code under development
-
-#produceSamplingCoverage(RDBESobj = testData, #var="SAnumSamp",contrastVar="CEnumDomTrip",type="Spatial", resolution="ICES #Subdivision", year=)
-
+```{r biologicalTable}
+summariseBiologicalVariables(H7Example, by = "SAspeCode")
 ```
 
+With `output_type = "plot"` the function returns one plot per type of
+measurement.
 
-
-## 1.3. *SelectionMethod* function
-
-The functions require the user to specify the RDBES table of interest. This is important as the sampling units are different according to the table. 
-
-  RDBESobj    = RDBESobject to be explored. 
-  Table = one of the tables in RDBES format. 
-
-The output of this function is a stacked barplot ranging 0 – 100 % showing the percentage of the sampling method used.
-
-
-### Summary information of the selection methods
-
-``` 
-{r SelectionMethod function, warning=FALSE, message=FALSE}
-
-## code under development 
-
+```{r biologicalPlot}
+bioPlots <- summariseBiologicalVariables(H7Example,
+  var = c("Length", "Maturity"),
+  by = "SAspeCode",
+  output_type = "plot"
+)
+bioPlots$LengthTotal
+bioPlots$Maturity
 ```
 
-## 1.4 *SampledNonsampled* funtion
+## Sampling coverage
 
-The functions require the user to specify the RDBES table of interest. This is important as the sampling units are different according to the table. 
+The coverage functions compare the samples with the landings (CL) or the
+effort (CE). Their relative values show where much is landed or fished but
+little is sampled.
 
-  RDBESobj    = RDBESobject to be explored.
-  Table = one of the tables in RDBES format
+The sample date is taken from the first of FO, FT, LE and OS that has a date.
+The rectangle, area and gear of a sample are taken from FO or LE if they are
+missing in SA. Hierarchy 8, which has no FO table, can therefore be used.
+Samples without any date only have the year (`DEyear`).
 
-The function output is two stacked barplots ranging 0-100% showing: 
-  - Percentage of Sampled (Y|N) 
-  - Reason for not sampled. 
+If the variable to sum has missing values these records are excluded from
+the relative values and a warning says how many are missing. In
+`H8ExampleEE1`, `SAsampWtLive` is missing for all samples:
 
-### Summary information of the selection methods
-
-``` 
-{r SampledNonsampled function, warning=FALSE, message=FALSE}
-
-## code under development
-
+```{r missingValues}
+coverageTable <- produceSamplingCoverage(H8ExampleEE1,
+  var = "SAsampWtLive",
+  contrastVar = "CLoffWeight",
+  resolution = "Quarter",
+  catchCat = "Lan",
+  output_type = "table"
+)
 ```
 
-## 1.5 *SummaryBiologicalVar* function
+The examples below therefore use the measured sample weight `SAsampWtMes`.
 
-These functions require to the user to specify an RDBES object. Additionally the user may specify a subset of biological variable of interest between: Length, Weight, Age, Sex, Maturity. The user may also defines a factor to split the data. 
+### produceSamplingCoverage
 
-  -RDBESobj    = RDBESobject to be explored. 
-  -var =  one of Length, Weight, Age, Sex, Maturity.
-  -by =  One (or more) factor(s) to split the data. 
-  -year = year(s) to filter the data. 
-  -output_type = one of table | plot. 
-This function will produce results depending on the hierarchies. Accordingly, the function provides information on: 
+`produceSamplingCoverage()` sums the sampling and the landings or effort at
+one resolution: "ICES Rectangle", "ICES Area", "Year", "Semester",
+"Quarter", "Month", "Gear", "Vessel length" or "Species". `by` splits the
+data further, and the relative values are then calculated within each level
+of `by`.
 
-  i. n individuals measured. 
-  ii. n individuals weighted. 
-  iii. n individuals aged. 
-
-The output can be reduced by selecting specific variables of interest. The output may be splitted as well by factors of interest.   When output_type == “plot” the functions output is a density / histogram plot. A ribbon stating additional summary statistics (mean, sd, median, IQR… ). 
-When output_type == “table” the function output is a table. 
-
-### Summary information of the biological variables colected
-
-``` 
-{r SummaryBiologicalVar function, warning=FALSE, message=FALSE}
-
-## code under development
-
+```{r produceSamplingCoverageTable}
+produceSamplingCoverage(H8ExampleEE1,
+  var = "SAsampWtMes",
+  contrastVar = "CLoffWeight",
+  resolution = "Quarter",
+  catchCat = "Lan",
+  output_type = "table"
+)
 ```
 
+```{r produceSamplingCoverageBar}
+produceSamplingCoverage(H8ExampleEE1,
+  var = "SAamountSamp",
+  contrastVar = "CEnumFracTrips",
+  resolution = "Vessel length",
+  catchCat = "Lan"
+)
+```
 
+For "ICES Rectangle" and "ICES Area" the result is a map. The colour shows
+the landings or effort and the circles show the sampling. Numbers are shown
+without scientific notation.
 
+```{r produceSamplingCoverageMap, fig.height = 6}
+produceSamplingCoverage(H8ExampleEE1,
+  var = "SAsampWtMes",
+  contrastVar = "CLoffWeight",
+  resolution = "ICES Rectangle",
+  by = "Quarter",
+  catchCat = "Lan"
+)
+```
 
+```{r produceSamplingCoverageArea, warning = FALSE}
+produceSamplingCoverage(H5Example,
+  var = "SAamountSamp",
+  contrastVar = "CLoffWeight",
+  resolution = "ICES Area",
+  catchCat = "Lan"
+)
+```
 
+### Interactive coverage plots
 
+The `coverageXXX()` functions return a list of interactive plots, one per
+year. The title states that `catchCat` refers to the sample data only.
 
+```{r coverageBySpecies}
+speciesPlots <- coverageBySpecies(H8ExampleEE1,
+  year = 2022,
+  vesselFlag = "ZW",
+  landingsVariable = "CLoffWeight",
+  samplingVariable = "SAsampWtMes",
+  catchCat = "Lan"
+)
+speciesPlots[[1]]
+```
+
+```{r coverageByGear}
+gearPlots <- coverageByGear(H8ExampleEE1,
+  year = 2022,
+  landingsVariable = "CLoffWeight",
+  effortVariable = "CEnumFracTrips",
+  samplingVariable = "SAsampWtMes",
+  catchCat = "Lan"
+)
+gearPlots[[1]]
+```
+
+```{r coverageTemporal, warning = FALSE}
+temporalPlots <- coverageTemporal(H8ExampleEE1,
+  year = 2022,
+  landingsVariable = "CLoffWeight",
+  effortVariable = "CEnumFracTrips",
+  samplingVariable = "SAsampWtMes",
+  catchCat = "Lan"
+)
+temporalPlots[[1]]
+```
+
+The spatial maps only draw the area around the data, which keeps them fast.
+
+```{r coverageSpatial, message = FALSE}
+spatialPlots <- coverageSpatial(H8ExampleEE1,
+  year = 2022,
+  landingsVariable = "CLoffWeight",
+  samplingVariable = "SAsampWtMes",
+  catchCat = "Lan",
+  includeEffort = FALSE
+)
+spatialPlots[[1]]
+```
+
+```{r coverageSpatialBivariate, warning = FALSE}
+bivariatePlots <- coverageSpatialBivariate(H8ExampleEE1,
+  year = 2022,
+  landingsVariable = "CLoffWeight",
+  samplingVariable = "SAsampWtMes",
+  catchCat = "Lan",
+  includeEffort = FALSE
+)
+bivariatePlots[[1]]
+```
+
+## Colours and spatial levels
+
+Plots use the RCG palette and then the colours of `colourPalette`, which
+also gives each country a fixed colour.
+
+```{r palette}
+colourPalette[c("EE", "LV", "LT", "PL")]
+```
+
+`icesStatRecLookup` links each ICES rectangle to its ICES area and RCG region.
+The internal function `rectanglesToRegions()` uses it to convert codes.
+
+```{r regions}
+icesStatRecLookup[icesStatRecLookup$StatRec %in% c("44H2", "44H3", "45H3"), ]
+RDBESvisualise:::rectanglesToRegions(c("44H2", "41F6", "27.7.e"), to = "Region")
+```
+
+## References
+
+Earlier RDBES work on visualising sampling data:
+
+* FishNCo report, Annex 1, Section 3 "Biological Data Quality".
+  <https://datacollection.jrc.ec.europa.eu/documents/d/dcf/annex-01-deliverable-1-overview-of-the-state-of-play-data-gaps-and-needs->
+* ICES. Second Workshop on Estimation with the RDBES data model (WKRDB-EST2),
+  Annex A3.5. <https://doi.org/10.17895/ices.pub.7915>
+
+---
+
+last review: not reviewed yet (written 15/10/2026 with AI assistance)

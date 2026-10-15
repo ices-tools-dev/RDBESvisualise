@@ -42,7 +42,8 @@ install_github("ices-tools-dev/RDBESvisualise", build_vignettes = TRUE)
 Usage
 -----
 
-For a summary of the package see the following [Vignettes]():
+For a summary of the package see the vignette "Getting started with
+RDBESvisualise", which has an example of each function:
 
 ```R
 browseVignettes(package = "RDBESvisualise")
@@ -62,6 +63,14 @@ https://www.ices.dk/community/groups/Pages/WGRDBESGOV.aspx
 https://github.com/ices-tools-dev/RDBEScore/blob/main/WGRDBES-EST/references/WGRDBES-EST%20Resolutions.pdf
 
 * see also: https://github.com/ices-tools-dev/RDBEScore/tree/main/WGRDBES-EST/references
+
+Earlier RDBES related reports that considered data visualisation:
+
+* FishNCo report, Annex 1, Section 3 "Biological Data Quality":
+https://datacollection.jrc.ec.europa.eu/documents/d/dcf/annex-01-deliverable-1-overview-of-the-state-of-play-data-gaps-and-needs-
+
+* Second Workshop on Estimation with the RDBES data model (WKRDB-EST2), Annex A3.5:
+https://doi.org/10.17895/ices.pub.7915
 
 `RDBESvisualise (Development)`
 =========
