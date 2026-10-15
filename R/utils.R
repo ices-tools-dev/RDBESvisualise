@@ -305,7 +305,6 @@ preprocessSamplingDataForCoverage <- function(dataToPlot, verbose) {
 }
 
 #' Internal function to prepare sample data for coveragesXXX functions
-#' NOT WORKING, to be check.
 #' @param dataToPlot An RDBESDataObject
 #' @param (Optional) Set to TRUE to print more information. Default is
 #' FALSE
@@ -313,6 +312,16 @@ preprocessSamplingDataForCoverage <- function(dataToPlot, verbose) {
 #' @return an RDBESEstObject
 #'
 preprocessSampleDataForCoverage <- function(dataToPlot, verbose) {
+
+  # For testing
+  #dataToPlot <- myH1RawObject
+  #verbose <- FALSE
+
+  # Check that VD is present - stop with an error if not
+  if (length(dataToPlot[["VD"]]) == 0 & is.null(dataToPlot[["VD"]])){
+    stop("No VD data present in sample data - this is required")
+  }
+
   if (verbose) {
     print("Preparing sample data")
   }
@@ -339,13 +348,48 @@ preprocessSampleDataForCoverage <- function(dataToPlot, verbose) {
   # Join to VD to get Vessel flag country
   sa <- dplyr::left_join(sa, dataToPlot[["VD"]], by = "VDid")
 
-  # Get the year and quarter of the sample from FO
-  sa$SAyear <-
-    as.integer(format(as.Date(sa$FOendDate, format = "%Y-%m-%d"), "%Y"))
-  sa$SAquar <-
-    as.integer(lubridate::quarter(as.Date(sa$FOendDate, format = "%Y-%m-%d")))
-  sa$SAmonth <-
-    as.integer(lubridate::month(as.Date(sa$FOendDate, format = "%Y-%m-%d")))
+  # Get the year, quarter, month of the sample data from the best table -
+  # check the tables in the following order: FO, FT, LE, OS, DE
+  if (length(dataToPlot[["FO"]])>0 && nrow(dataToPlot[["FO"]]) > 0){
+    # Get the year and quarter of the sample from FO
+    sa$SAyear <-
+      as.integer(format(as.Date(sa$FOendDate, format = "%Y-%m-%d"), "%Y"))
+    sa$SAquar <-
+      as.integer(lubridate::quarter(as.Date(sa$FOendDate, format = "%Y-%m-%d")))
+    sa$SAmonth <-
+      as.integer(lubridate::month(as.Date(sa$FOendDate, format = "%Y-%m-%d")))
+  } else if(length(dataToPlot[["FT"]])>0 && nrow(dataToPlot[["FT"]]) > 0) {
+    # Get the year and quarter of the sample from FT
+    sa$SAyear <-
+      as.integer(format(as.Date(sa$FTarvDate, format = "%Y-%m-%d"), "%Y"))
+    sa$SAquar <-
+      as.integer(lubridate::quarter(as.Date(sa$FTarvDate, format = "%Y-%m-%d")))
+    sa$SAmonth <-
+      as.integer(lubridate::month(as.Date(sa$FTarvDate, format = "%Y-%m-%d")))
+  } else if(length(dataToPlot[["LE"]])>0 && nrow(dataToPlot[["LE"]]) > 0) {
+    # Get the year and quarter of the sample from LE
+    sa$SAyear <-
+      as.integer(format(as.Date(sa$LEdate, format = "%Y-%m-%d"), "%Y"))
+    sa$SAquar <-
+      as.integer(lubridate::quarter(as.Date(sa$LEdate, format = "%Y-%m-%d")))
+    sa$SAmonth <-
+      as.integer(lubridate::month(as.Date(sa$LEdate, format = "%Y-%m-%d")))
+  } else if (length(dataToPlot[["OS"]])>0 && nrow(dataToPlot[["OS"]]) > 0){
+    # Get the year and quarter of the sample from OS
+    sa$SAyear <-
+      as.integer(format(as.Date(sa$OSsamDate, format = "%Y-%m-%d"), "%Y"))
+    sa$SAquar <-
+      as.integer(lubridate::quarter(as.Date(sa$OSsamDate, format = "%Y-%m-%d")))
+    sa$SAmonth <-
+      as.integer(lubridate::month(as.Date(sa$OSsamDate, format = "%Y-%m-%d")))
+  } else if (length(dataToPlot[["DE"]])>0 && nrow(dataToPlot[["DE"]]) > 0){
+    # Get the year of the sample from DE
+    sa$SAyear <- sa$DEyear
+    sa$SAquar <- NA
+    sa$SAmonth <- NA
+  } else{
+    stop("Could not determine which value to use for the sampling date")
+  }
 
   # Get only necessary columns from the sample data
 
@@ -358,7 +402,7 @@ preprocessSampleDataForCoverage <- function(dataToPlot, verbose) {
   for (myCol in colsToCheck) {
     myColValues <- unique(datatoPlot_EstOb[, myCol, with = FALSE])[[1]]
     myColValues <- myColValues[!is.na(myColValues)]
-    if (myColValues == "SA") {
+    if (length(myColValues)==1 && myColValues == "SA") {
       correctCol <- myCol
       suNumber <- gsub("su", "", correctCol)
       suNumber <- gsub("table", "", suNumber)
@@ -373,6 +417,24 @@ preprocessSampleDataForCoverage <- function(dataToPlot, verbose) {
   # Rename the suXnumTotal and suXnumSamp columns to SAnumTotal and SAnumSamp
   sa <- sa %>% dplyr::rename("SAnumTotal" = paste0("su", suNumber, "numTotal"))
   sa <- sa %>% dplyr::rename("SAnumSamp" = paste0("su", suNumber, "numSamp"))
+
+  # Process the gear information - use gear data from the following tables:
+  # SA, FO, LE
+  sa$SAgear <- as.character(sa$SAgear)
+
+  # If SAgear is NA or an empty string then use FOgear instead (if it exists)
+  if ("FOgear" %in% names(sa)){
+    sa$SAgear <- ifelse(is.na(sa$SAgear) | sa$SAgear == "",
+                          as.character(sa$FOgear),
+                          sa$SAgear)
+  }
+
+  # If we still have NA or empty gear values then try LEgear (if it exists)
+  if ("LEgear" %in% names(sa)){
+    sa$SAgear <- ifelse(is.na(sa$SAgear) | sa$SAgear == "",
+                        as.character(sa$LEgear),
+                        sa$SAgear)
+  }
 
   # Get the columns we want
   sa <- sa[, c(
@@ -399,7 +461,7 @@ preprocessSampleDataForCoverage <- function(dataToPlot, verbose) {
   # Append the species names
 
   # Ensure specode is an integer
-  sa$SAspeCode <- as.integer(sa$SAspeCode)
+  sa$SAspeCode <- as.integer(as.character(sa$SAspeCode))
   # Add an extra column called "specCode" to be consisten with CL
   sa$SAspecCode <- sa$SAspeCode
   full_name <- RDBESvisualise::wormsSpecies
@@ -421,6 +483,12 @@ preprocessSampleDataForCoverage <- function(dataToPlot, verbose) {
 #' @return A data table of landings data ("CL")
 #'
 preprocessLandingsDataForCoverage <- function(dataToPlot, verbose) {
+
+  # Check that CL is present - stop with an error if not
+  if (length(dataToPlot[["CL"]]) == 0 & is.null(dataToPlot[["CL"]])){
+    stop("No CL data present in data - this is required")
+  }
+
   if (verbose) {
     print("Preparing landings data")
   }
@@ -457,6 +525,12 @@ preprocessLandingsDataForCoverage <- function(dataToPlot, verbose) {
 #' @return A data table of effort data ("CE")
 #'
 preprocessEffortDataForCoverage <- function(dataToPlot, verbose) {
+
+  # Check that CE is present - stop with an error if not
+  if (length(dataToPlot[["CE"]]) == 0 & is.null(dataToPlot[["CE"]])){
+    stop("No CE data present in data - this is required")
+  }
+
   if (verbose) {
     print("Preparing effort data")
   }
@@ -508,6 +582,21 @@ barPlotsByGroupingVariable <- function(landingsData = NA,
                                        groupingVariable,
                                        topN = NA,
                                        plotQuarters = FALSE) {
+
+  # For testing
+  # landingsData = ld1
+  # effortData = ef1
+  # sampleData = sa1
+  # vesselFlag <- "ZW"
+  # catchCat <- "Lan"
+  # quarter <- NA
+  # landingsVariable <- "CLoffWeight"
+  # effortVariable <- "CEnumFracTrips"
+  # samplingVariable <- "SAsampWtMes"
+  # groupingVariable <- "speciesName"
+  # topN <- NA
+  # plotQuarters <- FALSE
+
   regExToFind <- paste0("^..", groupingVariable, "$")
 
   if (is.na(vesselFlag)) {
@@ -636,8 +725,15 @@ barPlotsByGroupingVariable <- function(landingsData = NA,
     if(samples){
       ds <- d2 %>% dplyr::filter(year == y[i])
       ds <- ds[-1]
-      uniqueGVValues <- c(uniqueGVValues,
-                          unique(ds$groupingVariable))
+      # Handle the values differently if they are a factor or not
+      if(is.factor(ds$groupingVariable)){
+        myValues <- as.character(ds$groupingVariable)
+      } else {
+        myValues <- ds$groupingVariable
+      }
+      uniqueGVValues <- c(uniqueGVValues,unique(myValues))
+                          #unique(as.character(ds$groupingVariable)))
+                          #unique(ds$groupingVariable))
       uniqueGVValues <- unique(uniqueGVValues)
     }
     if(effort){
@@ -710,7 +806,7 @@ barPlotsByGroupingVariable <- function(landingsData = NA,
       myTitle <- paste0(myTitle, "Top ", topN, " values of ")
     }
     if (samples) {
-      myTitle <- paste0(myTitle, groupingVariable, " (", catchCat, ") ")
+      myTitle <- paste0(myTitle, groupingVariable, " (Sampling catchCat=", catchCat, ") ")
     }
     myTitle <- paste0(myTitle, "- Relative Values per Plot \n in ")
     if (!is.na(quarter)) {
@@ -740,6 +836,13 @@ createBarPlot <- function(dataToPlot,
                           plotQuarters = FALSE,
                           showLegend = FALSE,
                           paletteToUse = "paletteForPlotting") {
+
+  # for testing
+  # dataToPlot = ds
+  # title = samplingVariable
+  # plotQuarters = plotQuarters
+  # showLegend = showPlotLegend
+  # paletteToUse = gvColours
 
   if (plotQuarters) {
     formulaForColour <- "~ as.character(quarter)"
@@ -783,18 +886,23 @@ createBarPlot <- function(dataToPlot,
 #' @return A data frame ready for createBarPlot()
 #'
 formatDataForBarPlotsByGroupingVariable <- function(dataToFormat, topN) {
+
+  # For testing
+  #dataToFormat <- sampleData
+  #topN <- topN
+
   # Calculate sum per group,year,quarter
   d1 <- dataToFormat %>%
     dplyr::group_by(year, quarter, groupingVariable) %>%
-    dplyr::mutate(sumByGroupYearQuarter = sum(variableToSum))
+    dplyr::mutate(sumByGroupYearQuarter = sum(variableToSum, na.rm = TRUE))
   # Calculate sum per group,year
   d1 <- d1 %>%
     dplyr::group_by(year, groupingVariable) %>%
-    dplyr::mutate(sumByGroupYear = sum(variableToSum))
+    dplyr::mutate(sumByGroupYear = sum(variableToSum, na.rm = TRUE))
   # Calculate sum per year
   d1 <- d1 %>%
     dplyr::group_by(year) %>%
-    dplyr::mutate(sumByYear = sum(variableToSum))
+    dplyr::mutate(sumByYear = sum(variableToSum, na.rm = TRUE))
   # Calculate a relative figure
   d1 <- d1 %>%
     dplyr::mutate(

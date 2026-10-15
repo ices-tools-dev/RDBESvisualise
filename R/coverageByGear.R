@@ -24,21 +24,19 @@
 #' @examples
 #' \dontrun{
 #'
-#' myH1RawObject <- RDBEScore::createRDBESDataObject(
-#'   rdbesExtractPath = "../tests/testthat/h1_v_1_19_13"
-#' )
+#'  myH1RawObject <- RDBEScore::createRDBESDataObject(input = "tests/testthat/h1_v_20250211")
 #'
-#' myYear <- 1965
-#' myvesselFlag <- "ZW"
+#'  myPlots <- coverageByGear(
+#'    dataToPlot = myH1RawObject,
+#'    year = 1965,
+#'    vesselFlag = "ZW",
+#'    catchCat = "Lan",
+#'    landingsVariable = "CLoffWeight",
+#'    effortVariable = "CEnumFracTrips",
+#'    samplingVariable = "SAsampWtMes",
+#'  )
+#'  myPlots[1]
 #'
-#' myPlots <- coverageLandingsByGear(
-#'   dataToPlot = myH1RawObject,
-#'   year = myYear,
-#'   vesselFlag = myvesselFlag,
-#'   catchCat = "Lan"
-#' )
-#'
-#' myPlots[1]
 #' }
 coverageByGear <- function(dataToPlot,
                            year = NA,

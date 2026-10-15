@@ -100,7 +100,8 @@ Suggests:
     rmarkdown,
     testthat
 Depends: 
-    R (>= 4.1)
+    R (>= 4.1),
+    sf
 Imports: 
     dplyr, 
     data.table,
@@ -113,6 +114,5 @@ Imports:
     rlang,
     purrr,
     biscale,
-    sf,
     RDBEScore
 VignetteBuilder: knitr
