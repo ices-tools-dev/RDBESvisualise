@@ -39,7 +39,8 @@ preprocessSamplingDataForCoverage <- function(RDBESDataObject,
   if (verbose) {
     print("Preparing sample data")
   }
-#check hierarchy
+
+  # Check hierarchy
   H <- unique(RDBESDataObject[["DE"]]$DEhierarchy)
   if (verbose) {
     print(paste0("Upper hierarchy: ", H))
@@ -67,7 +68,7 @@ preprocessSamplingDataForCoverage <- function(RDBESDataObject,
     # obtain the key to FO, in order to extract time information from there
     SA <- merge(
       RDBESDataObject[["SA"]],
-      RDBEScore::createTableOfRDBESIds(RDBESDataObject) |> dplyr::select(SAid, OSid, BVid, FMid, DEid, SDid) |> dplyr::distinct()
+      RDBEScore:::createTableOfRDBESIds(RDBESDataObject) |> dplyr::select(SAid, OSid, BVid, FMid, DEid, SDid) |> dplyr::distinct()
     )
     SA <- merge(SA, RDBESDataObject[["OS"]] |> dplyr::select(OSid, OSsamDate), by = "OSid")
     SA$month <- stringr::str_sub(SA$OSsamDate, 6, 7)
@@ -79,7 +80,7 @@ preprocessSamplingDataForCoverage <- function(RDBESDataObject,
     }
     SA <- merge(
       RDBESDataObject[["SA"]],
-      RDBEScore::createTableOfRDBESIds(RDBESDataObject) |> dplyr::select(SAid, BVid, FMid, DEid, SDid) |> dplyr::distinct()
+      RDBEScore:::createTableOfRDBESIds(RDBESDataObject) |> dplyr::select(SAid, BVid, FMid, DEid, SDid) |> dplyr::distinct()
     )
   }
 
@@ -88,15 +89,16 @@ preprocessSamplingDataForCoverage <- function(RDBESDataObject,
               RDBESDataObject[["DE"]] |> dplyr::select(DEid, DEsampScheme, DEyear, DEhierarchy),
               by = "DEid")
 
+  # Add general info (SD)
   if (generalVar) {
     #add general information
-    SD <- merge(SA, RDBESDataObject[["SD"]] |> dplyr::select(SDid, SDctry), by = "SDid")
+    SD <- merge(SA, RDBESDataObject[["SD"]] |> dplyr::select(SDid, SDctry)|>distinct(), by = "SDid")
   }
   if (bioVar) {
     #add biological variables and frequancy measures
     #lower hierarchy: A
-    if (length(RDBESDataObject[["FM"]]) != 0 &&
-        length(RDBESDataObject[["BV"]]) != 0) {
+    if (nrow(RDBESDataObject[["FM"]]) != 0 &&
+        nrow(RDBESDataObject[["BV"]]) != 0) {
       FM <- SA |> dplyr::mutate(SAFMid = paste0(SAid, FMid)) |> # I add new variable to don't lose intomation about lower hierarchy D
         dplyr::left_join(
           RDBESDataObject[["FM"]] |>
@@ -104,18 +106,19 @@ preprocessSamplingDataForCoverage <- function(RDBESDataObject,
             dplyr::select(SAFMid, FMclassMeas, FMnumAtUnit, FMtypeMeas,FMmethod),
           by = "SAFMid"
         )
+
       BVar <- FM |>
         dplyr::left_join(
-          RDBESDataObject[["BV"]] |> dplyr::select(BVid, BVfishId, BVtypeMeas, BVvalueMeas, BVvalUnitScale,BVmethod),
+          RDBESDataObject[["BV"]] |> dplyr::select(BVid, BVfishId, BVtypeMeas, BVvalueMeas, BVvalUnitScale,BVspecType),
           by = "BVid"
         )
       #SD information
       if (generalVar) {
-        SA <- merge(SD |> select(BVid, SDctry), BVar, by = "BVid")
+        SA <- merge(BVar,RDBESDataObject[["SD"]] |> select(SDid, SDctry)|>distinct(),  by = "SDid")
       }
     }
-    if (length(RDBESDataObject[["FM"]]) != 0 &&
-        length(RDBESDataObject[["BV"]]) == 0) {
+    if (nrow(RDBESDataObject[["FM"]]) != 0 &&
+        nrow(RDBESDataObject[["BV"]]) == 0) {
       #lower hierarchy: B
       BVar <- SA |> dplyr::mutate(SAFMid = paste0(SAid, FMid)) |> # I add new variable to don't lose intomation about lower hierarchy D
         dplyr::left_join(
@@ -129,8 +132,8 @@ preprocessSamplingDataForCoverage <- function(RDBESDataObject,
         SA <- merge(SD |> dplyr::mutate(SAFMid = paste0(SAid, FMid)), BVar, by = "SAFMid")
       }
     }
-    if (length(RDBESDataObject[["FM"]]) == 0 &&
-        length(RDBESDataObject[["BV"]]) != 0) {
+    if (nrow(RDBESDataObject[["FM"]]) == 0 &&
+        nrow(RDBESDataObject[["BV"]]) != 0) {
       #lower hierarchy: C
       BVar <- SA |> dplyr::mutate(SABVid = paste0(SAid, BVid)) |> # I add new variable to don't lose intomation about lower hierarchy
         dplyr::left_join(
@@ -142,7 +145,7 @@ preprocessSamplingDataForCoverage <- function(RDBESDataObject,
               BVfishId,
               BVtypeMeas,
               BVvalueMeas,
-              BVmethod,
+              BVspecType,
               BVvalUnitScale
             ),
           by = "SABVid"
@@ -152,8 +155,8 @@ preprocessSamplingDataForCoverage <- function(RDBESDataObject,
         SA <- merge(SD |> dplyr::mutate(paste0(SAid, BVid)), BVar, by = "SABVid")
       }
     }
-    if (length(RDBESDataObject[["FM"]]) == 0 &&
-        length(RDBESDataObject[["BV"]]) == 0) {
+    if (nrow(RDBESDataObject[["FM"]]) == 0 &&
+        nrow(RDBESDataObject[["BV"]]) == 0) {
       #lower hierarchy: D
       print(
         "No frequency measure and biological variables data.
@@ -206,5 +209,6 @@ preprocessSamplingDataForCoverage <- function(RDBESDataObject,
         month = NA
       )
   }
-  SA
+
+  return(SA)
 }
