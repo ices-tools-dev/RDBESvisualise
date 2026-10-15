@@ -21,7 +21,10 @@
 #' is returned as a list with components \code{$numeric} and
 #' \code{$categorical}.
 #'
-#' @param data A \code{data.frame} or \code{data.table}.
+#' @param data A \code{data.frame}, \code{data.table} or RDBESDataObject. For
+#'   an RDBESDataObject the table named by the first two letters of
+#'   \code{var[1]} is used (e.g. CL for "CLoffWeight"), so all columns must be
+#'   in that table.
 #' @param var Character vector of column names to summarise.
 #' @param valBy Character vector of grouping variables.
 #' @param filters Optional named list of filters applied before aggregation.
@@ -87,6 +90,9 @@ amountByGroup <- function(
     stop("'valBy' must be a character vector with at least one element.")
 
   `%||%` <- function(x, y) if (!is.null(x)) x else y
+  if (inherits(data, "RDBESDataObject")) {
+    data <- data[[substr(var[1], 1, 2)]]
+  }
   dt <- data.table::as.data.table(data)
 
   # check all columns exist

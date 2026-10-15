@@ -16,7 +16,10 @@ amountByGroup(
 )
 }
 \arguments{
-\item{data}{A \code{data.frame} or \code{data.table}.}
+\item{data}{A \code{data.frame}, \code{data.table} or RDBESDataObject. For
+an RDBESDataObject the table named by the first two letters of
+\code{var[1]} is used (e.g. CL for "CLoffWeight"), so all columns must be
+in that table.}
 
 \item{var}{Character vector of column names to summarise.}
 
