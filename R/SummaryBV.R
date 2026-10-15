@@ -29,9 +29,9 @@
 #' #to create plots and/or tables use
 #' summaryBiologicalVar(data,verbose,var="Age",by="DEhierarchy",year=2024,output_type,statistics)
 #'}
-var<-'Age'
+var<-'WeightMeasured'#'Age'
 by <-"SDctry"
-year<-2025
+year<-c(2022,2025,2023)
 verbose <-TRUE
 summaryBiologicalVar <- function(data,
                                  verbose = TRUE,
@@ -41,14 +41,8 @@ summaryBiologicalVar <- function(data,
                                  outputType,
                                  statistics) {
 
-  #required packages to run function
-  require(RDBEScore)
-  require(data.table)
-  require(ggplot2)
-  require(gridExtra)
-
   #validate RDBES Data Object
-  validateRDBESDataObject(data, verbose = verbose, strict = TRUE)
+  RDBEScore::validateRDBESDataObject(data, verbose = verbose, strict = TRUE)
 
   #check arguments of function
   if (!var %in% data$BV$BVtypeMeas) {
@@ -57,22 +51,20 @@ summaryBiologicalVar <- function(data,
         'The given measure type --->',
         var,
         '<--- is not present in the data. In your data is:',
-        paste(unique(data$BVtypeMeas), collapse = ', ')
+        paste(unique(data$BV$BVtypeMeas), collapse = ', ')
       )
     )
   }
 
-  if (!year %in% data$DE$DEyear) {
-    stop(paste(
-      'The given measure type --->',
-      year,
-      '<--- is not present in the data.'
+  missing_years <- year[!year %in% data$DE$DEyear]
+
+  if (length(missing_years) > 0) {
+    warning(paste(
+      "The given year(s) --->",
+      paste(missing_years, collapse = ", "),
+      "<--- are not present in the data."
     ))
   }
-
-  #palette
-  ###tu trzeba zmienic by czytało wprost z paczki
-  color <- readLines("../RDBESvisualise/data/colorCountryColScale.txt")
 
   #filter RDBESDataObejct
   data <- RDBEScore::filterRDBESDataObject(
@@ -85,7 +77,7 @@ summaryBiologicalVar <- function(data,
 
   byValues <- unique(data[[substr(by, 1, 2)]][[by]])
 
-  plotData <- getLinkedDataFromLevel(by, byValues, data, "BV", verbose = verbose)
+  plotData <- RDBEScore::getLinkedDataFromLevel(by, byValues, data, "BV", verbose = verbose)
 
   plotData <- plotData[BVtypeMeas == var, ]
 
@@ -100,6 +92,8 @@ summaryBiologicalVar <- function(data,
   #Counting
   subset <- plotData[, .(nIndividuals = .N), by = c(by, "BVvalueMeas")]
 
+  #add info about hierarchy
+  subset$hierarchy <- hierarchy
 
 
   if (outputType == 'table') {
@@ -107,11 +101,14 @@ summaryBiologicalVar <- function(data,
   }
 
   if(outputType == 'plot'){
-    plot <- ggplot(subset, aes(x = BVvalueMeas, y = nIndividuals)) +
-      geom_bar(stat = "identity", color = "black") +
-      labs(title = paste0("Number of individuals by ", var," and ", by), x = var, y = 'n individuals') +
-      facet_wrap(~get(by))+
-      scale_fill_manual(values = color)
+    plot <- ggplot2::ggplot(subset, ggplot2::aes(x = BVvalueMeas, y = nIndividuals, fill = BVvalueMeas)) +
+      ggplot2::geom_bar(stat = "identity",fill = colourPalette[1], color = "black") +
+      ggplot2::labs(title = paste0("Number of individuals by ", var," and ", by),
+                    x = var,
+                    y = 'Number of individuals',
+                    caption = paste0("* Data from ",year)) +
+      ggplot2::facet_wrap(~get(by))+
+      ggplot2::theme_light()
     print(plot)
   }
 
@@ -119,9 +116,9 @@ summaryBiologicalVar <- function(data,
     max_oy <- max(subset$nIndividuals)
     min_oy <- min(subset$nIndividuals)
 
-    p<- ggplot(subset, aes(BVvalueMeas, nIndividuals)) +
-      geom_boxplot(color="black")+
-      facet_wrap(~get(by))+
+    p<- ggplot2::ggplot(subset, ggplot2::aes(BVvalueMeas, nIndividuals)) +
+      ggplot2::geom_boxplot(fill = colourPalette[1],color="black")+
+      ggplot2::facet_wrap(~get(by))+
       stat_summary(fun.y=mean, geom="point", shape=4, size=3, color="black", fill="black")+
       scale_y_continuous(limits = c(min_oy,max_oy))+theme_bw()+
       theme(panel.background = element_blank(),
