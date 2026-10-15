@@ -176,6 +176,8 @@ test_that("Spatial bivariate plot gives error when no sample rectangles are spec
 
   # remove rectangles from landings
   myH1RawObject[["SA"]]$SAstatRect <- NA
+  # missing SA rectangles are taken from FO, so remove those as well
+  myH1RawObject[["FO"]]$FOstatRect <- NA
 
   # Spatial bivariate plot
   expect_error(
