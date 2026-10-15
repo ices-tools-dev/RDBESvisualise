@@ -2,62 +2,101 @@
 % Please edit documentation in R/produceSamplingCoverage.R
 \name{produceSamplingCoverage}
 \alias{produceSamplingCoverage}
-\title{Provides tabular or graphical outputs which compare sampling versus 
-landing coverage across the level of a factor variable specified by the user.}
+\title{Compare the sampling with the landings or effort}
 \usage{
 produceSamplingCoverage(
   RDBESobj,
-  var = c("SAsampWtLive", "SAnumSamp", "SAamountSamp", "SAsampWtMes"),
-  contrastVar = c("CLoffWeight", "CLsciWeight", "CLtotalOfficialLandingsValue",
-    "CEnumFracTrips", "CEnumDomTrip"),
-  by = NA,
-  type = c("Spatial", "Time", "Fleet", "Species"),
-  resolution = c("ICES Subdivision", "ICES Rectangle", "Year", "Semester", "Quarter",
-    "Month", "Scale of fishery", "Species unit", "Species group"),
+  var = c("SAsampWtLive", "SAnumSamp", "SAsampWtMes", "SAamountSamp"),
+  contrastVar = "CLoffWeight",
+  resolution = c("ICES Rectangle", "ICES Area", "Year", "Semester", "Quarter", "Month",
+    "Gear", "Vessel length", "Species"),
+  by = NULL,
   year = NA,
   quarter = NA,
   vesselFlag = NA,
-  catchCat = NA,
-  showSamples = T,
-  output_type = NA,
-  verbose = T
+  catchCat = c("Lan", "Dis", "Catch"),
+  showSamples = TRUE,
+  output_type = c("plot", "table"),
+  verbose = FALSE
 )
 }
 \arguments{
-\item{RDBESobj}{RDBES data to be plotted (as an RDBESDataObject)}
+\item{RDBESobj}{An RDBESDataObject with sample data from a single hierarchy
+and CL (or CE) data}
 
-\item{var}{The unit of the variable of interest. Possible values are "WeightSampled", "NumberSamples", "IndividualsSampled".}
+\item{var}{The sampling variable: "SAsampWtLive", "SAnumSamp",
+"SAsampWtMes", or "SAamountSamp" for the number of samples}
 
-\item{contrastVar}{A variable to be selected by the user.  landing or effort selected by the user.}
+\item{contrastVar}{The landings (e.g. "CLoffWeight") or effort (e.g.
+"CEnumFracTrips") variable to compare with}
 
-\item{by}{(Optional) One (or more) factor(s) to split the data.}
+\item{resolution}{The level at which the sampling and the landings or effort
+are compared: "ICES Rectangle", "ICES Area", "Year", "Semester", "Quarter",
+"Month", "Gear", "Vessel length" or "Species" (landings only)}
 
-\item{type}{Type of comparison to be represented by the plot. Possible values are "Spatial", "Time", "Fleet", "Species".}
+\item{by}{(Optional) One or more additional levels from \code{resolution} used to
+split the data, e.g. "Quarter". The relative values are calculated within
+each level of \code{by}. Default is NULL.}
 
-\item{resolution}{The resolution at which the type is required. Possible values: "ICES Subdivision", "ICES Rectangle", "Year", "Semester", "Quarter", "Month", "ScaleFishery", "SpeciesList", "SpeciesGroupList".}
-
-\item{year}{(Optional) Year to be assessed. Default is all years contained in RDBESobj data.}
+\item{year}{(Optional) Year to be assessed e.g 2021}
 
 \item{quarter}{(Optional) Quarter to be assessed - possible choices 1,2,3 or 4}
 
-\item{vesselFlag}{(Optional) Registered Country of Vessel - e.g "IE", "ES" or "FR"}
+\item{vesselFlag}{(Optional) Registered Country of Vessel - e.g "IE", "ES" or
+"FR"}
 
-\item{showSamples}{(Optional) Determines whether the samples data should be displayed or not. Default is TRUE.}
+\item{catchCat}{Sampling catch category - "Lan", "Dis" or "Catch"}
 
-\item{output_type}{(Optional) Determines whether the output is tabular or a graphical plot. Possible values are "table" or "plot". Default is "plot".}
+\item{showSamples}{(Optional) Show the sampling as circles on the maps.
+Default is TRUE.}
 
-\item{verbose}{(Optional) Set to TRUE to print more information. Default is FALSE}
+\item{output_type}{(Optional) "plot" (default) or "table"}
+
+\item{verbose}{(Optional) Set to TRUE to print more information. Default is
+FALSE}
 }
 \value{
-table or plot depending on user selection.
+For \code{output_type = "table"} a data frame with one row per level of
+\code{resolution} (and \code{by}) and the columns \code{sampling} and \code{contrast} (the sums
+of \code{var} and \code{contrastVar}) and \code{samplingShare} and \code{contrastShare} (their
+relative values). For \code{output_type = "plot"} a ggplot2 plot: a map for
+"ICES Rectangle" and "ICES Area", otherwise a bar plot of the relative
+values.
 }
 \description{
-Provides tabular or graphical outputs which compare sampling versus 
-landing coverage across the level of a factor variable specified by the user.
+Sums a sampling variable and a landings or effort variable (the contrast
+variable) at the chosen resolution and compares their relative values. Large
+landings or effort with little sampling show gaps in the sampling coverage.
 }
+\details{
+Records with a missing value of \code{var} or \code{contrastVar} are excluded from
+the sums, with a warning. Levels of \code{resolution} that occur only in the
+sampling or only in the contrast data get a sum of 0 for the other data.
+Records without a rectangle or area code are kept in the table but cannot be
+drawn on the maps.
+}
+\section{Development review}{
+
+\itemize{
+\item AI-assisted: Yes
+\item Review: (pending)
+\item Notes/scope: Rewritten to a working proof of concept (#11). The \code{type}
+parameter of the earlier draft is implied by \code{resolution}. Sums checked
+against manual calculations with the H1 test data in
+\code{tests/testthat/h1_v_20250211}.
+}
+}
+
 \examples{
 \dontrun{
-
-
+myH1RawObject <- RDBEScore::createRDBESDataObject(
+  input = "tests/testthat/h1_v_20250211"
+)
+produceSamplingCoverage(myH1RawObject,
+  var = "SAnumSamp",
+  contrastVar = "CLoffWeight",
+  resolution = "Quarter",
+  catchCat = "Lan"
+)
 }
 }

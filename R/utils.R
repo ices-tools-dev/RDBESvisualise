@@ -388,8 +388,8 @@ preprocessLandingsDataForCoverage <- function(dataToPlot, verbose) {
   # get landings
   ld <- dataToPlot[["CL"]][, c(
     "CLlanCou", "CLvesFlagCou", "CLyear", "CLquar",
-    "CLmonth", "CLstatRect", "CLspecCode", "CLspecFAO", "CLlandCat",
-    "CLcatchCat", "CLmetier6", "CLoffWeight", "CLsciWeight"
+    "CLmonth", "CLarea", "CLstatRect", "CLspecCode", "CLspecFAO", "CLlandCat",
+    "CLcatchCat", "CLmetier6", "CLvesLenCat", "CLoffWeight", "CLsciWeight"
   )]
 
   ld$CLGear <- substr(ld$CLmetier6, 0, 3)
@@ -429,7 +429,7 @@ preprocessEffortDataForCoverage <- function(dataToPlot, verbose) {
 
   # get effort
   ef <- dataToPlot[["CE"]][, c(
-    "CEvesFlagCou", "CEyear", "CEquar", "CEmonth",
+    "CEvesFlagCou", "CEyear", "CEquar", "CEmonth", "CEarea",
     "CEstatRect", "CEmetier6", "CEvesLenCat", "CEnumFracTrips",
     "CEnumDomTrip", "CEoffDaySea", "CEsciDaySea", "CEoffFishDay",
     "CEsciFishDay", "CEoffNumHaulSet", "CEsciNumHaulSet", "CEoffVesFishHour",
