@@ -17,6 +17,9 @@
 # Output files from R CMD check
 /*.Rcheck/
 
+# Plots printed while running the tests
+tests/testthat/Rplots.pdf
+
 # RStudio files
 .Rproj.user/
 
