@@ -7,7 +7,7 @@
 \format{
 A data frame containing spatial information
 \describe{
-  \item{Area_Full}{Name of the ICES statistical area}...
+\item{Area_Full}{Name of the ICES statistical area}...
 }
 }
 \source{

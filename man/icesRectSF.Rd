@@ -7,7 +7,7 @@
 \format{
 A data frame containing spatial information
 \describe{
-  \item{ICESNAME}{Name of the stat rectangle}...
+\item{ICESNAME}{Name of the stat rectangle}...
 }
 }
 \source{
