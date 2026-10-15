@@ -27,8 +27,30 @@ RCGPalette <- c(
   "#E5C494", "#B15928", "#FDDAEC", "#E7298A", "#FFFFCC",
   "#FFED6F", "#F2F2F2", "#AAAAAA", "#666666"
 )
-paletteForPlotting <- RCGPalette
 paletteForQuarters <- c("#B2DF8A","#1F78B4","#E31A1C","#FDBF6F")
+
+#' Internal function to get distinct colours for plotting
+#'
+#' Returns the RCG palette colours first and then the colours of
+#' [colourPalette], so that up to 64 groups get distinct colours (#7). More
+#' colours than that are interpolated.
+#'
+#' @param n Number of colours needed
+#'
+#' @return A character vector of `n` colours
+#'
+#' @section Development review:
+#' - AI-assisted: Yes
+#' - Review: (pending)
+#' - Notes/scope: Checked that the first 19 colours are the RCG palette.
+#' @keywords internal
+getPaletteForPlotting <- function(n) {
+  pal <- unique(c(RCGPalette, unname(RDBESvisualise::colourPalette)))
+  if (n > length(pal)) {
+    pal <- grDevices::colorRampPalette(pal)(n)
+  }
+  pal[seq_len(n)]
+}
 
 #' Internal function to format numbers for plot labels without scientific
 #' notation, so that the user's `scipen` option does not need changing (#20)
@@ -614,13 +636,8 @@ barPlotsByGroupingVariable <- function(landingsData = NA,
       uniqueGVValues <- unique(uniqueGVValues)
     }
     # Create our palette to cover all the grouping variable distinct values
-    if (length(uniqueGVValues) > 0 &&
-        length(uniqueGVValues) < length(paletteForPlotting)){
-      gvColours <- paletteForPlotting[seq_len(length(uniqueGVValues))]
-      names(gvColours) <- uniqueGVValues
-    } else {
-      gvColours <- paletteForPlotting
-    }
+    gvColours <- getPaletteForPlotting(length(uniqueGVValues))
+    names(gvColours) <- uniqueGVValues
 
     # Landings
     if (landings) {
@@ -705,7 +722,7 @@ createBarPlot <- function(dataToPlot,
                           title,
                           plotQuarters = FALSE,
                           showLegend = FALSE,
-                          paletteToUse = "paletteForPlotting") {
+                          paletteToUse = RCGPalette) {
 
   # for testing
   # dataToPlot = ds

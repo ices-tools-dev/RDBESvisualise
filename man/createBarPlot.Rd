@@ -9,7 +9,7 @@ createBarPlot(
   title,
   plotQuarters = FALSE,
   showLegend = FALSE,
-  paletteToUse = "paletteForPlotting"
+  paletteToUse = RCGPalette
 )
 }
 \arguments{

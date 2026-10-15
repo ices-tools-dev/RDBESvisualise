@@ -93,3 +93,16 @@
 #' }
 #' @source ICES Spatial Facility, via icesRectSF and icesAreaSF
 "icesStatRecLookup"
+#' Colour palette for countries
+#'
+#' A named vector of 47 colours, one for each country code, so that a country
+#' gets the same colour in all plots. The plotting functions also use these
+#' colours, after the RCG palette, when there are more than 19 groups to plot.
+#' Built by `data-raw/palette.R`.
+#'
+#' @format A named character vector of hexadecimal colours, named by
+#' ISO 3166-1 alpha-2 country code
+#' @source RColorBrewer palettes Set1, Set3, Set2, Dark2 and Pastel1
+#' @examples
+#' colourPalette[c("EE", "PL", "SE")]
+"colourPalette"
