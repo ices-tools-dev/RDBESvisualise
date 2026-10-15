@@ -13,6 +13,10 @@ globalVariables(c(
   "SamplingCount", "SamplingGearCountQuar",
   "SamplingGearCountYear",
   "VDvesFlsgCou", "VDflgCtry",
+  "CE", "CEyear", "CEquar", "CEstatRect", "CEvesFlagCou",
+  "year", "quarter", "Key", "groupingVariable", "variableToSum",
+  "sumByGroupYearQuarter", "sumByGroupYear", "sumByYear", "temp",
+  "var1", "var2", "mean_quantiles",
   "LandingCountYear", "LandingCount", "LandingCountAll",
   "LandingsGearCount", "LandingsGearCountQuar",
   "totalSpeCountAll", "SamplingCountYear", "totalGearYear",
@@ -237,37 +241,11 @@ prepareCoverageData <- function(dataToPlot,
   coverageData
 }
 
-#' as.integer.or.dbl
-#'
-#' This function checks if any value in a vector is above 2e+09, and if so runs
-#' `round(as.double())` on it. If not it uses `as.integer()` instead. This is to
-#' get around the 32-bit limitation in R that integers cannot be larger than
-#' around 2e+09, in which case `as.integer` would return an `NA`.
-#'
-#' @param x vector to be coerced to integers or doubles
-#'
-#' @return a vector of integers or doubles
-#' @importFrom stats na.omit
-#' @keywords internal
-
-as.integer.or.dbl <- function(x) {
-  # we apply as.numeric in case it is a character vector
-  # we apply as.omit because that causes an error
-  if (any(as.numeric(na.omit(x)) > 2e+09)) {
-    out <- round(as.double(x))
-  } else {
-    out <- as.integer(x)
-  }
-
-  return(out)
-}
-
-
 #' Internal function to filter landings data for coverageXXX functions
 #'
 #' @param landingsData A data table of landings data ("CL")
-#' @param year (Optional) Year to be assessed e.g 2021
-#' @param quarter (Optional) Quarter to be assessed - possible choices 1,2,3 or 4
+#' @param yearToFilter (Optional) Year to be assessed e.g 2021
+#' @param quarterToFilter (Optional) Quarter to be assessed - possible choices 1,2,3 or 4
 #' @param vesselFlag (Optional) Registered Country of Vessel - e.g "IE", "ES" or "FR"
 #' @param verbose (Optional) Set to TRUE to print more information. Default is
 #' FALSE
@@ -323,8 +301,8 @@ filterLandingsDataForCoverage <- function(landingsData,
 #' Internal function to filter sample data for coverageXXX functions
 #'
 #' @param sampleData An RDBESEstObject
-#' @param year (Optional) Year to be assessed e.g 2021
-#' @param quarter (Optional) Quarter to be assessed - possible choices 1,2,3 or 4
+#' @param yearToFilter (Optional) Year to be assessed e.g 2021
+#' @param quarterToFilter (Optional) Quarter to be assessed - possible choices 1,2,3 or 4
 #' @param vesselFlag (Optional) Registered Country of Vessel - e.g "IE", "ES" or "FR".
 #' @param catchCat (Optional) Sampling catch category - landings, catch or discards
 #' @param verbose (Optional) Set to TRUE to print more information. Default is
@@ -392,8 +370,8 @@ filterSampleDataForCoverage <- function(sampleData,
 #' Internal function to filter effort data for coverageXXX functions
 #'
 #' @param effortData A data table of effort data ("CE")
-#' @param year Year to be assessed e.g 2021
-#' @param quarter Quarter to be assessed - possible choices 1,2,3 or 4
+#' @param yearToFilter Year to be assessed e.g 2021
+#' @param quarterToFilter Quarter to be assessed - possible choices 1,2,3 or 4
 #' @param vesselFlag Registered Country of Vessel - e.g "IE", "ES" or "FR"
 #' @param verbose (Optional) Set to TRUE to print more information. Default is
 #' FALSE
@@ -537,8 +515,9 @@ preprocessEffortDataForCoverage <- function(dataToPlot, verbose) {
 #' @param catchCat Catch category
 #' @param quarter Quarter of year
 #' @param landingsVariable Variable from CL to plot
-#' @param landingsVariable Variable from CE to plot
+#' @param effortVariable Variable from CE to plot
 #' @param samplingVariable variable from SA to plot
+#' @inheritParams coverageByGroupingVariable
 #'
 #' @return A tagList of plotly plots
 #'
@@ -795,6 +774,8 @@ barPlotsByGroupingVariable <- function(landingsData = NA,
 #' @param title  Title to use for the plot
 #' @param plotQuarters Show bars coloured by quarter?
 #' @param showLegend Show the legend?
+#' @param paletteToUse Colours for the bars, named by the grouping variable
+#' values
 #'
 #' @return A plotly plot
 #'
@@ -826,7 +807,7 @@ createBarPlot <- function(dataToPlot,
     dataToPlot,
     x = ~groupingVariable,
     y = ~relativeValue,
-    color = as.formula(formulaForColour),
+    color = stats::as.formula(formulaForColour),
     type = "bar",
     showlegend = showLegend,
     colors = paletteToUse
@@ -891,7 +872,7 @@ formatDataForBarPlotsByGroupingVariable <- function(dataToFormat, topN) {
   sortOrder$temp <- 1
   sortOrder <- sortOrder %>%
     dplyr::distinct(year, groupingVariable, .keep_all = TRUE) %>%
-    dplyr::arrange(desc(sumByGroupYear), .by_group = TRUE) %>%
+    dplyr::arrange(dplyr::desc(sumByGroupYear), .by_group = TRUE) %>%
     dplyr::mutate("sortOrder" = cumsum(temp)) %>%
     dplyr::select(-temp)
   d1 <- dplyr::left_join(d1,

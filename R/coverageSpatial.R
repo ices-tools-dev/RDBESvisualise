@@ -8,7 +8,7 @@
 #' @param dataToPlot RDBES data to be plotted (as an RDBESDataObject)
 #' @param year Year to be assessed e.g 2021
 #' @param vesselFlag Registered Country of Vessel - e.g "IE", "ES" or "FR".
-#' @param commercialVariable Landings variable to be assessed
+#' @inheritParams coverageByGroupingVariable
 #' @param samplingVariable Sampling Variable to be assessed
 #' @param catchCat Sampling catch category - "Lan", "Dis",or "Catch"
 #' @param verbose (Optional) Set to TRUE to print more information. Default is
@@ -502,7 +502,7 @@ getQuantiles <- function(dataToProcess, numberOfClasses = 6) {
   # extract quantiles
   myQuantiles <- dataToProcess %>%
     dplyr::pull(var1) %>%
-    quantile(
+    stats::quantile(
       probs = seq(0, 1, length.out = numberOfClasses + 1),
       na.rm = TRUE
     ) %>%

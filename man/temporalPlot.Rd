@@ -28,7 +28,9 @@ temporalPlot(
 
 \item{catchCat}{Catch category}
 
-\item{landingsVariable}{Variable from CE to plot}
+\item{landingsVariable}{Variable from CL to plot}
+
+\item{effortVariable}{Variable from CE to plot}
 
 \item{samplingVariable}{variable from SA to plot}
 }

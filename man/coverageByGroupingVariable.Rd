@@ -44,11 +44,19 @@ that we want to group by}
 \item{catchCat}{Sampling catch category - "Lan", "Dis",or "Catch"}
 
 \item{includeLandings}{(Optional) Set to TRUE to include landings.
-Default is TRUE
-#' @param includeEffort (Optional) Set to TRUE to include effort
-Default is TRUE
-#' @param includeSamples (Optional) Set to TRUE to include samples.
 Default is TRUE}
+
+\item{includeEffort}{(Optional) Set to TRUE to include effort
+Default is TRUE}
+
+\item{includeSamples}{(Optional) Set to TRUE to include samples.
+Default is TRUE}
+
+\item{topN}{(Optional) Set to a positive integer N to limit the data that is
+plotted to the top N values of groupingVariable each year. Default is NA.}
+
+\item{plotQuarters}{(Optional) Set to TRUE to colour the data in the
+plots by quarter - default is FALSE.}
 
 \item{verbose}{(Optional) Set to TRUE to print more information. Default is
 FALSE}

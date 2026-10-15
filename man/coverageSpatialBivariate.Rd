@@ -29,14 +29,25 @@ coverageSpatialBivariate(
 
 \item{vesselFlag}{Registered Country of Vessel - e.g "IE", "ES" or "FR".}
 
+\item{landingsVariable}{Landings variable to be assessed}
+
+\item{effortVariable}{Effort variable to be assessed}
+
 \item{samplingVariable}{Sampling Variable to be assessed}
 
 \item{catchCat}{Sampling catch category - "Lan", "Dis",or "Catch"}
 
+\item{includeLandings}{(Optional) Set to TRUE to include landings.
+Default is TRUE}
+
+\item{includeEffort}{(Optional) Set to TRUE to include effort
+Default is TRUE}
+
+\item{includeSamples}{(Optional) Set to TRUE to include samples.
+Default is TRUE}
+
 \item{verbose}{(Optional) Set to TRUE to print more information. Default is
 FALSE}
-
-\item{commercialVariable}{Landings variable to be assessed}
 }
 \value{
 A tagList of ggplot2 plots

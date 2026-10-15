@@ -33,9 +33,20 @@ barPlotsByGroupingVariable(
 
 \item{quarter}{Quarter of year}
 
-\item{landingsVariable}{Variable from CE to plot}
+\item{landingsVariable}{Variable from CL to plot}
+
+\item{effortVariable}{Variable from CE to plot}
 
 \item{samplingVariable}{variable from SA to plot}
+
+\item{groupingVariable}{The variable from the landings/effort/sample data
+that we want to group by}
+
+\item{topN}{(Optional) Set to a positive integer N to limit the data that is
+plotted to the top N values of groupingVariable each year. Default is NA.}
+
+\item{plotQuarters}{(Optional) Set to TRUE to colour the data in the
+plots by quarter - default is FALSE.}
 }
 \value{
 A tagList of plotly plots

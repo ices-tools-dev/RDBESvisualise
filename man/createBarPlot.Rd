@@ -20,6 +20,9 @@ createBarPlot(
 \item{plotQuarters}{Show bars coloured by quarter?}
 
 \item{showLegend}{Show the legend?}
+
+\item{paletteToUse}{Colours for the bars, named by the grouping variable
+values}
 }
 \value{
 A plotly plot
