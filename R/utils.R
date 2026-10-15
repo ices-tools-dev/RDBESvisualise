@@ -806,7 +806,7 @@ barPlotsByGroupingVariable <- function(landingsData = NA,
       myTitle <- paste0(myTitle, "Top ", topN, " values of ")
     }
     if (samples) {
-      myTitle <- paste0(myTitle, groupingVariable, " (", catchCat, ") ")
+      myTitle <- paste0(myTitle, groupingVariable, " (Sampling catchCat=", catchCat, ") ")
     }
     myTitle <- paste0(myTitle, "- Relative Values per Plot \n in ")
     if (!is.na(quarter)) {
