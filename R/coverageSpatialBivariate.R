@@ -20,10 +20,6 @@
 #' @examples
 #' \dontrun{
 #'
-#' myH1RawObject <- RDBEScore::createRDBESDataObject(
-#'   rdbesExtractPath = "../tests/testthat/h1_v_1_19_13"
-#' )
-#'
 #'  myH1RawObject <- RDBEScore::createRDBESDataObject(input = "tests/testthat/h1_v_20250211")
 #'
 #'  myPlots <- coverageSpatialBivariate(
