@@ -93,26 +93,30 @@ Description:
 License: GPL-3 + file LICENSE
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.3.3
 Roxygen: list(markdown = TRUE)
-Suggests: 
+Suggests:
+    icesVocab,
     knitr,
     rmarkdown,
     testthat
-Depends: 
+Depends:
     R (>= 4.1),
     sf
-Imports: 
-    dplyr, 
+Imports:
+    dplyr,
     data.table,
     lubridate,
     ggiraph,
-    ggplot2,   
+    ggplot2,
     plotly,
     magrittr,
     htmltools,
     rlang,
-    purrr,
     biscale,
+    cowplot,
+    grDevices,
+    sp,
+    stats,
     RDBEScore
 VignetteBuilder: knitr
+Config/roxygen2/version: 8.1.1
