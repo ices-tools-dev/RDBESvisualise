@@ -92,6 +92,86 @@ warnMissingValues <- function(data, variable, dataLabel) {
   invisible(nMissing)
 }
 
+#' Internal function to count the values of a column in RDBES tables
+#'
+#' @param RDBESDataObject An RDBESDataObject
+#' @param tables The tables to use. If NULL, all tables with data that have
+#' the column.
+#' @param columnSuffix The column name without the table prefix, e.g.
+#' "selectMeth" for `VSselectMeth`, `FTselectMeth`, ...
+#' @param notSampledOnly Only count the units that were not sampled
+#' (`<table>samp` is "N")?
+#'
+#' @return A data frame with the columns `table`, `value`, `n` and
+#' `percentage` (within each table), or NULL if there is nothing to count.
+#' Missing and empty values are counted as "(missing)".
+#'
+#' @section Development review:
+#' - AI-assisted: Yes
+#' - Review: (pending)
+#' @keywords internal
+countTableValues <- function(RDBESDataObject,
+                             tables,
+                             columnSuffix,
+                             notSampledOnly = FALSE) {
+  hasColumn <- vapply(names(RDBESDataObject), function(tableName) {
+    tableData <- RDBESDataObject[[tableName]]
+    !is.null(tableData) && nrow(tableData) > 0 &&
+      paste0(tableName, columnSuffix) %in% names(tableData)
+  }, logical(1))
+  if (is.null(tables)) {
+    tables <- names(RDBESDataObject)[hasColumn]
+  }
+  noColumn <- setdiff(tables, names(RDBESDataObject)[hasColumn])
+  if (length(noColumn) > 0) {
+    stop("No ", columnSuffix, " data in table(s): ",
+         paste(noColumn, collapse = ", "))
+  }
+
+  counts <- lapply(tables, function(tableName) {
+    tableData <- RDBESDataObject[[tableName]]
+    values <- as.character(tableData[[paste0(tableName, columnSuffix)]])
+    if (notSampledOnly) {
+      values <- values[tableData[[paste0(tableName, "samp")]] %in% "N"]
+    }
+    if (length(values) == 0) {
+      return(NULL)
+    }
+    values[is.na(values) | values == ""] <- "(missing)"
+    n <- table(values)
+    data.frame(table = tableName,
+               value = names(n),
+               n = as.vector(n),
+               percentage = 100 * as.vector(n) / sum(n))
+  })
+  do.call(rbind, counts)
+}
+
+#' Internal function to plot percentages by table as stacked bars
+#'
+#' @param counts A data frame from [countTableValues()]
+#' @param fillLabel The legend title
+#'
+#' @return A ggplot2 plot
+#'
+#' @section Development review:
+#' - AI-assisted: Yes
+#' - Review: (pending)
+#' @keywords internal
+plotTablePercentages <- function(counts, fillLabel) {
+  ggplot2::ggplot(counts, ggplot2::aes(
+    x = factor(.data$table, levels = unique(.data$table)),
+    y = .data$percentage,
+    fill = .data$value
+  )) +
+    ggplot2::geom_col() +
+    ggplot2::scale_fill_manual(
+      values = getPaletteForPlotting(length(unique(counts$value)))
+    ) +
+    ggplot2::labs(x = "Table", y = "Percentage", fill = fillLabel) +
+    ggplot2::theme_bw()
+}
+
 #' Internal function to prepare and filter the landings, effort and sample
 #' data for the coverageXXX functions
 #'
