@@ -30,6 +30,21 @@ RCGPalette <- c(
 paletteForPlotting <- RCGPalette
 paletteForQuarters <- c("#B2DF8A","#1F78B4","#E31A1C","#FDBF6F")
 
+#' Internal function to format numbers for plot labels without scientific
+#' notation, so that the user's `scipen` option does not need changing (#20)
+#'
+#' @param x A numeric vector
+#'
+#' @return A character vector
+#'
+#' @section Development review:
+#' - AI-assisted: Yes
+#' - Review: (pending)
+#' @keywords internal
+formatNumber <- function(x) {
+  format(x, scientific = FALSE, big.mark = ",", trim = TRUE)
+}
+
 #' Internal function to warn when a variable to be summed has missing values
 #'
 #' Missing values are excluded from the sums, so the relative values only

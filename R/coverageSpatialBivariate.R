@@ -376,14 +376,16 @@ bivariatePlotCreateGraph <- function(dataToPlot,
   # get ICES rectangles feature collection
   bi_fc <- sf::st_as_sf(ices_rect_l)
 
-  # ICES rectangles feature collection without NAs for bounding box
-  bi_fc_No_NA <- na.omit(bi_fc)
+  # ICES rectangles feature collection without NAs for bounding box, only
+  # draw the rectangles and shoreline around it (#5)
+  plotExtent <- sf::st_bbox(bi_fc[!is.na(bi_fc$bi_class), ])
+  bi_fc <- cropToExtent(bi_fc, plotExtent)
+  shorelineToPlot <- cropToExtent(RDBESvisualise::shoreline, plotExtent)
 
   # create map
   map <- ggplot2::ggplot() +
-    ggplot2::geom_polygon(
-      data = RDBESvisualise::shoreline,
-      ggplot2::aes(x = long, y = lat, group = group),
+    ggplot2::geom_sf(
+      data = shorelineToPlot,
       color = "azure2",
       fill = "azure4",
       show.legend = FALSE
@@ -405,8 +407,8 @@ bivariatePlotCreateGraph <- function(dataToPlot,
       subtitle = subtitle
     ) +
     ggplot2::coord_sf(
-      xlim = c(sf::st_bbox(bi_fc_No_NA)[1], sf::st_bbox(bi_fc_No_NA)[3]),
-      ylim = c(sf::st_bbox(bi_fc_No_NA)[2], sf::st_bbox(bi_fc_No_NA)[4]),
+      xlim = plotExtent[c("xmin", "xmax")],
+      ylim = plotExtent[c("ymin", "ymax")],
       expand = FALSE
     ) +
     ggplot2::theme(

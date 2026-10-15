@@ -523,19 +523,12 @@ getQuantiles <- function(dataToProcess, numberOfClasses = 6) {
     myQuantiles[1] <- myQuantiles[1] -1
   }
 
-  # create custom labels
-  myLabels <- purrr::imap_chr(myQuantiles, function(., idx) {
-    return(paste0(
-      round(myQuantiles[idx], 10),
-      " - ",
-      round(myQuantiles[idx + 1], 10)
-    ))
-  })
-
-  # remove last label that includes NA
-  myLabels <- head(myLabels, -1)
-
-  #print(myLabels)
+  # create custom labels without scientific notation (#20)
+  myLabels <- paste0(
+    formatNumber(myQuantiles[-length(myQuantiles)]),
+    " - ",
+    formatNumber(myQuantiles[-1])
+  )
 
   # create new variable with quantiles - landings
   dataToProcess <- dataToProcess %>%
@@ -578,22 +571,17 @@ spatialPlotCreateGraph <- function(dataToPlot,
     plotPointsData <- TRUE
   }
 
-  # get extent of plot
-  # No_NA_l <- ices_rects_l[ices_rects_l$cl != "NA", ]
-  # No_NA <- dataToPlot[dataToPlot$var1 != "NA", ]
-  No_NA <- dataToPlot[!is.na(dataToPlot$var1), ]
-  xlim1 <- sf::st_bbox(No_NA)[1]
-  ylim2 <- sf::st_bbox(No_NA)[2]
-  xlim3 <- sf::st_bbox(No_NA)[3]
-  ylim4 <- sf::st_bbox(No_NA)[4]
-
+  # get extent of plot and only draw the rectangles and shoreline around it -
+  # drawing all of them made the interactive plot very slow (#5)
+  plotExtent <- sf::st_bbox(dataToPlot[!is.na(dataToPlot$var1), ])
+  dataToPlot <- cropToExtent(dataToPlot, plotExtent)
+  shorelineToPlot <- cropToExtent(RDBESvisualise::shoreline, plotExtent)
 
   # plot univariate map with points
 
   gg <- ggplot2::ggplot(data = dataToPlot) +
-    ggplot2::geom_polygon(
-      data = RDBESvisualise::shoreline,
-      ggplot2::aes(x = long, y = lat, group = group),
+    ggplot2::geom_sf(
+      data = shorelineToPlot,
       color = "white",
       fill = "gray",
       show.legend = FALSE
@@ -601,7 +589,7 @@ spatialPlotCreateGraph <- function(dataToPlot,
     ggiraph::geom_sf_interactive(
       ggplot2::aes(
         fill = mean_quantiles,
-        tooltip = paste(tooltipText, var1)
+        tooltip = paste(tooltipText, formatNumber(var1))
       ),
       color = "white",
       size = 0.1
@@ -618,8 +606,8 @@ spatialPlotCreateGraph <- function(dataToPlot,
       )
     ) +
     ggplot2::coord_sf(
-      xlim = c(xlim1, xlim3),
-      ylim = c(ylim2, ylim4)
+      xlim = plotExtent[c("xmin", "xmax")],
+      ylim = plotExtent[c("ymin", "ymax")]
     )
 
 
@@ -636,12 +624,13 @@ spatialPlotCreateGraph <- function(dataToPlot,
           x = X,
           y = Y,
           size = var2,
-          tooltip = paste(pointsTooltipText, var2)
+          tooltip = paste(pointsTooltipText, formatNumber(var2))
         ),
         shape = 1,
         color = "black",
         alpha = 0.5
-      )
+      ) +
+      ggplot2::scale_size(labels = formatNumber)
   }
 
 
@@ -678,4 +667,26 @@ spatialPlotCreateGraph <- function(dataToPlot,
   )
 
   x
+}
+
+#' Internal function to crop spatial data to the extent of a plot plus a
+#' margin, so that only the visible part is drawn (#5)
+#'
+#' @param spatialData An sf object or an object that can be converted to one
+#' with [sf::st_as_sf()], e.g. [shoreline]
+#' @param plotExtent The extent of the plot, from [sf::st_bbox()]
+#' @param margin Margin to add on each side, in degrees
+#'
+#' @return An sf object
+#'
+#' @section Development review:
+#' - AI-assisted: Yes
+#' - Review: (pending)
+#' - Notes/scope: Reduced the time to create one interactive map with the H1
+#'   test data from about 20 s to about 1 s.
+#' @keywords internal
+cropToExtent <- function(spatialData, plotExtent, margin = 1) {
+  cropExtent <- plotExtent + c(-margin, -margin, margin, margin)
+  # st_crop warns that attributes are assumed constant over the geometries
+  suppressWarnings(sf::st_crop(sf::st_as_sf(spatialData), cropExtent))
 }
