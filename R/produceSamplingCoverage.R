@@ -252,8 +252,7 @@ mapSamplingCoverage <- function(coverage, resolution, var, contrastVar,
   if (resolution == "ICES Rectangle") {
     layer <- RDBESvisualise::icesRectSF[, "ICESNAME"]
   } else {
-    # icesAreaSF is in EPSG:3857, the other spatial data in EPSG:4326
-    layer <- sf::st_transform(RDBESvisualise::icesAreaSF[, "Area_Full"], 4326)
+    layer <- RDBESvisualise::icesAreaSF[, "Area_Full"]
   }
   names(layer)[1] <- resolution
   layer <- layer[!duplicated(layer[[resolution]]), ]

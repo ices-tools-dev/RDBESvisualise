@@ -15,20 +15,40 @@
 #' ICES statistical rectangles
 #'
 #' An sf object containing spatial information for ICES statistical rectangles
+#' (EPSG:4326). Some rectangles have more than one row.
 #'
-#' @format A data frame containing spatial information
+#' @format An sf data frame with the fields of the ICES shapefile:
 #' \describe{
-#'   \item{ICESNAME}{Name of the stat rectangle}...
+#'   \item{OBJECTID, ID}{Identifiers in the shapefile}
+#'   \item{ICESNAME}{Name of the stat rectangle, e.g. "41F6"}
+#'   \item{SOUTH, WEST, NORTH, EAST}{Limits of the rectangle in degrees}
+#'   \item{AREA_KM2}{Area of the rectangle in km2}
+#'   \item{stat_x, stat_y}{Longitude and latitude of the centre of the
+#'   rectangle}
+#'   \item{Area_27}{ICES area covering most of the rectangle, without the
+#'   "27." prefix, e.g. "4.b"}
+#'   \item{Perc}{Percentage of the rectangle in each area of `AreasList`}
+#'   \item{MaxPer, RNDMaxPer}{Largest value of `Perc`, and rounded}
+#'   \item{AreasList}{All ICES areas the rectangle overlaps}
+#'   \item{Shape_Leng, Shape_Le_1, Shape_Area}{Perimeter and area in degrees}
+#'   \item{geometry}{Polygon of the rectangle}
 #' }
 #' @source ICES
 "icesRectSF"
 #' ICES statistical areas
 #'
 #' An sf object containing spatial information for ICES statistical areas
+#' (EPSG:4326, reprojected from EPSG:3857 by `data-raw/icesAreaSF.R`).
 #'
-#' @format A data frame containing spatial information
+#' @format An sf data frame with the fields of the ICES shapefile:
 #' \describe{
-#'   \item{Area_Full}{Name of the ICES statistical area}...
+#'   \item{OBJECTID_1, OBJECTID}{Identifiers in the shapefile}
+#'   \item{Major_FA}{FAO major fishing area, "27"}
+#'   \item{SubArea, Division, SubDivisio, Unit}{Parts of the area code}
+#'   \item{Area_Full}{Code of the ICES statistical area, e.g. "27.3.d.27"}
+#'   \item{Area_27}{Area code without the "27." prefix}
+#'   \item{Area_km2}{Area in km2}
+#'   \item{geometry}{Polygon of the area}
 #' }
 #' @source ICES: https://gis.ices.dk/geonetwork/srv/api/records/c784a0a3-752f-4b50-b02f-f225f6c815eb
 "icesAreaSF"

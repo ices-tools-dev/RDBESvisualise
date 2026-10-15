@@ -5,9 +5,21 @@
 \alias{icesRectSF}
 \title{ICES statistical rectangles}
 \format{
-A data frame containing spatial information
+An sf data frame with the fields of the ICES shapefile:
 \describe{
-\item{ICESNAME}{Name of the stat rectangle}...
+\item{OBJECTID, ID}{Identifiers in the shapefile}
+\item{ICESNAME}{Name of the stat rectangle, e.g. "41F6"}
+\item{SOUTH, WEST, NORTH, EAST}{Limits of the rectangle in degrees}
+\item{AREA_KM2}{Area of the rectangle in km2}
+\item{stat_x, stat_y}{Longitude and latitude of the centre of the
+rectangle}
+\item{Area_27}{ICES area covering most of the rectangle, without the
+"27." prefix, e.g. "4.b"}
+\item{Perc}{Percentage of the rectangle in each area of \code{AreasList}}
+\item{MaxPer, RNDMaxPer}{Largest value of \code{Perc}, and rounded}
+\item{AreasList}{All ICES areas the rectangle overlaps}
+\item{Shape_Leng, Shape_Le_1, Shape_Area}{Perimeter and area in degrees}
+\item{geometry}{Polygon of the rectangle}
 }
 }
 \source{
@@ -18,5 +30,6 @@ icesRectSF
 }
 \description{
 An sf object containing spatial information for ICES statistical rectangles
+(EPSG:4326). Some rectangles have more than one row.
 }
 \keyword{datasets}

@@ -5,9 +5,15 @@
 \alias{icesAreaSF}
 \title{ICES statistical areas}
 \format{
-A data frame containing spatial information
+An sf data frame with the fields of the ICES shapefile:
 \describe{
-\item{Area_Full}{Name of the ICES statistical area}...
+\item{OBJECTID_1, OBJECTID}{Identifiers in the shapefile}
+\item{Major_FA}{FAO major fishing area, "27"}
+\item{SubArea, Division, SubDivisio, Unit}{Parts of the area code}
+\item{Area_Full}{Code of the ICES statistical area, e.g. "27.3.d.27"}
+\item{Area_27}{Area code without the "27." prefix}
+\item{Area_km2}{Area in km2}
+\item{geometry}{Polygon of the area}
 }
 }
 \source{
@@ -18,5 +24,6 @@ icesAreaSF
 }
 \description{
 An sf object containing spatial information for ICES statistical areas
+(EPSG:4326, reprojected from EPSG:3857 by \code{data-raw/icesAreaSF.R}).
 }
 \keyword{datasets}
