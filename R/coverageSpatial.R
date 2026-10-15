@@ -287,7 +287,7 @@ pointsPlot <- function(landingsData = NA,
 
   all_plot <- htmltools::tagList()
 
-  for (i in seq_along(length(y))) {
+  for (i in seq_along(y)) {
     # i <- 1
     if (landings) {
       dd <- d1 %>% dplyr::filter(CLyear == y[i])
@@ -386,8 +386,7 @@ pointsPlot <- function(landingsData = NA,
 
 
       # Add our plot to the output list
-      currentPlotCount <- length(all_plot)
-      all_plot[[currentPlotCount + i]] <- x_l
+      all_plot[[length(all_plot) + 1]] <- x_l
     }
 
 
@@ -434,8 +433,7 @@ pointsPlot <- function(landingsData = NA,
 
 
       # Add our plot to the output list
-      currentPlotCount <- length(all_plot)
-      all_plot[[currentPlotCount + i]] <- x_e
+      all_plot[[length(all_plot) + 1]] <- x_e
     }
 
 
@@ -467,8 +465,7 @@ pointsPlot <- function(landingsData = NA,
       )
 
       # Add our plot to the output list
-      currentPlotCount <- length(all_plot)
-      all_plot[[currentPlotCount + i]] <- x_s
+      all_plot[[length(all_plot) + 1]] <- x_s
     }
   }
 

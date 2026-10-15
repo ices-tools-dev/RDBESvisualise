@@ -186,8 +186,9 @@ produceSamplingCoverage(H5Example,
 
 ### Interactive coverage plots
 
-The `coverageXXX()` functions return a list of interactive plots. The title
-states that `catchCat` refers to the sample data only.
+The `coverageXXX()` functions return a list of interactive plots, one per
+year (the spatial functions need a single year). The title states that
+`catchCat` refers to the sample data only.
 
 ```{r coverageBySpecies}
 speciesPlots <- coverageBySpecies(H8ExampleEE1,

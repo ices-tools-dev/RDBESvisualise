@@ -220,7 +220,7 @@ temporalPlot <- function(landingsData = NA,
 
 
 
-  for (i in seq_along(length(y))) {
+  for (i in seq_along(y)) {
     show_legend <- if (i == 1) {
       TRUE
     } else {

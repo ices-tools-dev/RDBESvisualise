@@ -675,7 +675,7 @@ barPlotsByGroupingVariable <- function(landingsData = NA,
 
   all_plot <- htmltools::tagList()
 
-  for (i in seq_along(length(y))) {
+  for (i in seq_along(y)) {
     # Just show legend for first plot when we display quarters
     if (plotQuarters) {
       showPlotLegend <- TRUE
