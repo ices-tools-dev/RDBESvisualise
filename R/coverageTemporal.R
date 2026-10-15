@@ -93,58 +93,29 @@ coverageTemporal <- function(dataToPlot,
   RDBEScore::validateRDBESDataObject(dataToPlot, verbose = verbose)
 
   # STEP 1) PREPARE AND FILTER THE DATA
+  coverageData <- prepareCoverageData(dataToPlot = dataToPlot,
+                                      year = year,
+                                      quarter = quarter,
+                                      vesselFlag = vesselFlag,
+                                      catchCat = catchCat,
+                                      landingsVariable = landingsVariable,
+                                      effortVariable = effortVariable,
+                                      samplingVariable = samplingVariable,
+                                      includeLandings = includeLandings,
+                                      includeEffort = includeEffort,
+                                      includeSamples = includeSamples,
+                                      verbose = verbose)
 
-  # Landings
-  if (includeLandings) {
-    ld <- preprocessLandingsDataForCoverage(dataToPlot, verbose = verbose)
-    ld1 <- filterLandingsDataForCoverage(ld,
-      year = year,
-      quarter = quarter,
-      vesselFlag = vesselFlag,
-      verbose = verbose
-    )
-  } else {
-    ld1 <- NA
-  }
-
-  # Effort
-  if (includeEffort) {
-    ef <- preprocessEffortDataForCoverage(dataToPlot, verbose = verbose)
-    ef1 <- filterEffortDataForCoverage(ef,
-      year = year,
-      quarter = quarter,
-      vesselFlag = vesselFlag,
-      verbose = verbose
-    )
-  } else {
-    ef1 <- NA
-  }
-
-  # Samples
-  if (includeSamples) {
-    sa <- preprocessSampleDataForCoverage(dataToPlot, verbose = verbose)
-    sa1 <- filterSampleDataForCoverage(sa,
-      year = year,
-      quarter = quarter,
-      vesselFlag = vesselFlag,
-      catchCat = catchCat,
-      verbose = verbose
-    )
-  } else {
-    sa1 <- NA
-  }
-
-
-  # STEP 3) Plot the data
+  # STEP 2) Plot the data
 
   if (verbose) {
     print("Preparing plots")
   }
 
   plotsToPrint <- temporalPlot(
-    landingsData = ld1,
-    effortData = ef1,
-    sampleData = sa1,
+    landingsData = coverageData$landings,
+    effortData = coverageData$effort,
+    sampleData = coverageData$samples,
     vesselFlag = vesselFlag,
     catchCat = catchCat,
     landingsVariable = landingsVariable,
@@ -207,7 +178,7 @@ temporalPlot <- function(landingsData = NA,
       dplyr::group_by(CLyear, CLquar) %>%
       dplyr::summarize(CL = sum(!!rlang::sym(
         landingsVariable
-      )))) %>%
+      ), na.rm = TRUE))) %>%
       dplyr::mutate(relCL = CL / sum(CL))
   }
 
@@ -217,7 +188,7 @@ temporalPlot <- function(landingsData = NA,
       dplyr::group_by(SAyear, SAquar) %>%
       dplyr::summarize(sa = sum(!!rlang::sym(
         samplingVariable
-      )))) %>%
+      ), na.rm = TRUE))) %>%
       dplyr::mutate(relSA = sa / sum(sa))
   }
 
@@ -227,7 +198,7 @@ temporalPlot <- function(landingsData = NA,
       dplyr::group_by(CEyear, CEquar) %>%
       dplyr::summarize(CE = sum(!!rlang::sym(
         effortVariable
-      )))) %>%
+      ), na.rm = TRUE))) %>%
       dplyr::mutate(relCE = CE / sum(CE))
   }
 

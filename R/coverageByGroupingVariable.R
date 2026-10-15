@@ -118,47 +118,18 @@ coverageByGroupingVariable <- function(dataToPlot,
   RDBEScore::validateRDBESDataObject(dataToPlot, verbose = verbose)
 
   # STEP 1) PREPARE AND FILTER THE DATA
-
-  # Landings
-  if (includeLandings) {
-    ld <- preprocessLandingsDataForCoverage(dataToPlot, verbose = verbose)
-    ld1 <- filterLandingsDataForCoverage(ld,
-      year = year,
-      quarter = quarter,
-      vesselFlag = vesselFlag,
-      verbose = verbose
-    )
-  } else {
-    ld1 <- NA
-  }
-
-  # Effort
-  if (includeEffort) {
-    ef <- preprocessEffortDataForCoverage(dataToPlot, verbose = verbose)
-    ef1 <- filterEffortDataForCoverage(ef,
-      year = year,
-      quarter = quarter,
-      vesselFlag = vesselFlag,
-      verbose = verbose
-    )
-  } else {
-    ef1 <- NA
-  }
-
-  # Samples
-  if (includeSamples) {
-    sa <- preprocessSampleDataForCoverage(dataToPlot, verbose = verbose)
-    sa1 <- filterSampleDataForCoverage(sa,
-      year = year,
-      quarter = quarter,
-      vesselFlag = vesselFlag,
-      catchCat = catchCat,
-      verbose = verbose
-    )
-  } else {
-    sa1 <- NA
-  }
-
+  coverageData <- prepareCoverageData(dataToPlot = dataToPlot,
+                                      year = year,
+                                      quarter = quarter,
+                                      vesselFlag = vesselFlag,
+                                      catchCat = catchCat,
+                                      landingsVariable = landingsVariable,
+                                      effortVariable = effortVariable,
+                                      samplingVariable = samplingVariable,
+                                      includeLandings = includeLandings,
+                                      includeEffort = includeEffort,
+                                      includeSamples = includeSamples,
+                                      verbose = verbose)
 
   # STEP 2) Plot the data
 
@@ -166,9 +137,9 @@ coverageByGroupingVariable <- function(dataToPlot,
     print("Preparing plots")
   }
 
-  plotsToPrint <- barPlotsByGroupingVariable(landingsData = ld1,
-                             effortData = ef1,
-                             sampleData = sa1,
+  plotsToPrint <- barPlotsByGroupingVariable(landingsData = coverageData$landings,
+                             effortData = coverageData$effort,
+                             sampleData = coverageData$samples,
                              vesselFlag = vesselFlag,
                              catchCat = catchCat,
                              quarter = quarter,

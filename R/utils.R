@@ -30,6 +30,96 @@ RCGPalette <- c(
 paletteForPlotting <- RCGPalette
 paletteForQuarters <- c("#B2DF8A","#1F78B4","#E31A1C","#FDBF6F")
 
+#' Internal function to warn when a variable to be summed has missing values
+#'
+#' Missing values are excluded from the sums, so the relative values only
+#' represent the records with a value (#37).
+#'
+#' @param data A data frame
+#' @param variable Name of the column to check
+#' @param dataLabel Label for the data in the warning, e.g. "sample"
+#'
+#' @return The number of missing values, invisibly
+#'
+#' @section Development review:
+#' - AI-assisted: Yes
+#' - Review: (pending)
+#' @keywords internal
+warnMissingValues <- function(data, variable, dataLabel) {
+  nMissing <- sum(is.na(data[[variable]]))
+  if (nMissing > 0) {
+    warning(variable, " is missing for ", nMissing, " of ", nrow(data), " ",
+            dataLabel, " records; these are excluded from the relative values",
+            call. = FALSE)
+  }
+  invisible(nMissing)
+}
+
+#' Internal function to prepare and filter the landings, effort and sample
+#' data for the coverageXXX functions
+#'
+#' @inheritParams coverageByGroupingVariable
+#'
+#' @return A list with the elements `landings`, `effort` and `samples`. An
+#' element is `NA` if that data is not included.
+#'
+#' @section Development review:
+#' - AI-assisted: Yes
+#' - Review: (pending)
+#' - Notes/scope: Replaces the identical data preparation blocks of the
+#'   coverageXXX functions and adds the missing value warnings (#37).
+#' @keywords internal
+prepareCoverageData <- function(dataToPlot,
+                                year,
+                                quarter,
+                                vesselFlag,
+                                catchCat,
+                                landingsVariable,
+                                effortVariable,
+                                samplingVariable,
+                                includeLandings,
+                                includeEffort,
+                                includeSamples,
+                                verbose) {
+  coverageData <- list(landings = NA, effort = NA, samples = NA)
+
+  if (includeLandings) {
+    ld <- preprocessLandingsDataForCoverage(dataToPlot, verbose = verbose)
+    coverageData$landings <- filterLandingsDataForCoverage(ld,
+      yearToFilter = year,
+      quarterToFilter = quarter,
+      vesselFlag = vesselFlag,
+      verbose = verbose
+    )
+    warnMissingValues(coverageData$landings, landingsVariable, "landings")
+  }
+
+  if (includeEffort) {
+    ef <- preprocessEffortDataForCoverage(dataToPlot, verbose = verbose)
+    coverageData$effort <- filterEffortDataForCoverage(ef,
+      yearToFilter = year,
+      quarterToFilter = quarter,
+      vesselFlag = vesselFlag,
+      verbose = verbose
+    )
+    warnMissingValues(coverageData$effort, effortVariable, "effort")
+  }
+
+  if (includeSamples) {
+    sa <- preprocessSampleDataForCoverage(dataToPlot, verbose = verbose)
+    coverageData$samples <- filterSampleDataForCoverage(sa,
+      yearToFilter = year,
+      quarterToFilter = quarter,
+      vesselFlag = vesselFlag,
+      catchCat = catchCat,
+      verbose = verbose
+    )
+    warnMissingValues(coverageData$samples, samplingVariable, "sample")
+  }
+
+  coverageData
+}
+
 #' as.integer.or.dbl
 #'
 #' This function checks if any value in a vector is above 2e+09, and if so runs
