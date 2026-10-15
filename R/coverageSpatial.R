@@ -231,6 +231,11 @@ pointsPlot <- function(landingsData = NA,
   }
 
   if (landings) {
+
+    # change any blank stat rects ("") to NA
+    landingsData[!is.na(landingsData$CLstatRect) & landingsData$CLstatRect == "",
+                 "CLstatRect"] <- NA
+
     d1 <- na.omit(landingsData %>%
       dplyr::group_by(CLyear, CLstatRect) %>%
       dplyr::summarize(cl = sum(!!rlang::sym(
@@ -248,6 +253,11 @@ pointsPlot <- function(landingsData = NA,
   }
 
   if (samples) {
+
+    # change any blank stat rects ("") to NA
+    sampleData[!is.na(sampleData$SAstatRect) & sampleData$SAstatRect == "",
+                 "SAstatRect"] <- NA
+
     d2 <- na.omit(sampleData %>%
       dplyr::group_by(SAyear, SAstatRect) %>%
       dplyr::summarize(sa = sum(!!rlang::sym(
@@ -265,6 +275,11 @@ pointsPlot <- function(landingsData = NA,
   }
 
   if (effort) {
+
+    # change any blank stat rects ("") to NA
+    effortData[!is.na(effortData$CEstatRect) & effortData$CEstatRect == "",
+               "CEstatRect"] <- NA
+
     d3 <- na.omit(effortData %>%
       dplyr::group_by(CEyear, CEstatRect) %>%
       dplyr::summarize(ce = sum(!!rlang::sym(
