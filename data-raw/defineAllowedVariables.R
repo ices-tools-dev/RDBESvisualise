@@ -8,7 +8,7 @@ allowedEffortVariable <- c(
   "CEnumFracTrips",
   "CEnumDomTrip",
   "CEoffDaySea",
-  "CESciDaySea",
+  "CEsciDaySea",
   "CEoffFishDay",
   "CEsciFishDay",
   "CEoffNumHaulSet",
