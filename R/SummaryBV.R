@@ -1,9 +1,11 @@
 #'Function which shows tabel and/or plot with summary of Biological Variables
+#'for one hierarchy
 #'
-#' @param data RDBES Data Obejct A masterTable with SA,DE,SD,FM,BV data.
+#' @param data RDBES Data Obejct
 #' @param verbose (Optional) Set to TRUE if you want informative text printed
 #' out, or FALSE if you don't.  The default is FALSE.
-#' @param var One biological variable ex. Length, WeightLive, Age, Sex, Maturity.
+#' @param var One biological variable ex. Length, WeightLive,WeightMeasured,
+#' Age, Sex, Maturity.
 #' @param by One factor to split the data.
 #' @param year Year or years to filter the data. If you don't add information,
 #' the default will by all years occures in data.
@@ -14,35 +16,35 @@
 #' @return Function returns results depending of output_type defined in parameters.
 #'
 #' @section Development review:
-#' - AI-assisted: No
+#' - AI-assisted: Yes
 #' - Review: Kasia-MIR
 #' - Notes/scope: Tested with hierarchy H1 using 2025 RDBES data (downloaded 2026-10-13).
 #'
 #' @example
 #' \dontrun{
-#' #perpare RDBES Data Object for all hierarchies:
 #' data <- createRDBESDataObject(input = "data-raw/exampleData/H1_2026_10_08.zip")
-#' #RDBESDataObjectH2 <- createRDBESDataObject(input = "data-raw/exampleData/H2_2025_10_13_160257.zip")
-#'
-#'
 #'
 #' #to create plots and/or tables use
-#' summaryBiologicalVar(data,verbose,var="Age",by="DEhierarchy",year=2024,output_type,statistics)
+#' summaryBiologicalVar(data,verbose,var="Age",by="DEhierarchy",year=2024,output_type="table",statistics=TRUE)
 #'}
 var<-'WeightMeasured'#'Age'
 by <-"SDctry"
 year<-c(2022,2025,2023)
 verbose <-TRUE
+outputType <- 'plot'
 summaryBiologicalVar <- function(data,
                                  verbose = TRUE,
                                  var,
                                  by,
                                  year,
-                                 outputType,
-                                 statistics) {
+                                 outputType = c('plot','table'),
+                                 statistics = FALSE) {
 
   #validate RDBES Data Object
   RDBEScore::validateRDBESDataObject(data, verbose = verbose, strict = TRUE)
+
+  #hierarchy
+  hierarchy <- data$DE$DEhierarchy
 
   #check arguments of function
   if (!var %in% data$BV$BVtypeMeas) {
