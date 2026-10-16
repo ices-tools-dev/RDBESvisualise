@@ -1,6 +1,6 @@
 #' Provides graphical outputs which compare the statistical
-#' rectangle where landings occured to the statistical rectangles where
-#' sampling occured. The relative amounts of landings/samples are
+#' rectangle where landings/effort occurred to the statistical rectangles where
+#' sampling occurred. The relative amounts of landings/samples are
 #' shown by i) coloured rectangles for landings, and ii) circles for
 #' sampling.
 #'
@@ -20,23 +20,21 @@
 #' @examples
 #' \dontrun{
 #'
-#' myH1RawObject <- RDBEScore::createRDBESDataObject(
-#'   rdbesExtractPath = "../tests/testthat/h1_v_1_19_13"
-#' )
+#'  myH1RawObject <- RDBEScore::createRDBESDataObject(input = "tests/testthat/h1_v_20250211")
 #'
-#' myYear <- 1965
-#' myvesselFlag <- "ZW"
-#'
-#' myPlots <- coverageLandingsSpatial(
-#'   dataToPlot = myH1RawObject,
-#'   year = myYear,
-#'   vesselFlag = myvesselFlag,
-#'   catchCat = "Lan",
-#'   commercialVariable = "CLoffWeight",
-#'   samplingVariable = "SAsampWtLive"
-#' )
-#'
-#' myPlots[1]
+#'  myPlots <- coverageSpatial(
+#'    dataToPlot = myH1RawObject,
+#'    year = 1965,
+#'    vesselFlag = "ZW",
+#'    catchCat = "Lan",
+#'    landingsVariable = "CLoffWeight",
+#'    effortVariable = "CEnumFracTrips",
+#'    samplingVariable = "SAsampWtMes",
+#'    includeLandings = TRUE,
+#'    includeEffort = TRUE,
+#'    includeSamples = TRUE
+#'  )
+#'  myPlots[1]
 #' }
 coverageSpatial <- function(dataToPlot,
                             year,
@@ -63,6 +61,23 @@ coverageSpatial <- function(dataToPlot,
                             includeEffort = TRUE,
                             includeSamples = TRUE,
                             verbose = FALSE) {
+
+  # For testing
+  # myH1RawObject <- RDBEScore::createRDBESDataObject(input = "./tests/testthat/h1_v_20250211")
+  # dataToPlot <- myH1RawObject
+  # year <- 1965
+  # quarter <- NA
+  # vesselFlag <- "ZW"
+  # landingsVariable <- "CLoffWeight"
+  # effortVariable <- "CEnumFracTrips"
+  # samplingVariable <- "SAsampWtMes"
+  # groupingVariable <- "speciesName"
+  # catchCat <- "Lan"
+  # includeLandings <- TRUE
+  # includeEffort <- FALSE
+  # includeSamples <- TRUE
+  # verbose <- FALSE
+
   # STEP 0) VALIDATE INPUTS
 
   # check the parameters are valid before we do anything
@@ -180,6 +195,18 @@ pointsPlot <- function(landingsData = NA,
                        landingsVariable,
                        effortVariable,
                        samplingVariable) {
+
+  # For testing
+  # landingsData = ld1
+  # effortData = ef1
+  # sampleData = sa1
+  # sampleData$SAstatRect <- 2
+  # vesselFlag = vesselFlag
+  # catchCat = catchCat
+  # landingsVariable = landingsVariable
+  # effortVariable = effortVariable
+  # samplingVariable = samplingVariable
+
   # see what data we've been given
   if (length(landingsData) == 1 && is.na(landingsData)) {
     landings <- FALSE
@@ -204,11 +231,16 @@ pointsPlot <- function(landingsData = NA,
   }
 
   if (landings) {
+
+    # change any blank stat rects ("") to NA
+    landingsData[!is.na(landingsData$CLstatRect) & landingsData$CLstatRect == "",
+                 "CLstatRect"] <- NA
+
     d1 <- na.omit(landingsData %>%
       dplyr::group_by(CLyear, CLstatRect) %>%
       dplyr::summarize(cl = sum(!!rlang::sym(
         landingsVariable
-      ))))
+      ), na.rm = TRUE)))
 
     # Check we still have some landings data left to plot after removing NAs
     # - if we don't have then we can't plot landings data
@@ -221,11 +253,16 @@ pointsPlot <- function(landingsData = NA,
   }
 
   if (samples) {
+
+    # change any blank stat rects ("") to NA
+    sampleData[!is.na(sampleData$SAstatRect) & sampleData$SAstatRect == "",
+                 "SAstatRect"] <- NA
+
     d2 <- na.omit(sampleData %>%
       dplyr::group_by(SAyear, SAstatRect) %>%
       dplyr::summarize(sa = sum(!!rlang::sym(
         samplingVariable
-      ))))
+      ), na.rm = TRUE)))
 
     # Check we still have some sample data left to plot after removing NAs
     # - if we don't have then we can't plot sample data
@@ -238,11 +275,16 @@ pointsPlot <- function(landingsData = NA,
   }
 
   if (effort) {
+
+    # change any blank stat rects ("") to NA
+    effortData[!is.na(effortData$CEstatRect) & effortData$CEstatRect == "",
+               "CEstatRect"] <- NA
+
     d3 <- na.omit(effortData %>%
       dplyr::group_by(CEyear, CEstatRect) %>%
       dplyr::summarize(ce = sum(!!rlang::sym(
         effortVariable
-      ))))
+      ), na.rm = TRUE)))
 
     # Check we still have some effort data left to plot after removing NAs
     # - if we don't have then we can't plot effort data
@@ -276,6 +318,7 @@ pointsPlot <- function(landingsData = NA,
   all_plot <- htmltools::tagList()
 
   for (i in seq_along(length(y))) {
+    # i <- 1
     if (landings) {
       dd <- d1 %>% dplyr::filter(CLyear == y[i])
 
@@ -470,6 +513,25 @@ pointsPlot <- function(landingsData = NA,
 #'
 #' @return The data with mean_quantiles appended
 getQuantiles <- function(dataToProcess, numberOfClasses = 6) {
+
+  # For testing
+  # dataToProcess <- ices_rects_s
+  # numberOfClasses <- 6
+
+  # Handle the case when we've requested more classes than the numerical range
+  # of the variable
+  maxValue <- dataToProcess %>%
+    dplyr::pull(var1) %>%
+    max(na.rm = TRUE)
+
+  minValue <- dataToProcess %>%
+    dplyr::pull(var1) %>%
+    min(na.rm = TRUE)
+
+  if (maxValue - minValue < numberOfClasses){
+    numberOfClasses <- maxValue - minValue
+  }
+
   # extract quantiles
   myQuantiles <- dataToProcess %>%
     dplyr::pull(var1) %>%
@@ -479,6 +541,17 @@ getQuantiles <- function(dataToProcess, numberOfClasses = 6) {
     ) %>%
     as.vector() # to remove names of quantiles, so idx below is numeric
   myQuantiles <- round(myQuantiles, 0)
+
+  # if all the values are the same then we need to fix it
+  if (length(unique(myQuantiles)) == 1){
+    # just keep first 2 entries - we expect to see at least 2 entries later on
+    if (length(myQuantiles)>1){
+      myQuantiles <- myQuantiles[c(1,2)]
+    } else {
+      myQuantiles <- c(myQuantiles,myQuantiles)
+    }
+    myQuantiles[1] <- myQuantiles[1] -1
+  }
 
   # create custom labels
   myLabels <- purrr::imap_chr(myQuantiles, function(., idx) {
@@ -491,6 +564,8 @@ getQuantiles <- function(dataToProcess, numberOfClasses = 6) {
 
   # remove last label that includes NA
   myLabels <- head(myLabels, -1)
+
+  #print(myLabels)
 
   # create new variable with quantiles - landings
   dataToProcess <- dataToProcess %>%

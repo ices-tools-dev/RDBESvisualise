@@ -1,10 +1,10 @@
-#capture.output({  ## suppresses printing of console output when running test()
+capture.output({  ## suppresses printing of console output when running test()
 
 prepareTestData <- function(){
 
   # Prepare some test data
   myH1RawObject <-
-    RDBEScore::createRDBESDataObject(rdbesExtractPath = "h1_v_1_19_13")
+    RDBEScore::createRDBESDataObject(input = "h1_v_20250211")
   # Generate some quarters for CL (test data is all Q1)
   set.seed(1)
   myH1RawObject[['CL']]$CLquar <-
@@ -194,4 +194,4 @@ test_that("Spatial bivariate plot gives error when no sample rectangles are spec
 
 })
 
-#}) ## end capture.output
+}) ## end capture.output

@@ -1,0 +1,5 @@
+FMid,SAid,FMrecordType,FMstateOfProcessing,FMpresentation,FMclassMeasured,FMnumberAtUnit,FMtypeMeasured,FMmethod,FMmeasurementEquipment,FMaccuracy,FMconversionFactorAssessment,FMtypeAssessment,FMsampler,FMaddGrpMeasurement,FMaddGrpMeasurementType
+23553942,4145019,FM,UNK,WHL,170,1,LengthTotal,,RULER,cm,1.0000,LengthTotal,Observer,,
+23553943,4145019,FM,UNK,WHL,210,1,LengthTotal,,RULER,cm,1.0000,LengthTotal,Observer,,
+23553944,4145019,FM,UNK,WHL,230,1,LengthTotal,,RULER,cm,1.0000,LengthTotal,Observer,,
+23553945,4145019,FM,UNK,WHL,220,1,LengthTotal,,RULER,cm,1.0000,LengthTotal,Observer,,

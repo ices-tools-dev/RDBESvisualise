@@ -19,7 +19,7 @@
 #'
 #' @return Function returns table.
 #'
-#' @example
+#' @examples
 #' RDBESDataObject <- createRDBESDataObject(input = "data-raw/exampleData/H1_2024_10_14.zip")
 #' SA<-preprocessSamplingDataForCoverage(RDBESDataObject)
 
