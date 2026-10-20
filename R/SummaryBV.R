@@ -1,62 +1,90 @@
 #'Function which shows tabel and/or plot with summary of Biological Variables
 #'for one hierarchy
 #'
-#' @param data RDBES Data Obejct
+#' @param data RDBES Data Obejct.
 #' @param verbose (Optional) Set to TRUE if you want informative text printed
 #' out, or FALSE if you don't.  The default is FALSE.
-#' @param var One biological variable ex. Length, WeightLive,WeightMeasured,
-#' Age, Sex, Maturity.
-#' @param by One factor to split the data.
-#' @param year Year or years to filter the data. If you don't add information,
-#' the default will by all years occures in data.
-#' @param outputType Data should be present as table and/or plot.
+#' @param var (Optional) One biological variable ex. Length, WeightLive,
+#' WeightMeasured, Age, Sex, Maturity.
+#' @param by One or more factors to split the data, ex. "SDctry" or
+#' c("SDctry", "DEyear").
+#' @param year (Optional) Year or years to filter the data. If you don't add
+#' information, the default will by all years occures in data.
+#' @param outputType Data should be present as table and/or plot. The default
+#' is both: c("plot", "table").
 #' @param statistics (Optional) Set to TRUE if you want additional summary
-#' statistics (mean, sd, median, IQR… ). Default is FALSE
+#' statistics (mean, sd, median, IQR… ). Default is FALSE.
+#' @param bins (Optional) Number of bins in histograms. Default is 20.
 #'
-#' @return Function returns results depending of output_type defined in parameters.
+#' @return Function shows results depending on outputType defined in parameters
+#' and returns them invisibly as a list: table, plots, statsTable, statsFigures,
+#' tableFigures.
+#'
 #'
 #' @section Development review:
 #' - AI-assisted: Yes
 #' - Review: Kasia-MIR
-#' - Notes/scope: Tested with hierarchy H1 using 2025 RDBES data (downloaded 2026-10-13).
+#' - Notes/scope: Tested with hierarchy H1 using 2021-2025 RDBES data (downloaded 2026-10-13).
 #'
-#' @example
+#' @examples
 #' \dontrun{
-#' data <- createRDBESDataObject(input = "data-raw/exampleData/H1_2026_10_08.zip")
+#' data <- H8ExampleEE1 # dataset from RDBEScore
 #'
 #' #to create plots and/or tables use
-#' summaryBiologicalVar(data,verbose,var="Age",by="DEhierarchy",year=2024,output_type="table",statistics=TRUE)
+#' summaryBiologicalVar(data,verbose=TRUE,var="Age",by="DEhierarchy",year=2022,outputType="table",statistics=TRUE)
 #'}
-var<-'WeightMeasured'#'Age'
-by <-"SDctry"
-year<-c(2022,2025,2023)
-verbose <-TRUE
-outputType <- 'plot'
+#'
+#'@export
+#'
 summaryBiologicalVar <- function(data,
-                                 verbose = TRUE,
+                                 verbose = FALSE,
                                  var,
                                  by,
-                                 year,
+                                 year = NULL,
                                  outputType = c('plot','table'),
-                                 statistics = FALSE) {
+                                 statistics = FALSE,
+                                 bins = 20) {
 
   #validate RDBES Data Object
   RDBEScore::validateRDBESDataObject(data, verbose = verbose, strict = TRUE)
+
+  #BVid exists?
+  if (is.null(data$BV) || nrow(data$BV) == 0) {
+    stop('The data does not contain any BV (biological variable) records.')
+  }
 
   #hierarchy
   hierarchy <- data$DE$DEhierarchy
 
   #check arguments of function
-  if (!var %in% data$BV$BVtypeMeas) {
-    stop(
-      paste(
-        'The given measure type --->',
-        var,
-        '<--- is not present in the data. In your data is:',
-        paste(unique(data$BV$BVtypeMeas), collapse = ', ')
-      )
-    )
+  if (missing(by) || !is.character(by)) {
+    stop("'by' must be one or more column names, ex. 'SDctry'.")
   }
+
+  by <- unique(by)
+
+  for (b in by) {
+    if (!b %in% names(data[[substr(b, 1, 2)]])) {
+      stop(paste('The given column --->', b, '<--- is not present in the data.'))
+    }
+  }
+
+  #check var argument in the function
+  if (is.null(var)) {
+    var <- unique(data$BV$BVtypeMeas)
+  } else{
+    if (!var %in% data$BV$BVtypeMeas) {
+      stop(
+        paste(
+          'The given measure type --->',
+          var,
+          '<--- is not present in the data. In your data is:',
+          paste(unique(data$BV$BVtypeMeas), collapse = ', ')
+        )
+      )
+    }
+  }
+
 
   missing_years <- year[!year %in% data$DE$DEyear]
 
@@ -84,7 +112,7 @@ summaryBiologicalVar <- function(data,
   plotData <- plotData[BVtypeMeas == var, ]
 
   #range for weights
-  if(var == "WeightLive"){
+  if(var %in% c("WeightLive","WeightMeasured")){
 
     plotData[, BVvalueMeas := cut(as.numeric(BVvalueMeas), breaks = 15) ]
   }
@@ -108,7 +136,7 @@ summaryBiologicalVar <- function(data,
       ggplot2::labs(title = paste0("Number of individuals by ", var," and ", by),
                     x = var,
                     y = 'Number of individuals',
-                    caption = paste0("* Data from ",year)) +
+                    caption = paste0("* Data from ",paste(year, collapse = ", "))) +
       ggplot2::facet_wrap(~get(by))+
       ggplot2::theme_light()
     print(plot)
@@ -122,7 +150,7 @@ summaryBiologicalVar <- function(data,
       ggplot2::geom_boxplot(fill = colourPalette[1],color="black")+
       ggplot2::facet_wrap(~get(by))+
       stat_summary(fun.y=mean, geom="point", shape=4, size=3, color="black", fill="black")+
-      scale_y_continuous(limits = c(min_oy,max_oy))+theme_bw()+
+      theme_bw()+
       theme(panel.background = element_blank(),
             panel.grid.major = element_blank(),
             panel.grid.minor = element_blank(),
