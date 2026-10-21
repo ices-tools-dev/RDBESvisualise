@@ -31,7 +31,7 @@
 #' data <- H8ExampleEE1 # dataset from RDBEScore
 #'
 #' #to create plots and/or tables use
-#' summaryBiologicalVar(data,verbose=TRUE,var="Age",by="DEhierarchy",year=2022,outputType="table",statistics=TRUE)
+#' summaryBiologicalVar(data,verbose=TRUE,var="Age",by=c("DEhierarchy","SDctry"),year=2022,outputType="table",statistics=TRUE)
 #'}
 #'
 #'@export
@@ -86,15 +86,26 @@ summaryBiologicalVar <- function(data,
   }
 
 
-  missing_years <- year[!year %in% data$DE$DEyear]
-
-  if (length(missing_years) > 0) {
-    warning(paste(
+  if (is.null(year)) {
+    #all years, if year is not given
+    year <- unique(data$DE$DEyear)
+    message(paste(
       "The given year(s) --->",
-      paste(missing_years, collapse = ", "),
-      "<--- are not present in the data."
+      paste(sort(year), collapse = ", "),
+      "<--- will be present in the data."
     ))
+  } else {
+    missing_years <- year[!year %in% data$DE$DEyear]
+
+    if (length(missing_years) > 0) {
+      warning(paste(
+        "The given year(s) --->",
+        paste(sort(missing_years), collapse = ", "),
+        "<--- are not present in the data."
+      ))
+    }
   }
+
 
   #filter RDBESDataObejct
   data <- RDBEScore::filterRDBESDataObject(
@@ -105,17 +116,44 @@ summaryBiologicalVar <- function(data,
     verbose = verbose
   )
 
-  byValues <- unique(data[[substr(by, 1, 2)]][[by]])
+  #get biological data linked with each "by" column
+  plotData <- NULL
 
-  plotData <- RDBEScore::getLinkedDataFromLevel(by, byValues, data, "BV", verbose = verbose)
+  #loop to get biological data if is more than one
+  for (b in by){
+  byValues <- unique(data[[substr(b, 1, 2)]][[b]])
+
+  partData <- RDBEScore::getLinkedDataFromLevel(b, byValues, data, "BV", verbose = verbose)
+  partData <- data.table::as.data.table(partData)
+  if (is.null(plotData)) {
+    plotData <- partData
+  } else if(!b %in% names(plotData)) {
+    plotData <- merge(plotData, partData[, c('BVid', b), with = FALSE], by = 'BVid')
+  }
+  }
 
   plotData <- plotData[BVtypeMeas == var, ]
 
-  #range for weights
-  if(var %in% c("WeightLive","WeightMeasured")){
-
-    plotData[, BVvalueMeas := cut(as.numeric(BVvalueMeas), breaks = 15) ]
+  if (nrow(plotData) == 0) {
+    stop('There are no records of the given measure type(s) for the given year(s).')
   }
+
+  #numeric variables
+
+  numericVar <- var[var %in% c("WeightLive","WeightMeasured",'ForkLength','Age',
+  'LengthCarapace','LengthLowerJawFork','LengthMantle','LengthMaximumShell',
+  'LengthPinchedTail','LengthPreAnal','LengthPreCaudal','LengthStandard',
+  'LengthTail','LengthTotal','LengthWingSpan','WidthCarapace','WidthMaximumShell')]
+
+  plotData[, valueNum := NA_real_]
+  plotData[BVtypeMeas %in% numericVar, valueNum := suppressWarnings(as.numeric(BVvalueMeas))]
+
+  #no numeric variables
+  notNumber <- plotData$BVtypeMeas %in% numericVars & is.na(plotData$valueNum)
+
+  #group used in the plots of statistics
+  plotData[, group := do.call(paste, c(.SD, sep = '/')), .SDcols = by]
+
 
   plotData <- plotData[, BVvalueMeas := factor(BVvalueMeas, levels = sort(unique(as.numeric(as.character(BVvalueMeas)))))]
 
