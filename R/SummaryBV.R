@@ -38,7 +38,7 @@
 #'
 summaryBiologicalVar <- function(data,
                                  verbose = FALSE,
-                                 var,
+                                 var=NULL,
                                  by,
                                  year = NULL,
                                  outputType = c('plot','table'),
@@ -132,7 +132,7 @@ summaryBiologicalVar <- function(data,
   }
   }
 
-  plotData <- plotData[BVtypeMeas == var, ]
+  plotData <- plotData[BVtypeMeas %in% var, ]
 
   if (nrow(plotData) == 0) {
     stop('There are no records of the given measure type(s) for the given year(s).')
@@ -149,7 +149,7 @@ summaryBiologicalVar <- function(data,
   plotData[BVtypeMeas %in% numericVar, valueNum := suppressWarnings(as.numeric(BVvalueMeas))]
 
   #no numeric variables
-  notNumber <- plotData$BVtypeMeas %in% numericVars & is.na(plotData$valueNum)
+  notNumber <- plotData$BVtypeMeas %in% numericVar & is.na(plotData$valueNum)
 
   #group used in the plots of statistics
   plotData[, group := do.call(paste, c(.SD, sep = '/')), .SDcols = by]
@@ -163,9 +163,13 @@ summaryBiologicalVar <- function(data,
   #add info about hierarchy
   subset$hierarchy <- hierarchy
 
+  caption = paste0("* Data from ",paste(year, collapse = ", "))
+
+  #define list with results
+  result <- list()
 
   if (outputType == 'table') {
-    print(subset)
+    result$countTable <- subset
   }
 
   if(outputType == 'plot'){
@@ -174,36 +178,159 @@ summaryBiologicalVar <- function(data,
       ggplot2::labs(title = paste0("Number of individuals by ", var," and ", by),
                     x = var,
                     y = 'Number of individuals',
-                    caption = paste0("* Data from ",paste(year, collapse = ", "))) +
+      )
       ggplot2::facet_wrap(~get(by))+
       ggplot2::theme_light()
     print(plot)
   }
 
-  if(statistics){
-    max_oy <- max(subset$nIndividuals)
-    min_oy <- min(subset$nIndividuals)
-
-    p<- ggplot2::ggplot(subset, ggplot2::aes(BVvalueMeas, nIndividuals)) +
-      ggplot2::geom_boxplot(fill = colourPalette[1],color="black")+
-      ggplot2::facet_wrap(~get(by))+
-      stat_summary(fun.y=mean, geom="point", shape=4, size=3, color="black", fill="black")+
-      theme_bw()+
-      theme(panel.background = element_blank(),
-            panel.grid.major = element_blank(),
-            panel.grid.minor = element_blank(),
-            axis.text.x = element_text(colour="black",size = 11),
-            axis.text.y = element_text(colour="black",size = 11),
-            axis.title.x = element_blank(),
-            axis.title.y=element_text(size=13, vjust=0.3),
-            panel.border = element_rect(colour = "black", fill=NA, size=0.5),
-            strip.background = element_rect(colour = "black", fill="grey", size=0.5),
-            strip.text.x=element_text(size=11, vjust=0.3)
-      )
-
-    statsTable <- tableGrob(plotData)
-
-    a<-grid.arrange(p, statsTable, nrow = 2, heights = c(2, 1))
-
+  #check that statistics are available
+  if (statistics & length(numericVar) == 0) {
+    warning('Statistics are available only for numeric variables, statistics = FALSE is used.')
+    statistics <- FALSE
   }
+  #boxplot and table of statistics only for numeric variables
+  if(statistics){
+
+    statsTable <- plotData[BVtypeMeas %in% numericVar,
+                           .(n = .N,
+                             mean = round(mean(valueNum), 2),
+                             sd = round(stats::sd(valueNum), 2),
+                             median = stats::median(valueNum),
+                             IQR = stats::IQR(valueNum),
+                             min = min(valueNum),
+                             max = max(valueNum)),
+                           by = c('BVtypeMeas', by)]
+
+    data.table::setorderv(statsTable, c('BVtypeMeas', by))
+
+    result$statsTable <- statsTable
+  }
+
+  #Plots and statistics: one for each variable
+  if ('plot' %in% outputType | statistics) {
+
+    plots <- list()
+    statsFigures <- list()
+    tableFigures <- list()
+
+    #look of the tables in the figures
+    tableTheme <- gridExtra::ttheme_default(
+      colhead = list(bg_params = list(fill = colourPalette[1], col = NA),
+                     fg_params = list(fontface = 'bold'))
+    )
+
+    for (v in var[var %in% plotData$BVtypeMeas]) {
+
+      varData <- plotData[BVtypeMeas == v, ]
+
+      #plot with number of individuals
+      if ('plot' %in% outputType) {
+
+        if (v %in% numericVar) {
+
+          plot <- ggplot2::ggplot(varData, ggplot2::aes(x = valueNum))
+
+          if (plotType == 'histogram' & v == 'Age') {
+
+            plot <- plot + ggplot2::geom_histogram(binwidth = 1, center = 0, fill = colourPalette[1], color = "black")
+            yLabel <- 'Number of individuals'
+
+          } else if (plotType == 'histogram') {
+
+            plot <- plot + ggplot2::geom_histogram(bins = bins, fill = colourPalette[1], color = "black")
+            yLabel <- 'Number of individuals'
+
+          } else {
+
+            plot <- plot + ggplot2::geom_density(fill = colourPalette[1], color = "black", alpha = 0.7)
+            yLabel <- 'Density'
+          }
+
+        } else {
+
+          #Counting
+          subset <- varData[, .(nIndividuals = .N), by = c(by, "BVvalueMeas")]
+
+          plot <- ggplot2::ggplot(subset, ggplot2::aes(x = BVvalueMeas, y = nIndividuals)) +
+            ggplot2::geom_bar(stat = "identity", fill = colourPalette[1], color = "black")
+          yLabel <- 'Number of individuals'
+        }
+
+        plot <- plot +
+          ggplot2::labs(title = paste0("Number of individuals by ", v, " and ", paste(by, collapse = " / ")),
+                        x = v,
+                        y = yLabel,
+                        caption = caption) +
+          ggplot2::facet_wrap(by) +
+          ggplot2::theme_light()
+
+        plots[[v]] <- plot
+      }
+
+      #boxplot and table of statistics (only for numeric variables)
+      if (statistics & v %in% numericVar) {
+
+        #boxplot of the values, cross is the mean
+        p <- ggplot2::ggplot(varData, ggplot2::aes(x = group, y = valueNum)) +
+          ggplot2::geom_boxplot(fill = colourPalette[1], color = "black") +
+          ggplot2::stat_summary(fun = mean, geom = "point", shape = 4, size = 3, color = "black") +
+          ggplot2::labs(y = v, caption = caption) +
+          ggplot2::theme_bw() +
+          ggplot2::theme(panel.background = ggplot2::element_blank(),
+                         panel.grid.major = ggplot2::element_blank(),
+                         panel.grid.minor = ggplot2::element_blank(),
+                         axis.text.x = ggplot2::element_text(colour = "black", size = 11),
+                         axis.text.y = ggplot2::element_text(colour = "black", size = 11),
+                         axis.title.x = ggplot2::element_blank(),
+                         axis.title.y = ggplot2::element_text(size = 13, vjust = 0.3),
+                         panel.border = ggplot2::element_rect(colour = "black", fill = NA, linewidth = 0.5)
+          )
+
+        #table of statistics for this variable
+        varStats <- statsTable[BVtypeMeas == v, ]
+        varStats[, BVtypeMeas := NULL]
+
+        statsTableGrob <- gridExtra::tableGrob(varStats, rows = NULL, theme = tableTheme)
+
+        if ('plot' %in% outputType) {
+
+          #plot on the left, boxplot on the right, table of statistics below
+          statsFigures[[v]] <- gridExtra::grid.arrange(plot, p, statsTableGrob,
+                                                       layout_matrix = rbind(c(1, 2), c(3, 3)),
+                                                       heights = c(2, 1))
+        } else {
+
+          #boxplot with the table below
+          statsFigures[[v]] <- gridExtra::grid.arrange(p, statsTableGrob, nrow = 2, heights = c(2, 1))
+        }
+
+      } else if ('plot' %in% outputType & 'table' %in% outputType & !(v %in% numericVar)) {
+
+        #plot on the top, table with number of individuals below
+        varCounts <- countTable[, c(by, paste0('n', v)), with = FALSE]
+
+        countTableGrob <- gridExtra::tableGrob(varCounts, rows = NULL, theme = tableTheme)
+
+        tableFigures[[v]] <- gridExtra::grid.arrange(plot, countTableGrob, nrow = 2, heights = c(2, 1))
+
+      } else if ('plot' %in% outputType) {
+
+        print(plot)
+      }
+    }
+
+    if ('plot' %in% outputType) {
+      result$plots <- plots
+    }
+
+    if (statistics) {
+      result$statsFigures <- statsFigures
+    }
+
+    if (length(tableFigures) > 0) {
+      result$tableFigures <- tableFigures
+    }
+  }
+  return(result)
   }
