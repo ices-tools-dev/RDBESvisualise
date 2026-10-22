@@ -17,8 +17,8 @@
 #' @param bins (Optional) Number of bins in histograms. Default is 20.
 #'
 #' @return Function shows results depending on outputType defined in parameters
-#' and returns them invisibly as a list: table, plots, statsTable, statsFigures,
-#' tableFigures.
+#' and returns them invisibly as a list: countTable, statsTable, plots,
+#' tableFigures, statsFigures.
 #'
 #'
 #' @section Development review:
@@ -122,9 +122,9 @@ summaryBiologicalVar <- function(data,
   #loop to get biological data if is more than one
   for (b in by){
   byValues <- unique(data[[substr(b, 1, 2)]][[b]])
-
   partData <- RDBEScore::getLinkedDataFromLevel(b, byValues, data, "BV", verbose = verbose)
   partData <- data.table::as.data.table(partData)
+
   if (is.null(plotData)) {
     plotData <- partData
   } else if(!b %in% names(plotData)) {
@@ -140,10 +140,25 @@ summaryBiologicalVar <- function(data,
 
   #numeric variables
 
-  numericVar <- var[var %in% c("WeightLive","WeightMeasured",'ForkLength','Age',
-  'LengthCarapace','LengthLowerJawFork','LengthMantle','LengthMaximumShell',
-  'LengthPinchedTail','LengthPreAnal','LengthPreCaudal','LengthStandard',
-  'LengthTail','LengthTotal','LengthWingSpan','WidthCarapace','WidthMaximumShell')]
+  numericVar <- var[var %in% c(
+    "WeightLive",
+    "WeightMeasured",
+    'ForkLength',
+    'Age',
+    'LengthCarapace',
+    'LengthLowerJawFork',
+    'LengthMantle',
+    'LengthMaximumShell',
+    'LengthPinchedTail',
+    'LengthPreAnal',
+    'LengthPreCaudal',
+    'LengthStandard',
+    'LengthTail',
+    'LengthTotal',
+    'LengthWingSpan',
+    'WidthCarapace',
+    'WidthMaximumShell'
+  )]
 
   plotData[, valueNum := NA_real_]
   plotData[BVtypeMeas %in% numericVar, valueNum := suppressWarnings(as.numeric(BVvalueMeas))]
@@ -154,11 +169,8 @@ summaryBiologicalVar <- function(data,
   #group used in the plots of statistics
   plotData[, group := do.call(paste, c(.SD, sep = '/')), .SDcols = by]
 
-
-  plotData <- plotData[, BVvalueMeas := factor(BVvalueMeas, levels = sort(unique(as.numeric(as.character(BVvalueMeas)))))]
-
   #Counting
-  subset <- plotData[, .(nIndividuals = .N), by = c(by, "BVvalueMeas")]
+  subset <- plotData[, .(nIndividuals = .N), by = c(by, "BVtypeMeas")]
 
   #add info about hierarchy
   subset$hierarchy <- hierarchy
@@ -168,20 +180,8 @@ summaryBiologicalVar <- function(data,
   #define list with results
   result <- list()
 
-  if (outputType == 'table') {
+  if ('table' %in% outputType) {
     result$countTable <- subset
-  }
-
-  if(outputType == 'plot'){
-    plot <- ggplot2::ggplot(subset, ggplot2::aes(x = BVvalueMeas, y = nIndividuals, fill = BVvalueMeas)) +
-      ggplot2::geom_bar(stat = "identity",fill = colourPalette[1], color = "black") +
-      ggplot2::labs(title = paste0("Number of individuals by ", var," and ", by),
-                    x = var,
-                    y = 'Number of individuals',
-      )
-      ggplot2::facet_wrap(~get(by))+
-      ggplot2::theme_light()
-    print(plot)
   }
 
   #check that statistics are available
@@ -208,7 +208,7 @@ summaryBiologicalVar <- function(data,
   }
 
   #Plots and statistics: one for each variable
-  if ('plot' %in% outputType | statistics) {
+  if ('plot' %in% outputType || statistics) {
 
     plots <- list()
     statsFigures <- list()
@@ -231,26 +231,18 @@ summaryBiologicalVar <- function(data,
 
           plot <- ggplot2::ggplot(varData, ggplot2::aes(x = valueNum))
 
-          if (plotType == 'histogram' & v == 'Age') {
+          if (v == 'Age') {
 
             plot <- plot + ggplot2::geom_histogram(binwidth = 1, center = 0, fill = colourPalette[1], color = "black")
             yLabel <- 'Number of individuals'
 
-          } else if (plotType == 'histogram') {
-
+          }else{
             plot <- plot + ggplot2::geom_histogram(bins = bins, fill = colourPalette[1], color = "black")
             yLabel <- 'Number of individuals'
-
-          } else {
-
-            plot <- plot + ggplot2::geom_density(fill = colourPalette[1], color = "black", alpha = 0.7)
-            yLabel <- 'Density'
           }
-
         } else {
 
           #Counting
-          subset <- varData[, .(nIndividuals = .N), by = c(by, "BVvalueMeas")]
 
           plot <- ggplot2::ggplot(subset, ggplot2::aes(x = BVvalueMeas, y = nIndividuals)) +
             ggplot2::geom_bar(stat = "identity", fill = colourPalette[1], color = "black")
@@ -298,25 +290,28 @@ summaryBiologicalVar <- function(data,
           #plot on the left, boxplot on the right, table of statistics below
           statsFigures[[v]] <- gridExtra::grid.arrange(plot, p, statsTableGrob,
                                                        layout_matrix = rbind(c(1, 2), c(3, 3)),
-                                                       heights = c(2, 1))
+                                                       heights = c(2, 1),
+                                                       right = textGrob(caption, rot = -90))
         } else {
 
           #boxplot with the table below
-          statsFigures[[v]] <- gridExtra::grid.arrange(p, statsTableGrob, nrow = 2, heights = c(2, 1))
+          statsFigures[[v]] <- gridExtra::grid.arrange(p, statsTableGrob,
+                                                       nrow = 2,
+                                                       heights = c(2, 1),
+                                                       right = textGrob(caption, rot = -90))
         }
 
       } else if ('plot' %in% outputType & 'table' %in% outputType & !(v %in% numericVar)) {
 
         #plot on the top, table with number of individuals below
-        varCounts <- countTable[, c(by, paste0('n', v)), with = FALSE]
 
-        countTableGrob <- gridExtra::tableGrob(varCounts, rows = NULL, theme = tableTheme)
+        countTableGrob <- gridExtra::tableGrob(subset, rows = NULL, theme = tableTheme)
 
-        tableFigures[[v]] <- gridExtra::grid.arrange(plot, countTableGrob, nrow = 2, heights = c(2, 1))
+        tableFigures[[v]] <- gridExtra::grid.arrange(plot, countTableGrob,
+                                                     nrow = 2,
+                                                     heights = c(2, 1),
+                                                     right = textGrob(caption, rot = -90))
 
-      } else if ('plot' %in% outputType) {
-
-        print(plot)
       }
     }
 
