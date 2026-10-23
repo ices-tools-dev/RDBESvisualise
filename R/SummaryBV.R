@@ -73,7 +73,7 @@ summaryBiologicalVar <- function(data,
   if (is.null(var)) {
     var <- unique(data$BV$BVtypeMeas)
   } else{
-    if (!var %in% data$BV$BVtypeMeas) {
+    if (!all(var %in% data$BV$BVtypeMeas)) {
       stop(
         paste(
           'The given measure type --->',
@@ -215,9 +215,26 @@ summaryBiologicalVar <- function(data,
     tableFigures <- list()
 
     #look of the tables in the figures
-    tableTheme <- gridExtra::ttheme_default(
-      colhead = list(bg_params = list(fill = colourPalette[1], col = NA),
-                     fg_params = list(fontface = 'bold'))
+    tableTheme <- gridExtra::ttheme_minimal(
+      colhead = list(
+        bg_params = list(
+          fill = "grey85",
+          col = "grey20"
+        ),
+        fg_params = list(
+          col = "black",
+          fontface = "plain"
+        )
+      ),
+      core = list(
+        bg_params = list(
+          fill = "white",
+          col = "gray20"
+        ),
+        fg_params = list(
+          col = "black"
+        )
+      )
     )
 
     for (v in var[var %in% plotData$BVtypeMeas]) {
@@ -233,19 +250,23 @@ summaryBiologicalVar <- function(data,
 
           if (v == 'Age') {
 
-            plot <- plot + ggplot2::geom_histogram(binwidth = 1, center = 0, fill = colourPalette[1], color = "black")
+            plot <- plot + ggplot2::geom_histogram(binwidth = 1, center = 0,
+                                                   fill = colourPalette[2],
+                                                   color = "black")
             yLabel <- 'Number of individuals'
 
           }else{
-            plot <- plot + ggplot2::geom_histogram(bins = bins, fill = colourPalette[1], color = "black")
+            plot <- plot + ggplot2::geom_histogram(bins = bins,
+                                                   fill = colourPalette[2],
+                                                   color = "black")
             yLabel <- 'Number of individuals'
           }
         } else {
 
           #Counting
 
-          plot <- ggplot2::ggplot(subset, ggplot2::aes(x = BVvalueMeas, y = nIndividuals)) +
-            ggplot2::geom_bar(stat = "identity", fill = colourPalette[1], color = "black")
+          plot <- ggplot2::ggplot(varData, ggplot2::aes(x = BVvalueMeas)) +
+            ggplot2::geom_bar(fill = colourPalette[2], color = "black")
           yLabel <- 'Number of individuals'
         }
 
@@ -265,18 +286,34 @@ summaryBiologicalVar <- function(data,
 
         #boxplot of the values, cross is the mean
         p <- ggplot2::ggplot(varData, ggplot2::aes(x = group, y = valueNum)) +
-          ggplot2::geom_boxplot(fill = colourPalette[1], color = "black") +
-          ggplot2::stat_summary(fun = mean, geom = "point", shape = 4, size = 3, color = "black") +
-          ggplot2::labs(y = v, caption = caption) +
+          ggplot2::geom_boxplot(fill = colourPalette[2], color = "black") +
+          ggplot2::stat_summary(
+            fun = mean,
+            geom = "point",
+            shape = 4,
+            size = 3,
+            color = "black"
+          ) +
+          ggplot2::labs(y = v) +
           ggplot2::theme_bw() +
-          ggplot2::theme(panel.background = ggplot2::element_blank(),
-                         panel.grid.major = ggplot2::element_blank(),
-                         panel.grid.minor = ggplot2::element_blank(),
-                         axis.text.x = ggplot2::element_text(colour = "black", size = 11),
-                         axis.text.y = ggplot2::element_text(colour = "black", size = 11),
-                         axis.title.x = ggplot2::element_blank(),
-                         axis.title.y = ggplot2::element_text(size = 13, vjust = 0.3),
-                         panel.border = ggplot2::element_rect(colour = "black", fill = NA, linewidth = 0.5)
+          ggplot2::theme(
+            panel.background = ggplot2::element_blank(),
+            panel.grid.major = ggplot2::element_blank(),
+            panel.grid.minor = ggplot2::element_blank(),
+            axis.text.x = ggplot2::element_text(colour = "black", size = 11),
+            axis.text.y = ggplot2::element_text(colour = "black", size = 11),
+            axis.title.x = ggplot2::element_blank(),
+            axis.title.y = ggplot2::element_text(size = 13, vjust = 0.3),
+            strip.text = ggplot2::element_text(
+              face = "plain",
+              size = 9,
+              colour = "black"
+            ),
+            panel.border = ggplot2::element_rect(
+              colour = "black",
+              fill = NA,
+              linewidth = 0.5
+            )
           )
 
         #table of statistics for this variable
@@ -288,29 +325,54 @@ summaryBiologicalVar <- function(data,
         if ('plot' %in% outputType) {
 
           #plot on the left, boxplot on the right, table of statistics below
-          statsFigures[[v]] <- gridExtra::grid.arrange(plot, p, statsTableGrob,
-                                                       layout_matrix = rbind(c(1, 2), c(3, 3)),
+          statsFigures[[v]] <- gridExtra::grid.arrange(plot + ggplot2::labs(caption = NULL),
+                                                       p, statsTableGrob,
+                                                       layout_matrix = rbind(c(1, 2),
+                                                                             c(3, 3)),
                                                        heights = c(2, 1),
-                                                       right = textGrob(caption, rot = -90))
+                                                       bottom = grid::textGrob(
+                                                         caption,
+                                                         x = grid::unit(1, "npc") - grid::unit(3, "mm"),
+                                                         y = grid::unit(2, "mm"),
+                                                         just = c("right", "bottom"),
+                                                         gp = grid::gpar(fontsize = 10)
+                                                       )
+                                                       )
         } else {
 
           #boxplot with the table below
           statsFigures[[v]] <- gridExtra::grid.arrange(p, statsTableGrob,
                                                        nrow = 2,
                                                        heights = c(2, 1),
-                                                       right = textGrob(caption, rot = -90))
+                                                       bottom = grid::textGrob(
+                                                         caption,
+                                                         x = grid::unit(1, "npc") - grid::unit(3, "mm"),
+                                                         y = grid::unit(2, "mm"),
+                                                         just = c("right", "bottom"),
+                                                         gp = grid::gpar(fontsize = 10)
+                                                       ))
         }
 
       } else if ('plot' %in% outputType & 'table' %in% outputType & !(v %in% numericVar)) {
 
         #plot on the top, table with number of individuals below
 
-        countTableGrob <- gridExtra::tableGrob(subset, rows = NULL, theme = tableTheme)
+        countTableGrob <- gridExtra::tableGrob(subset[BVtypeMeas == v,
+                                                      c(by, 'BVtypeMeas','nIndividuals'),
+                                                      with = FALSE],
+                                               rows = NULL, theme = tableTheme)
 
-        tableFigures[[v]] <- gridExtra::grid.arrange(plot, countTableGrob,
+        tableFigures[[v]] <- gridExtra::grid.arrange(plot + ggplot2::labs(caption = NULL),
+                                                     countTableGrob,
                                                      nrow = 2,
                                                      heights = c(2, 1),
-                                                     right = textGrob(caption, rot = -90))
+                                                     bottom = grid::textGrob(
+                                                       caption,
+                                                       x = grid::unit(1, "npc") - grid::unit(3, "mm"),
+                                                       y = grid::unit(2, "mm"),
+                                                       just = c("right", "bottom"),
+                                                       gp = grid::gpar(fontsize = 10)
+                                                     ))
 
       }
     }
