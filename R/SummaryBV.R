@@ -4,22 +4,37 @@
 #' @param data RDBES Data Obejct.
 #' @param verbose (Optional) Set to TRUE if you want informative text printed
 #' out, or FALSE if you don't.  The default is FALSE.
-#' @param var (Optional) One biological variable ex. Length, WeightLive,
-#' WeightMeasured, Age, Sex, Maturity.
-#' @param by One or more factors to split the data, ex. "SDctry" or
-#' c("SDctry", "DEyear").
-#' @param year (Optional) Year or years to filter the data. If you don't add
-#' information, the default will by all years occures in data.
-#' @param outputType Data should be present as table and/or plot. The default
+#' @param var (Optional) One or more biological variables (values of `BVtypeMeas`),
+#'  ex. `"LengthTotal"`, `"WeightLive"`, `"Age"`, `"Sex"`,
+#' `"Maturity"`, `" WeightMeasured"`.If NULL (default), all variable types
+#' present in the data are used.
+#' @param by One or more factors to split the data, ex. `"SDctry"` or
+#' `c("SDctry", "DEyear")`.
+#' @param year (Optional) Year or years to filter the data. If NULL (default),
+#' all years present in the data are used.
+#' @param outputType Results can be presented as table and/or plot. The default
 #' is both: c("plot", "table").
 #' @param statistics (Optional) Set to TRUE if you want additional summary
-#' statistics (mean, sd, median, IQR… ). Default is FALSE.
+#' statistics (mean, sd, median,… ). Default is FALSE.
 #' @param bins (Optional) Number of bins in histograms. Default is 20.
 #'
-#' @return Function shows results depending on outputType defined in parameters
-#' and returns them invisibly as a list: countTable, statsTable, plots,
-#' tableFigures, statsFigures.
+#'@return Invisibly, a list with the following elements (depending on the arguments):
+#' - `countTable`: number of individuals by `by` and variable type (if
+#'   `"table"` in `outputType`).
+#' - `statsTable`: summary statistics of numeric variables (if
+#'   `statistics = TRUE`).
+#' - `plots`: list of ggplot objects, one per variable (if `"plot"` in
+#'   `outputType`).
+#' - `tableFigures`: list of figures (plot + count table) for non-numeric
+#'   variables (if both `"plot"` and `"table"` in `outputType`).
+#' - `statsFigures`: list of figures (histogram, boxplot and statistics
+#'   table) for numeric variables (if `statistics = TRUE`).
 #'
+#' The results are also shown (plots drawn, tables printed) while the function
+#' runs.
+#'
+#' @import data.table
+#' @importFrom rlang .data
 #'
 #' @section Development review:
 #' - AI-assisted: Yes
@@ -31,7 +46,7 @@
 #' data <- H8ExampleEE1 # dataset from RDBEScore
 #'
 #' #to create plots and/or tables use
-#' summaryBiologicalVar(data,verbose=TRUE,var="Age",by=c("DEhierarchy","SDctry"),year=2022,outputType="table",statistics=TRUE)
+#' summaryBiologicalVar(data,by=c("SDctry"),statistics=TRUE)
 #'}
 #'
 #'@export
@@ -48,13 +63,20 @@ summaryBiologicalVar <- function(data,
   #validate RDBES Data Object
   RDBEScore::validateRDBESDataObject(data, verbose = verbose, strict = TRUE)
 
+  if (!is.logical(statistics) || length(statistics) != 1 || is.na(statistics)) {
+    stop("'statistics' must be TRUE or FALSE.")
+  }
+  if (!is.numeric(bins) || length(bins) != 1 || is.na(bins) || bins < 1) {
+    stop("'bins' must be a single positive number.")
+  }
+
   #BVid exists?
   if (is.null(data$BV) || nrow(data$BV) == 0) {
     stop('The data does not contain any BV (biological variable) records.')
   }
 
   #hierarchy
-  hierarchy <- data$DE$DEhierarchy
+  hierarchy <- unique(data$DE$DEhierarchy)
 
   #check arguments of function
   if (missing(by) || !is.character(by)) {
@@ -163,9 +185,6 @@ summaryBiologicalVar <- function(data,
   plotData[, valueNum := NA_real_]
   plotData[BVtypeMeas %in% numericVar, valueNum := suppressWarnings(as.numeric(BVvalueMeas))]
 
-  #no numeric variables
-  notNumber <- plotData$BVtypeMeas %in% numericVar & is.na(plotData$valueNum)
-
   #group used in the plots of statistics
   plotData[, group := do.call(paste, c(.SD, sep = '/')), .SDcols = by]
 
@@ -185,7 +204,7 @@ summaryBiologicalVar <- function(data,
   }
 
   #check that statistics are available
-  if (statistics & length(numericVar) == 0) {
+  if (statistics && length(numericVar) == 0) {
     warning('Statistics are available only for numeric variables, statistics = FALSE is used.')
     statistics <- FALSE
   }
@@ -197,7 +216,6 @@ summaryBiologicalVar <- function(data,
                              mean = round(mean(valueNum), 2),
                              sd = round(stats::sd(valueNum), 2),
                              median = stats::median(valueNum),
-                             IQR = stats::IQR(valueNum),
                              min = min(valueNum),
                              max = max(valueNum)),
                            by = c('BVtypeMeas', by)]
@@ -282,7 +300,7 @@ summaryBiologicalVar <- function(data,
       }
 
       #boxplot and table of statistics (only for numeric variables)
-      if (statistics & v %in% numericVar) {
+      if (statistics && v %in% numericVar) {
 
         #boxplot of the values, cross is the mean
         p <- ggplot2::ggplot(varData, ggplot2::aes(x = group, y = valueNum)) +
@@ -294,23 +312,20 @@ summaryBiologicalVar <- function(data,
             size = 3,
             color = "black"
           ) +
-          ggplot2::labs(y = v) +
-          ggplot2::theme_bw() +
+          ggplot2::labs(y = v,
+                        x = "") +
+          ggplot2::theme_light() +
           ggplot2::theme(
             panel.background = ggplot2::element_blank(),
             panel.grid.major = ggplot2::element_blank(),
             panel.grid.minor = ggplot2::element_blank(),
-            axis.text.x = ggplot2::element_text(colour = "black", size = 11),
-            axis.text.y = ggplot2::element_text(colour = "black", size = 11),
-            axis.title.x = ggplot2::element_blank(),
-            axis.title.y = ggplot2::element_text(size = 13, vjust = 0.3),
             strip.text = ggplot2::element_text(
               face = "plain",
               size = 9,
               colour = "black"
             ),
             panel.border = ggplot2::element_rect(
-              colour = "black",
+              colour = "grey60",
               fill = NA,
               linewidth = 0.5
             )
@@ -353,7 +368,7 @@ summaryBiologicalVar <- function(data,
                                                        ))
         }
 
-      } else if ('plot' %in% outputType & 'table' %in% outputType & !(v %in% numericVar)) {
+      } else if ('plot' %in% outputType && 'table' %in% outputType && !(v %in% numericVar)) {
 
         #plot on the top, table with number of individuals below
 
@@ -389,5 +404,7 @@ summaryBiologicalVar <- function(data,
       result$tableFigures <- tableFigures
     }
   }
-  return(result)
+  return(invisible(result))
   }
+
+utils::globalVariables(c("BVtypeMeas", "BVvalueMeas", "valueNum", "group"))
