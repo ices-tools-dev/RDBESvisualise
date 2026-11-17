@@ -1,0 +1,253 @@
+---
+title: "Summarising biological variables with summaryBiologicalVar()"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Summarising biological variables with summaryBiologicalVar()}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 8,
+  fig.height = 5
+)
+```
+
+## Purpose
+
+`summaryBiologicalVar()` gives a quick overview of the biological variables
+(BV table) in an RDBES Data Object. For one measured variable — for example
+`Age`, `Length`, `WeightLive`, `Sex` or `Maturity` — it counts how many
+individuals were measured at each value, split by a chosen grouping field
+and restricted to the selected year(s).
+
+The result can be returned as:
+
+- a **table** of counts (`outputType = "table"`),
+- a **bar plot** of counts, faceted by the grouping field (`outputType = "plot"`),
+- optionally, a **box plot with summary statistics** (`statistics = TRUE`).
+
+## Packages
+
+```{r packages}
+library(RDBEScore)
+library(RDBESvisualise)
+```
+
+## Preparing the data
+
+The function expects a validated RDBES Data Object containing at least the
+`SA`, `DE`, `SD`, `FM` and `BV` tables. Create it from an RDBES download with
+`RDBEScore::createRDBESDataObject()`:
+
+```{r data}
+data <- createRDBESDataObject(
+  input = "/data-raw/exampleData/H1_2025_02_11.zip"
+)
+```
+
+The object is validated inside the function
+(`RDBEScore::validateRDBESDataObject(strict = TRUE)`), so an invalid object
+stops with an informative error before any summarising is done.
+
+It is worth checking which variables and years are present before calling
+the function:
+
+```{r explore}
+unique(data$BV$BVtypeMeas)   # measured variables available for `var`
+unique(data$DE$DEyear)       # years available for `year`
+```
+
+## Arguments
+
+| Argument     | Description |
+|--------------|-------------|
+| `data`       | RDBES Data Object (masterTable with SA, DE, SD, FM, BV). |
+| `verbose`    | `TRUE` prints informative messages from the RDBEScore helpers. Default `TRUE`. |
+| `var`        | One biological variable, matching a value of `BVtypeMeas` (e.g. `"Age"`). |
+| `by`         | One field used to split the data, e.g. `"SDctry"` or `"DEhierarchy"`. The first two letters must be the table name. |
+| `year`       | One or more years to keep (filters on `DEyear`). |
+| `outputType` | `"table"` or `"plot"`. |
+| `statistics` | `TRUE` adds a box plot and a statistics table. Default `FALSE`. |
+
+## How it works
+
+1. **Validation** – the RDBES Data Object is checked with
+   `validateRDBESDataObject()`.
+2. **Argument checks** – if `var` is not found in `BVtypeMeas` the function
+   stops and lists the variables that are available. Years in `year` that are
+   not in `DEyear` produce a warning (not an error).
+3. **Filtering** – the object is filtered to the requested years with
+   `filterRDBESDataObject(killOrphans = TRUE)`, so records no longer linked
+   to a kept design row are removed.
+4. **Linking** – `getLinkedDataFromLevel()` attaches each BV record to the
+   value of the `by` field it belongs to.
+5. **Binning** – for `WeightLive`, values are grouped into 15 intervals so the
+   plot stays readable. Other variables are used as they are.
+6. **Counting** – the number of individuals (`nIndividuals`) is counted for
+   each combination of `by` and `BVvalueMeas`.
+
+## Examples
+
+### Age by country, as a table
+
+```{r table}
+summaryBiologicalVar(
+  data,
+  verbose = FALSE,
+  var = "Age",
+  by = "SDctry",
+  year = 2025,
+  outputType = "table",
+  statistics = FALSE
+)
+```
+
+Each row gives the number of individuals of a given age for one country.
+
+### Age by country, as a plot
+
+```{r plot}
+summaryBiologicalVar(
+  data,
+  verbose = FALSE,
+  var = "Age",
+  by = "SDctry",
+  year = 2025,
+  outputType = "plot",
+  statistics = FALSE
+)
+```
+
+The plot has one panel per value of `by`; the x axis shows the values of
+`var` and the y axis the number of individuals.
+
+### Several years and a hierarchy split
+
+```{r years}
+summaryBiologicalVar(
+  data,
+  var = "Length",
+  by = "DEhierarchy",
+  year = c(2023, 2024, 2025),
+  outputType = "plot",
+  statistics = FALSE
+)
+```
+
+If one of the years is missing from the data, a warning names it and the
+summary is built from the years that are present.
+
+### Adding summary statistics
+
+```{r stats}
+summaryBiologicalVar(
+  data,
+  var = "Age",
+  by = "SDctry",
+  year = 2025,
+  outputType = "plot",
+  statistics = TRUE
+)
+```
+
+With `statistics = TRUE` a box plot of the counts (mean marked with a cross)
+is drawn above a table of the underlying data.
+
+## Example output on simulated data
+
+The chunks in the *Examples* section need an RDBES export, so they are not
+run when the vignette is built. To show what the output looks like, the
+chunks below build a small **simulated** count table with the same
+structure as the one `summaryBiologicalVar()` creates internally
+(one row per `by` value and `BVvalueMeas`, with `nIndividuals`), and draw
+it with the same ggplot2 code the function uses. The numbers are not real
+RDBES data.
+
+```{r sim-data, eval = TRUE}
+library(ggplot2)
+set.seed(42)
+
+ages <- 0:10
+countries <- c("DK", "PL", "SE")
+peak <- c(DK = 3, PL = 4, SE = 5)
+
+simCounts <- do.call(rbind, lapply(countries, function(ctry) {
+  data.frame(
+    SDctry = ctry,
+    BVvalueMeas = factor(ages, levels = ages),
+    nIndividuals = rpois(length(ages),
+                         lambda = 120 * dnorm(ages, peak[ctry], 2) * 5 + 2)
+  )
+}))
+head(simCounts)
+```
+
+### Bar plot (`outputType = "plot"`)
+
+```{r sim-plot, eval = TRUE, fig.height = 4}
+ggplot(simCounts, aes(x = BVvalueMeas, y = nIndividuals)) +
+  geom_bar(stat = "identity", fill = "#2C7FB8", color = "black") +
+  labs(title = "Number of individuals by Age and SDctry",
+       x = "Age",
+       y = "Number of individuals",
+       caption = "* Simulated data") +
+  facet_wrap(~SDctry) +
+  theme_light()
+```
+
+### Length distribution split by hierarchy
+
+```{r sim-length, eval = TRUE, fig.height = 4}
+lengths <- seq(10, 40, by = 1)
+simLength <- data.frame(
+  DEhierarchy = "1",
+  BVvalueMeas = factor(lengths, levels = lengths),
+  nIndividuals = rpois(length(lengths), 300 * dnorm(lengths, 24, 5) + 1)
+)
+
+ggplot(simLength, aes(x = BVvalueMeas, y = nIndividuals)) +
+  geom_bar(stat = "identity", fill = "#2C7FB8", color = "black") +
+  labs(title = "Number of individuals by Length and DEhierarchy",
+       x = "Length",
+       y = "Number of individuals",
+       caption = "* Simulated data") +
+  facet_wrap(~DEhierarchy, labeller = label_both) +
+  scale_x_discrete(breaks = seq(10, 40, by = 5)) +
+  theme_light()
+```
+
+### Summary statistics (`statistics = TRUE`)
+
+The box plot summarises the counts per group; the cross marks the mean.
+
+```{r sim-stats, eval = TRUE, fig.height = 4}
+ggplot(simCounts, aes(x = SDctry, y = nIndividuals)) +
+  geom_boxplot(fill = "#2C7FB8", color = "black") +
+  stat_summary(fun = mean, geom = "point", shape = 4, size = 3) +
+  labs(y = "Number of individuals per age") +
+  theme_bw() +
+  theme(axis.title.x = element_blank(),
+        panel.grid.minor = element_blank())
+
+aggregate(nIndividuals ~ SDctry, data = simCounts,
+          FUN = function(x) c(mean = mean(x), sd = sd(x),
+                              median = median(x), IQR = IQR(x)))
+```
+
+## Common errors
+
+- **"The given measure type ---> X <--- is not present in the data"** –
+  `var` does not match any `BVtypeMeas` value. The message lists the valid
+  values; spelling and capitalisation must match exactly.
+- **Warning about missing years** – some years in `year` are not in `DEyear`.
+  Check `unique(data$DE$DEyear)`.
+- **Validation error** – the input is not a valid RDBES Data Object; see the
+  RDBEScore documentation on `createRDBESDataObject()`.
+
+## Scope
+
+Tested with hierarchy H1 using 2025 RDBES data (downloaded 2026-10-13).
