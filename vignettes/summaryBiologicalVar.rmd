@@ -44,9 +44,7 @@ The function expects a validated RDBES Data Object containing at least the
 `RDBEScore::createRDBESDataObject()`:
 
 ```{r data}
-data <- createRDBESDataObject(
-  input = "/data-raw/exampleData/H1_2025_02_11.zip"
-)
+data <- RDBEScore::H8ExampleEE1
 ```
 
 The object is validated inside the function
