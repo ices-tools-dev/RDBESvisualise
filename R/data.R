@@ -75,3 +75,11 @@
 #' @format A character vector
 #' @source WGRDBES-EST
 "allowedSamplingVariable"
+#' Colour palette for countries
+#'
+#' A named character vector of colours (hex codes) used in the plots of the
+#' package. Names are the country codes (e.g. `"BE"`, `"DK"`, `"PL"`).
+#'
+#' @format A named character vector of hex colour codes.
+#' @source Created with `data-raw/palette.R`.
+"colourPalette"
