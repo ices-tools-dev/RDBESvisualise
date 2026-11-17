@@ -1,12 +1,12 @@
-#'Function which shows tabel and/or plot with summary of Biological Variables
+#'Function which shows table and/or plot with summary of Biological Variables
 #'for one hierarchy
 #'
-#' @param data RDBES Data Obejct.
+#' @param data RDBES Data Object.
 #' @param verbose (Optional) Set to TRUE if you want informative text printed
 #' out, or FALSE if you don't.  The default is FALSE.
 #' @param var (Optional) One or more biological variables (values of `BVtypeMeas`),
 #'  ex. `"LengthTotal"`, `"WeightLive"`, `"Age"`, `"Sex"`,
-#' `"Maturity"`, `" WeightMeasured"`.If NULL (default), all variable types
+#' `"Maturity"`, `"WeightMeasured"`.If NULL (default), all variable types
 #' present in the data are used.
 #' @param by One or more factors to split the data, ex. `"SDctry"` or
 #' `c("SDctry", "DEyear")`.
@@ -30,8 +30,8 @@
 #' - `statsFigures`: list of figures (histogram, boxplot and statistics
 #'   table) for numeric variables (if `statistics = TRUE`).
 #'
-#' The results are also shown (plots drawn, tables printed) while the function
-#' runs.
+#' Figures combining plots and tables (tableFigures, statsFigures) are also
+#' drawn while the function runs.
 #'
 #' @import data.table
 #' @importFrom rlang .data
@@ -269,13 +269,13 @@ summaryBiologicalVar <- function(data,
           if (v == 'Age') {
 
             plot <- plot + ggplot2::geom_histogram(binwidth = 1, center = 0,
-                                                   fill = colourPalette[2],
+                                                   fill = RDBESvisualise::colourPalette[2],
                                                    color = "black")
             yLabel <- 'Number of individuals'
 
           }else{
             plot <- plot + ggplot2::geom_histogram(bins = bins,
-                                                   fill = colourPalette[2],
+                                                   fill = RDBESvisualise::colourPalette[2],
                                                    color = "black")
             yLabel <- 'Number of individuals'
           }
@@ -284,7 +284,7 @@ summaryBiologicalVar <- function(data,
           #Counting
 
           plot <- ggplot2::ggplot(varData, ggplot2::aes(x = BVvalueMeas)) +
-            ggplot2::geom_bar(fill = colourPalette[2], color = "black")
+            ggplot2::geom_bar(fill = RDBESvisualise::colourPalette[2], color = "black")
           yLabel <- 'Number of individuals'
         }
 
@@ -304,7 +304,7 @@ summaryBiologicalVar <- function(data,
 
         #boxplot of the values, cross is the mean
         p <- ggplot2::ggplot(varData, ggplot2::aes(x = group, y = valueNum)) +
-          ggplot2::geom_boxplot(fill = colourPalette[2], color = "black") +
+          ggplot2::geom_boxplot(fill = RDBESvisualise::colourPalette[2], color = "black") +
           ggplot2::stat_summary(
             fun = mean,
             geom = "point",
