@@ -2,7 +2,7 @@
 % Please edit documentation in R/summaryBiologicalVar.R
 \name{summaryBiologicalVar}
 \alias{summaryBiologicalVar}
-\title{Function which shows tabel and/or plot with summary of Biological Variables
+\title{Function which shows table and/or plot with summary of Biological Variables
 for one hierarchy}
 \usage{
 summaryBiologicalVar(
@@ -17,14 +17,14 @@ summaryBiologicalVar(
 )
 }
 \arguments{
-\item{data}{RDBES Data Obejct.}
+\item{data}{RDBES Data Object.}
 
 \item{verbose}{(Optional) Set to TRUE if you want informative text printed
 out, or FALSE if you don't.  The default is FALSE.}
 
 \item{var}{(Optional) One or more biological variables (values of \code{BVtypeMeas}),
 ex. \code{"LengthTotal"}, \code{"WeightLive"}, \code{"Age"}, \code{"Sex"},
-\code{"Maturity"}, \code{" WeightMeasured"}.If NULL (default), all variable types
+\code{"Maturity"}, \code{"WeightMeasured"}.If NULL (default), all variable types
 present in the data are used.}
 
 \item{by}{One or more factors to split the data, ex. \code{"SDctry"} or
@@ -56,11 +56,11 @@ variables (if both \code{"plot"} and \code{"table"} in \code{outputType}).
 table) for numeric variables (if \code{statistics = TRUE}).
 }
 
-The results are also shown (plots drawn, tables printed) while the function
-runs.
+Figures combining plots and tables (tableFigures, statsFigures) are also
+drawn while the function runs.
 }
 \description{
-Function which shows tabel and/or plot with summary of Biological Variables
+Function which shows table and/or plot with summary of Biological Variables
 for one hierarchy
 }
 \section{Development review}{
