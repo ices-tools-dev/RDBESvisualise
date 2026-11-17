@@ -84,9 +84,7 @@ unique(data$DE$DEyear)       # years available for `year`
    to a kept design row are removed.
 4. **Linking** – `getLinkedDataFromLevel()` attaches each BV record to the
    value of the `by` field it belongs to.
-5. **Binning** – for eg. `WeightLive`, values are grouped into 20 intervals so the
-   plot stays readable. Other variables are used as they are.
-6. **Plotting** – numeric variables are shown as histograms with bins intervals 
+5. **Plotting** – numeric variables are shown as histograms with bins intervals 
    (Age with a bin width of 1); non-numeric variables (e.g. Sex, Maturity) as bar plots.
 
 ## Examples
@@ -94,7 +92,7 @@ unique(data$DE$DEyear)       # years available for `year`
 ### Age by country, as a table
 
 ```{r table}
-summaryBiologicalVar(
+res <- summaryBiologicalVar(
   data,
   verbose = FALSE,
   var = "Age",
@@ -103,6 +101,8 @@ summaryBiologicalVar(
   outputType = "table",
   statistics = FALSE
 )
+
+res$countTable
 ```
 
 Each row gives the number of individuals of a given age for one country.
@@ -110,7 +110,7 @@ Each row gives the number of individuals of a given age for one country.
 ### Age by country, as a plot
 
 ```{r plot}
-summaryBiologicalVar(
+res <- summaryBiologicalVar(
   data,
   verbose = FALSE,
   var = "Age",
@@ -119,6 +119,8 @@ summaryBiologicalVar(
   outputType = "plot",
   statistics = FALSE
 )
+
+res$plots$Age
 ```
 
 The plot has one panel per value of `by`; the x axis shows the values of
@@ -127,7 +129,7 @@ The plot has one panel per value of `by`; the x axis shows the values of
 ### Several years and a hierarchy split
 
 ```{r years}
-summaryBiologicalVar(
+res <- summaryBiologicalVar(
   data,
   var = "Age",
   by = "DEhierarchy",
@@ -135,6 +137,7 @@ summaryBiologicalVar(
   outputType = "plot",
   statistics = FALSE
 )
+res$plots$Age
 ```
 
 If one of the years is missing from the data, a warning names it and the
@@ -143,7 +146,7 @@ summary is built from the years that are present.
 ### Adding summary statistics
 
 ```{r stats}
-summaryBiologicalVar(
+res <- summaryBiologicalVar(
   data,
   var = "Age",
   by = "SDctry",
@@ -151,91 +154,12 @@ summaryBiologicalVar(
   outputType = "plot",
   statistics = TRUE
 )
+
+res$statsTable
 ```
 
 With `statistics = TRUE` a box plot of the counts (mean marked with a cross)
 is drawn above a table of the underlying data.
-
-## Example output on simulated data
-
-The chunks in the *Examples* section need an RDBES export, so they are not
-run when the vignette is built. To show what the output looks like, the
-chunks below build a small **simulated** count table with the same
-structure as the one `summaryBiologicalVar()` creates internally
-(one row per `by` value and `BVvalueMeas`, with `nIndividuals`), and draw
-it with the same ggplot2 code the function uses. The numbers are not real
-RDBES data.
-
-```{r sim-data, eval = TRUE}
-library(ggplot2)
-set.seed(42)
-
-ages <- 0:10
-countries <- c("DK", "PL", "SE")
-peak <- c(DK = 3, PL = 4, SE = 5)
-
-simCounts <- do.call(rbind, lapply(countries, function(ctry) {
-  data.frame(
-    SDctry = ctry,
-    BVvalueMeas = factor(ages, levels = ages),
-    nIndividuals = rpois(length(ages),
-                         lambda = 120 * dnorm(ages, peak[ctry], 2) * 5 + 2)
-  )
-}))
-head(simCounts)
-```
-
-### Bar plot (`outputType = "plot"`)
-
-```{r sim-plot, eval = TRUE, fig.height = 4}
-ggplot(simCounts, aes(x = BVvalueMeas, y = nIndividuals)) +
-  geom_bar(stat = "identity", fill = colourPalette[2], color = "black") +
-  labs(title = "Number of individuals by Age and SDctry",
-       x = "Age",
-       y = "Number of individuals",
-       caption = "* Simulated data") +
-  facet_wrap(~SDctry) +
-  theme_light()
-```
-
-### Length distribution split by hierarchy
-
-```{r sim-length, eval = TRUE, fig.height = 4}
-lengths <- seq(10, 40, by = 1)
-simLength <- data.frame(
-  DEhierarchy = "1",
-  BVvalueMeas = factor(lengths, levels = lengths),
-  nIndividuals = rpois(length(lengths), 300 * dnorm(lengths, 24, 5) + 1)
-)
-
-ggplot(simLength, aes(x = BVvalueMeas, y = nIndividuals)) +
-  geom_bar(stat = "identity", fill = colourPalette[2], color = "black") +
-  labs(title = "Number of individuals by Length and DEhierarchy",
-       x = "Length",
-       y = "Number of individuals",
-       caption = "* Simulated data") +
-  facet_wrap(~DEhierarchy, labeller = label_both) +
-  scale_x_discrete(breaks = seq(10, 40, by = 5)) +
-  theme_light()
-```
-
-### Summary statistics (`statistics = TRUE`)
-
-The box plot summarises the counts per group; the cross marks the mean.
-
-```{r sim-stats, eval = TRUE, fig.height = 4}
-ggplot(simCounts, aes(x = SDctry, y = nIndividuals)) +
-  geom_boxplot(fill = colourPalette[2], color = "black") +
-  stat_summary(fun = mean, geom = "point", shape = 4, size = 3) +
-  labs(y = "Number of individuals per age") +
-  theme_bw() +
-  theme(axis.title.x = element_blank(),
-        panel.grid.minor = element_blank())
-
-aggregate(nIndividuals ~ SDctry, data = simCounts,
-          FUN = function(x) c(mean = mean(x), sd = sd(x),
-                              median = median(x), IQR = IQR(x)))
-```
 
 ## Common errors
 
@@ -246,7 +170,3 @@ aggregate(nIndividuals ~ SDctry, data = simCounts,
   Check `unique(data$DE$DEyear)`.
 - **Validation error** – the input is not a valid RDBES Data Object; see the
   RDBEScore documentation on `createRDBESDataObject()`.
-
-## Scope
-
-Tested with hierarchy H1 using 2025 RDBES data (downloaded 2026-10-13).
