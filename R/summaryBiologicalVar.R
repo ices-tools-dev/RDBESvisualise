@@ -269,13 +269,13 @@ summaryBiologicalVar <- function(data,
           if (v == 'Age') {
 
             plot <- plot + ggplot2::geom_histogram(binwidth = 1, center = 0,
-                                                   fill = RDBESvisualise::colourPalette[2],
+                                                   fill = colourPalette[2],
                                                    color = "black")
             yLabel <- 'Number of individuals'
 
           }else{
             plot <- plot + ggplot2::geom_histogram(bins = bins,
-                                                   fill = RDBESvisualise::colourPalette[2],
+                                                   fill = colourPalette[2],
                                                    color = "black")
             yLabel <- 'Number of individuals'
           }
@@ -284,7 +284,7 @@ summaryBiologicalVar <- function(data,
           #Counting
 
           plot <- ggplot2::ggplot(varData, ggplot2::aes(x = BVvalueMeas)) +
-            ggplot2::geom_bar(fill = RDBESvisualise::colourPalette[2], color = "black")
+            ggplot2::geom_bar(fill = colourPalette[2], color = "black")
           yLabel <- 'Number of individuals'
         }
 
@@ -304,7 +304,7 @@ summaryBiologicalVar <- function(data,
 
         #boxplot of the values, cross is the mean
         p <- ggplot2::ggplot(varData, ggplot2::aes(x = group, y = valueNum)) +
-          ggplot2::geom_boxplot(fill = RDBESvisualise::colourPalette[2], color = "black") +
+          ggplot2::geom_boxplot(fill = colourPalette[2], color = "black") +
           ggplot2::stat_summary(
             fun = mean,
             geom = "point",
