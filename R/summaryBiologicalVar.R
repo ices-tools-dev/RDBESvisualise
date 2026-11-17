@@ -407,4 +407,4 @@ summaryBiologicalVar <- function(data,
   return(invisible(result))
   }
 
-utils::globalVariables(c("BVtypeMeas", "BVvalueMeas", "valueNum", "group"))
+utils::globalVariables(c("BVtypeMeas", "BVvalueMeas", "valueNum", "group","."))

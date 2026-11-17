@@ -93,7 +93,6 @@ Description:
 License: GPL-3 + file LICENSE
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.3.3
 Roxygen: list(markdown = TRUE)
 Suggests: 
     knitr,
@@ -119,3 +118,4 @@ Imports:
     grid,
     stats
 VignetteBuilder: knitr
+Config/roxygen2/version: 8.1.1

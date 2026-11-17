@@ -43,7 +43,7 @@ The function expects a validated RDBES Data Object containing at least the
 `SA`, `DE`, `SD`, `FM` and `BV` tables. Create it from an RDBES download with
 `RDBEScore::createRDBESDataObject()`:
 
-```{r data, eval=FALSE}
+```{r data}
 data <- RDBEScore::H8ExampleEE1
 ```
 
@@ -68,7 +68,7 @@ unique(data$DE$DEyear)       # years available for `year`
 | `var`        | One or more biological variables, matching a value of `BVtypeMeas` (e.g. `"Age"`). |
 | `by`         | One or more fields used to split the data, e.g. `"SDctry"` or `"DEhierarchy"`. |
 | `year`       | One or more years to keep (filters on `DEyear`). |
-| `outputType` | `"table"` or `"plot"`.The default is both. |
+| `outputType` | `"table"` and/or `"plot"`. The default is both. |
 | `statistics` | `TRUE` adds a box plot and a statistics table. Default `FALSE`. |
 | `bins`       | Number of bins in histograms. Default is 20.|
 
@@ -86,8 +86,8 @@ unique(data$DE$DEyear)       # years available for `year`
    value of the `by` field it belongs to.
 5. **Binning** – for eg. `WeightLive`, values are grouped into 20 intervals so the
    plot stays readable. Other variables are used as they are.
-6. **Counting** – the number of individuals (`nIndividuals`) is counted for
-   each combination of `by` and `BVvalueMeas`.
+6. **Plotting** – numeric variables are shown as histograms with bins intervals 
+   (Age with a bin width of 1); non-numeric variables (e.g. Sex, Maturity) as bar plots.
 
 ## Examples
 
@@ -99,7 +99,7 @@ summaryBiologicalVar(
   verbose = FALSE,
   var = "Age",
   by = "SDctry",
-  year = 2025,
+  year = 2022,
   outputType = "table",
   statistics = FALSE
 )
@@ -115,7 +115,7 @@ summaryBiologicalVar(
   verbose = FALSE,
   var = "Age",
   by = "SDctry",
-  year = 2025,
+  year = 2022,
   outputType = "plot",
   statistics = FALSE
 )
@@ -129,9 +129,9 @@ The plot has one panel per value of `by`; the x axis shows the values of
 ```{r years}
 summaryBiologicalVar(
   data,
-  var = "Length",
+  var = "Age",
   by = "DEhierarchy",
-  year = c(2023, 2024, 2025),
+  year = c(2022, 2024, 2025),
   outputType = "plot",
   statistics = FALSE
 )
@@ -147,7 +147,7 @@ summaryBiologicalVar(
   data,
   var = "Age",
   by = "SDctry",
-  year = 2025,
+  year = 2022,
   outputType = "plot",
   statistics = TRUE
 )
