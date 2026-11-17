@@ -66,12 +66,13 @@ unique(data$DE$DEyear)       # years available for `year`
 | Argument     | Description |
 |--------------|-------------|
 | `data`       | RDBES Data Object (masterTable with SA, DE, SD, FM, BV). |
-| `verbose`    | `TRUE` prints informative messages from the RDBEScore helpers. Default `TRUE`. |
-| `var`        | One biological variable, matching a value of `BVtypeMeas` (e.g. `"Age"`). |
-| `by`         | One field used to split the data, e.g. `"SDctry"` or `"DEhierarchy"`. The first two letters must be the table name. |
+| `verbose`    | `TRUE` prints informative messages from the RDBEScore helpers. Default `FALSE`. |
+| `var`        | One or more biological variables, matching a value of `BVtypeMeas` (e.g. `"Age"`). |
+| `by`         | One or more fields used to split the data, e.g. `"SDctry"` or `"DEhierarchy"`. |
 | `year`       | One or more years to keep (filters on `DEyear`). |
 | `outputType` | `"table"` or `"plot"`. |
 | `statistics` | `TRUE` adds a box plot and a statistics table. Default `FALSE`. |
+| `bins`       | Number of bins in histograms. Default is 20.|
 
 ## How it works
 
@@ -85,7 +86,7 @@ unique(data$DE$DEyear)       # years available for `year`
    to a kept design row are removed.
 4. **Linking** – `getLinkedDataFromLevel()` attaches each BV record to the
    value of the `by` field it belongs to.
-5. **Binning** – for `WeightLive`, values are grouped into 15 intervals so the
+5. **Binning** – for `WeightLive`, values are grouped into 20 intervals so the
    plot stays readable. Other variables are used as they are.
 6. **Counting** – the number of individuals (`nIndividuals`) is counted for
    each combination of `by` and `BVvalueMeas`.
@@ -190,7 +191,7 @@ head(simCounts)
 
 ```{r sim-plot, eval = TRUE, fig.height = 4}
 ggplot(simCounts, aes(x = BVvalueMeas, y = nIndividuals)) +
-  geom_bar(stat = "identity", fill = "#2C7FB8", color = "black") +
+  geom_bar(stat = "identity", fill = colourPalette[2], color = "black") +
   labs(title = "Number of individuals by Age and SDctry",
        x = "Age",
        y = "Number of individuals",
@@ -210,7 +211,7 @@ simLength <- data.frame(
 )
 
 ggplot(simLength, aes(x = BVvalueMeas, y = nIndividuals)) +
-  geom_bar(stat = "identity", fill = "#2C7FB8", color = "black") +
+  geom_bar(stat = "identity", fill = colourPalette[2], color = "black") +
   labs(title = "Number of individuals by Length and DEhierarchy",
        x = "Length",
        y = "Number of individuals",
@@ -226,7 +227,7 @@ The box plot summarises the counts per group; the cross marks the mean.
 
 ```{r sim-stats, eval = TRUE, fig.height = 4}
 ggplot(simCounts, aes(x = SDctry, y = nIndividuals)) +
-  geom_boxplot(fill = "#2C7FB8", color = "black") +
+  geom_boxplot(fill = colourPalette[2], color = "black") +
   stat_summary(fun = mean, geom = "point", shape = 4, size = 3) +
   labs(y = "Number of individuals per age") +
   theme_bw() +
