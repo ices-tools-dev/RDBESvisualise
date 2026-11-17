@@ -114,5 +114,8 @@ Imports:
     rlang,
     purrr,
     biscale,
-    RDBEScore
+    RDBEScore,
+    gridExtra,
+    grid,
+    stats
 VignetteBuilder: knitr
