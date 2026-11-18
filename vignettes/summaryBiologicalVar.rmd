@@ -46,7 +46,7 @@ H8ExampleEE1 from RDBEScore is used. Your own data can be loaded with
 `RDBEScore::createRDBESDataObject()`
 
 ```{r data}
-data <- RDBEScore::H8ExampleEE1
+H8RDBESobjEE <- RDBEScore::H8ExampleEE1
 ```
 
 The object is validated inside the function
@@ -57,8 +57,8 @@ It is worth checking which variables and years are present before calling
 the function:
 
 ```{r explore}
-unique(data$BV$BVtypeMeas)   # measured variables available for `var`
-unique(data$DE$DEyear)       # years available for `year`
+unique(H8RDBESobjEE$BV$BVtypeMeas)   # measured variables available for `var`
+unique(H8RDBESobjEE$DE$DEyear)       # years available for `year`
 ```
 
 ## Arguments
@@ -68,7 +68,7 @@ unique(data$DE$DEyear)       # years available for `year`
 | `data`       | RDBES Data Object (masterTable with SA, DE, SD, FM, BV). |
 | `verbose`    | `TRUE` prints informative messages from the RDBEScore helpers. Default `FALSE`. |
 | `var`        | One or more biological variables, matching a value of `BVtypeMeas` (e.g. `"Age"`). |
-| `by`         | One or more fields used to split the data, e.g. `"SDctry"` or `"DEhierarchy"`. |
+| `by`         | One or more fields used to split the data, e.g. `"SDctry"`, `"DEyear"` or `"SAsampler"`. |
 | `year`       | One or more years to keep (filters on `DEyear`). |
 | `outputType` | `"table"` and/or `"plot"`. The default is both. |
 | `statistics` | `TRUE` adds a box plot and a statistics table. Default `FALSE`. |
@@ -94,8 +94,8 @@ unique(data$DE$DEyear)       # years available for `year`
 ### Age by country, as a table
 
 ```{r table}
-res <- summaryBiologicalVar(
-  data,
+H8AgebyCtryTab <- summaryBiologicalVar(
+  data = H8RDBESobjEE,
   verbose = FALSE,
   var = "Age",
   by = "SDctry",
@@ -104,7 +104,7 @@ res <- summaryBiologicalVar(
   statistics = FALSE
 )
 
-res$countTable
+H8AgebyCtryTab$countTable
 ```
 
 Each row shows the number of fish for which age has been reported in the RDBES for a given country.
@@ -112,8 +112,8 @@ Each row shows the number of fish for which age has been reported in the RDBES f
 ### Age by country, as a plot
 
 ```{r plot}
-res <- summaryBiologicalVar(
-  data,
+H8AgebyCtryPlot <- summaryBiologicalVar(
+  data = H8RDBESobjEE,
   verbose = FALSE,
   var = "Age",
   by = "SDctry",
@@ -122,24 +122,24 @@ res <- summaryBiologicalVar(
   statistics = FALSE
 )
 
-res$plots$Age
+H8AgebyCtryPlot$plots$Age
 ```
 
 The plot has one panel per value of `by`; the x axis shows the values of
 `var` and the y axis the number of individuals.
 
-### Several years and a hierarchy split
+### Several years and a sampler split
 
 ```{r years}
-res <- summaryBiologicalVar(
-  data,
+H8sampler <- summaryBiologicalVar(
+  data = H8RDBESobjEE,
   var = "Age",
-  by = "DEhierarchy",
+  by = c("SAsampler"),
   year = c(2022, 2024, 2025),
   outputType = "plot",
   statistics = FALSE
 )
-res$plots$Age
+H8sampler$plots$Age
 ```
 
 If one of the years is missing from the data, a warning names it and the
@@ -148,8 +148,8 @@ summary is built from the years that are present.
 ### Adding summary statistics
 
 ```{r stats}
-res <- summaryBiologicalVar(
-  data,
+H8stat <- summaryBiologicalVar(
+  data = H8RDBESobjEE,
   var = "Age",
   by = "SDctry",
   year = 2022,
@@ -157,12 +157,44 @@ res <- summaryBiologicalVar(
   statistics = TRUE
 )
 
-res$statsTable
+H8stat$statsTable
 ```
 
 With `statistics = TRUE`a histogram and a box plot of the values (mean marked 
 with a cross) are drawn above a table of summary statistics (n, mean, sd, median,
 min, max).
+
+### Age by hierarchy 
+
+This function do not work for several hierarchies in the RDBESdataObject. If you want to show results.
+Run the function and combine results.
+
+```{r plot_combine}
+H8AgePlot <- summaryBiologicalVar(
+  data = H8RDBESobjEE,
+  verbose = FALSE,
+  var = "Age",
+  by = c("DEhierarchy"),
+  outputType = "plot",
+  statistics = FALSE
+)
+
+H1AgePlot <- summaryBiologicalVar(
+  data = RDBEScore::H1Example,
+  verbose = FALSE,
+  var = "Age",
+  by = c("DEhierarchy"),
+  outputType = "plot",
+  statistics = FALSE
+)
+
+gridExtra::grid.arrange(
+  H1AgePlot$plots$Age,
+  H8AgePlot$plots$Age,
+  nrow = 2
+)
+
+```
 
 ## Common errors
 
