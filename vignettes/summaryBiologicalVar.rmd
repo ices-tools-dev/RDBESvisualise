@@ -1,0 +1,207 @@
+---
+title: "Summarising biological variables with summaryBiologicalVar()"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Summarising biological variables with summaryBiologicalVar()}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 8,
+  fig.height = 5,
+  out.width = "100%"
+)
+```
+
+## Introduction
+
+`summaryBiologicalVar()` gives a quick overview of the biological variables
+(BV table) in an RDBES Data Object. For one or more measured variable (e.g.`Age`,
+`Length`, `WeightLive`, `Sex` or `Maturity`) it counts how many
+individuals were measured, split by one or more grouping fields and restricted 
+to the selected year(s).
+
+The result can be returned as:
+
+- a **table** of counts (`outputType = "table"`),
+- a **histogram** (numeric variables) or **bar plot** (non-numeric variables), faceted by the grouping field(`outputType = "plot"`),
+- optionally, a **box plot with summary statistics** (`statistics = TRUE`).
+
+## Load packages
+
+```{r packages, message=FALSE}
+library(RDBEScore)
+library(RDBESvisualise)
+```
+
+## Load and prepare data
+
+The function expects a validated RDBES Data Object containing at least the
+`SA`, `DE`, `SD`, `FM` and `BV` tables. In this vignette the example dataset 
+H8ExampleEE1 from RDBEScore is used. Your own data can be loaded with 
+`RDBEScore::createRDBESDataObject()`
+
+```{r data}
+H8RDBESobjEE <- RDBEScore::H8ExampleEE1
+```
+
+The object is validated inside the function
+(`RDBEScore::validateRDBESDataObject(strict = TRUE)`), so an invalid object
+stops with an informative error before any summarising is done.
+
+It is worth checking which variables and years are present before calling
+the function:
+
+```{r explore}
+unique(H8RDBESobjEE$BV$BVtypeMeas)   # measured variables available for `var`
+unique(H8RDBESobjEE$DE$DEyear)       # years available for `year`
+```
+
+## Arguments
+
+| Argument     | Description |
+|--------------|-------------|
+| `data`       | RDBES Data Object (masterTable with SA, DE, SD, FM, BV). |
+| `verbose`    | `TRUE` prints informative messages from the RDBEScore helpers. Default `FALSE`. |
+| `var`        | One or more biological variables, matching a value of `BVtypeMeas` (e.g. `"Age"`). |
+| `by`         | One or more fields used to split the data, e.g. `"SDctry"`, `"DEyear"` or `"SAsampler"`. |
+| `year`       | One or more years to keep (filters on `DEyear`). |
+| `outputType` | `"table"` and/or `"plot"`. The default is both. |
+| `statistics` | `TRUE` adds a box plot and a statistics table. Default `FALSE`. |
+| `bins`       | Number of bins in histograms. Default is 20.|
+
+## How it works
+
+1. **Validation** – the RDBES Data Object is checked with
+   `validateRDBESDataObject()`.
+2. **Argument checks** – if `var` is not found in `BVtypeMeas` the function
+   stops and lists the variables that are available. Years in `year` that are
+   not in `DEyear` produce a warning (not an error).
+3. **Filtering** – the object is filtered to the requested years with
+   `filterRDBESDataObject(killOrphans = TRUE)`, so records no longer linked
+   to a kept design row are removed.
+4. **Linking** – `getLinkedDataFromLevel()` attaches each BV record to the
+   value of the `by` field it belongs to.
+5. **Plotting** – numeric variables are shown as histograms with bins intervals 
+   (Age with a bin width of 1); non-numeric variables (e.g. Sex, Maturity) as bar plots.
+
+## Examples
+
+### Age by country, as a table
+
+```{r table}
+H8AgebyCtryTab <- summaryBiologicalVar(
+  data = H8RDBESobjEE,
+  verbose = FALSE,
+  var = "Age",
+  by = "SDctry",
+  year = 2022,
+  outputType = "table",
+  statistics = FALSE
+)
+
+H8AgebyCtryTab$countTable
+```
+
+Each row shows the number of fish for which age has been reported in the RDBES for a given country.
+
+### Age by country, as a plot
+
+```{r plot}
+H8AgebyCtryPlot <- summaryBiologicalVar(
+  data = H8RDBESobjEE,
+  verbose = FALSE,
+  var = "Age",
+  by = "SDctry",
+  year = 2022,
+  outputType = "plot",
+  statistics = FALSE
+)
+
+H8AgebyCtryPlot$plots$Age
+```
+
+The plot has one panel per value of `by`; the x axis shows the values of
+`var` and the y axis the number of individuals.
+
+### Several years and a sampler split
+
+```{r years}
+H8sampler <- summaryBiologicalVar(
+  data = H8RDBESobjEE,
+  var = "Age",
+  by = c("SAsampler"),
+  year = c(2022, 2024, 2025),
+  outputType = "plot",
+  statistics = FALSE
+)
+H8sampler$plots$Age
+```
+
+If one of the years is missing from the data, a warning names it and the
+summary is built from the years that are present.
+
+### Adding summary statistics
+
+```{r stats}
+H8stat <- summaryBiologicalVar(
+  data = H8RDBESobjEE,
+  var = "Age",
+  by = "SDctry",
+  year = 2022,
+  outputType = "plot",
+  statistics = TRUE
+)
+
+H8stat$statsTable
+```
+
+With `statistics = TRUE`a histogram and a box plot of the values (mean marked 
+with a cross) are drawn above a table of summary statistics (n, mean, sd, median,
+min, max).
+
+### Age by hierarchy 
+
+This function do not work for several hierarchies in the RDBESdataObject. If you want to show results.
+Run the function and combine results.
+
+```{r plot_combine}
+H8AgePlot <- summaryBiologicalVar(
+  data = H8RDBESobjEE,
+  verbose = FALSE,
+  var = "Age",
+  by = c("DEhierarchy"),
+  outputType = "plot",
+  statistics = FALSE
+)
+
+H1AgePlot <- summaryBiologicalVar(
+  data = RDBEScore::H1Example,
+  verbose = FALSE,
+  var = "Age",
+  by = c("DEhierarchy"),
+  outputType = "plot",
+  statistics = FALSE
+)
+
+gridExtra::grid.arrange(
+  H1AgePlot$plots$Age,
+  H8AgePlot$plots$Age,
+  nrow = 2
+)
+
+```
+
+## Common errors
+
+- **"The given measure type ---> X <--- is not present in the data"** –
+  `var` does not match any `BVtypeMeas` value. The message lists the valid
+  values; spelling and case must be the same as in RDBES documentation (ICESvocab).
+- **Warning about missing years** – some years in `year` are not in `DEyear`.
+  Check `unique(data$DE$DEyear)`.
+- **Validation error** – the input is not a valid RDBES Data Object; see the
+  RDBEScore documentation on `createRDBESDataObject()`.
