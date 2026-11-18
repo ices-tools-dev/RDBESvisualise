@@ -1,4 +1,4 @@
-# tests/testthat/test-summaryBV.R
+# tests/testthat/test-summaryBiologicalVar.R
 # AI-assisted: Yes
 # Review: Kasia-MIR
 # Notes/scope: Tested with hierarchy H1 using
