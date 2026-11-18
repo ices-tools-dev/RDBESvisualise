@@ -105,7 +105,7 @@ res <- summaryBiologicalVar(
 res$countTable
 ```
 
-Each row gives the number of individuals of a given age for one country.
+Each row shows the number of fish for which age has been reported in the RDBES database for a given country.
 
 ### Age by country, as a plot
 
@@ -165,7 +165,7 @@ is drawn above a table of the underlying data.
 
 - **"The given measure type ---> X <--- is not present in the data"** –
   `var` does not match any `BVtypeMeas` value. The message lists the valid
-  values; spelling and capitalisation must match exactly.
+  values; spelling and case must be the same as in RDBES documentation (ICESvocab).
 - **Warning about missing years** – some years in `year` are not in `DEyear`.
   Check `unique(data$DE$DEyear)`.
 - **Validation error** – the input is not a valid RDBES Data Object; see the
