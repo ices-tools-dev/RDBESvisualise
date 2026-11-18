@@ -10,13 +10,11 @@ vignette: >
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>",
-  fig.width = 8,
-  fig.height = 5
+  comment = "#>"
 )
 ```
 
-## Purpose
+## Introduction
 
 `summaryBiologicalVar()` gives a quick overview of the biological variables
 (BV table) in an RDBES Data Object. For one or more measured variable (e.g.`Age`,
@@ -30,14 +28,14 @@ The result can be returned as:
 - a **histogram** (numeric variables) or **bar plot** (non-numeric variables), faceted by the grouping field(`outputType = "plot"`),
 - optionally, a **box plot with summary statistics** (`statistics = TRUE`).
 
-## Packages
+## Load packages
 
 ```{r packages, message=FALSE}
 library(RDBEScore)
 library(RDBESvisualise)
 ```
 
-## Preparing the data
+## Load and prepare data
 
 The function expects a validated RDBES Data Object containing at least the
 `SA`, `DE`, `SD`, `FM` and `BV` tables. In this vignette the example dataset 
