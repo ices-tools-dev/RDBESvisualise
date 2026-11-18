@@ -2,42 +2,58 @@
 % Please edit documentation in R/rectanglesToRegions.R
 \name{rectanglesToRegions}
 \alias{rectanglesToRegions}
-\title{rectanglesToRegions}
+\title{Convert codes between ICES spatial levels}
 \usage{
 rectanglesToRegions(
-  data,
-  from = c("ICES Rectangles", "ICES DivAndSubdivision", "ICES Area", "ICES Subarea",
-    "ICES Division", "ICES Subdivision", "ICES Regions"),
-  to = c("ICES Rectangles", "ICES DivAndSubdivision", "ICES Area", "ICES Subarea",
-    "ICES Division", "ICES Subdivision", "ICES Regions"),
-  type = c("code", "name"),
-  sf = c(TRUE, FALSE),
-  plot = c(TRUE, FALSE)
+  x,
+  to = c("Region", "SubArea", "Division", "SubDivision", "Area", "FAOArea"),
+  from = NULL
 )
 }
 \arguments{
-\item{data}{A vector of input to be transformed}
+\item{x}{Character vector of codes, e.g. "41F6" (rectangle) or "27.4.b"
+(ICES area; area codes include the "27." prefix).}
 
-\item{from}{The spatial resolution of the input. Possible values are "ICES Rectangles", "ICES Subdivision", "ICES Regions".}
+\item{to}{Level to convert to: one of "Region", "SubArea", "Division",
+"SubDivision", "Area", "FAOArea".}
 
-\item{to}{The spatial resolution of the output. Possible values are "ICES Rectangles", "ICES Subdivision", "ICES Regions".}
-
-\item{type}{Should the conversion provide the a code (e.g. 27.1.a) or full name (e.g. Barents Sea - NEAFC Regulatory Area; available for all levels, except ICES Rectangle)?}
-
-\item{sf}{Dichotomous, should the result include geometries? Possible values are TRUE or FALSE.}
-
-\item{plot}{Dichotomous, should the result be plotted? Possible values are TRUE or FALSE.}
+\item{from}{Level of \code{x}: one of "StatRec", "Area", "SubDivision",
+"Division", "SubArea", "FAOArea". If \code{NULL} (default), detected for each
+code: rectangles by their pattern, area codes by their number of parts.}
 }
 \value{
-A vector and a plot, the latter depending on user selection.
+Character vector with the same length and order as \code{x}. Codes
+already at the \code{to} level are returned unchanged. Unknown codes, and areas
+with no code at the \code{to} level (e.g. division 27.4.a has no subdivision),
+give NA.
 }
 \description{
-rectanglesToRegions
+Converts ICES statistical rectangles and ICES area codes to a coarser
+spatial level. The level of each input code is detected from its format
+unless \code{from} is given, so one vector can mix levels.
 }
+\details{
+Each rectangle is assigned to a single ICES area, taken from column
+\code{Area_27} of \link{icesRectSF} (as provided by ICES). Rectangles spanning
+several areas list all of them in \code{AreasList} of \link{icesStatRecLookup}.
+}
+\section{Development review}{
+
+\itemize{
+\item AI-assisted: Yes
+\item Human review: mrska
+}
+}
+
 \examples{
 \dontrun{
+rectanglesToRegions(c("41F6", "39G5"), "Region")
+rectanglesToRegions(c("41F6", "27.7.e", "27.3.d"), "Region")  # mixed levels
 
-
+# Full area names from the ICES vocabulary
+div <- rectanglesToRegions(c("37G6", "41F6"), "Division")
+areaNames <- icesVocab::getCodeList("ICES_Area")
+areaNames$Description[match(div, areaNames$Key)]
 }
-
 }
+\keyword{internal}
