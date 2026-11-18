@@ -105,7 +105,7 @@ res <- summaryBiologicalVar(
 res$countTable
 ```
 
-Each row shows the number of fish for which age has been reported in the RDBES database for a given country.
+Each row shows the number of fish for which age has been reported in the RDBES for a given country.
 
 ### Age by country, as a plot
 
