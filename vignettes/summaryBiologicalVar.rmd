@@ -32,7 +32,7 @@ The result can be returned as:
 
 ## Packages
 
-```{r packages}
+```{r packages, message=FALSE}
 library(RDBEScore)
 library(RDBESvisualise)
 ```
