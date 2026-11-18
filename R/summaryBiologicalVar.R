@@ -194,7 +194,7 @@ summaryBiologicalVar <- function(data,
   #add info about hierarchy
   subset$hierarchy <- hierarchy
 
-  caption = paste0("* Data from ",paste(year, collapse = ", "))
+  caption = paste0("* Data from ",paste(!(year %in% missing_years), collapse = ", "))
 
   #define list with results
   result <- list()
