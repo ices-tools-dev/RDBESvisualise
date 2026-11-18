@@ -19,15 +19,15 @@ knitr::opts_chunk$set(
 ## Purpose
 
 `summaryBiologicalVar()` gives a quick overview of the biological variables
-(BV table) in an RDBES Data Object. For one measured variable — for example
-`Age`, `Length`, `WeightLive`, `Sex` or `Maturity` — it counts how many
-individuals were measured at each value, split by a chosen grouping field
-and restricted to the selected year(s).
+(BV table) in an RDBES Data Object. For one or more measured variable (e.g.`Age`,
+`Length`, `WeightLive`, `Sex` or `Maturity`) it counts how many
+individuals were measured, split by one or more grouping fields and restricted 
+to the selected year(s).
 
 The result can be returned as:
 
 - a **table** of counts (`outputType = "table"`),
-- a **bar plot** of counts, faceted by the grouping field (`outputType = "plot"`),
+- a **histogram** (numeric variables) or **bar plot** (non-numeric variables), faceted by the grouping field(`outputType = "plot"`),
 - optionally, a **box plot with summary statistics** (`statistics = TRUE`).
 
 ## Packages
@@ -40,8 +40,9 @@ library(RDBESvisualise)
 ## Preparing the data
 
 The function expects a validated RDBES Data Object containing at least the
-`SA`, `DE`, `SD`, `FM` and `BV` tables. Create it from an RDBES download with
-`RDBEScore::createRDBESDataObject()`:
+`SA`, `DE`, `SD`, `FM` and `BV` tables. In this vignette the example dataset 
+H8ExampleEE1 from RDBEScore is used. Your own data can be loaded with 
+`RDBEScore::createRDBESDataObject()`
 
 ```{r data}
 data <- RDBEScore::H8ExampleEE1
@@ -158,8 +159,9 @@ res <- summaryBiologicalVar(
 res$statsTable
 ```
 
-With `statistics = TRUE` a box plot of the counts (mean marked with a cross)
-is drawn above a table of the underlying data.
+With `statistics = TRUE`a histogram and a box plot of the values (mean marked 
+with a cross) are drawn above a table of summary statistics (n, mean, sd, median,
+min, max).
 
 ## Common errors
 
