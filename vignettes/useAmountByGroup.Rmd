@@ -432,4 +432,6 @@ preparation tool.
 
 In those cases, prepare the data first, then call `amountByGroup()`.
 
+*Last review: 09/03/2026*
+
 #END
