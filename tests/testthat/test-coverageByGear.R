@@ -1,10 +1,10 @@
-#capture.output({  ## suppresses printing of console output when running test()
+capture.output({  ## suppresses printing of console output when running test()
 
 prepareTestData <- function(){
 
   # Prepare some test data
   myH1RawObject <-
-    RDBEScore::createRDBESDataObject(rdbesExtractPath = "h1_v_1_19_13")
+    RDBEScore::createRDBESDataObject(input = "h1_v_20250211")
   # Generate some quarters for CL (test data is all Q1)
   set.seed(1)
   myH1RawObject[['CL']]$CLquar <-
@@ -219,6 +219,170 @@ test_that("Gear plot runs without errors for landings, effort, and samples",  {
   expect_s3_class(plots[[1]],"plotly")
 })
 
+test_that("Gear plot runs without error if you try to plot sample data with empty VD",  {
+
+  myH1RawObject <- prepareTestData()
+  # Remove VD data rows
+  myH1RawObject[["VD"]] <- myH1RawObject[["VD"]][1==0,]
+
+  myYear <- 1965
+  myvesselFlag <- "ZW"
+
+  # Gear plot
+  expect_error(
+    plots <- coverageByGear(
+      dataToPlot = myH1RawObject,
+      year = myYear,
+      vesselFlag = myvesselFlag,
+      catchCat = "Lan",
+      landingsVariable = "CLoffWeight",
+      effortVariable = "CEnumFracTrips",
+      samplingVariable = "SAsampWtLive",
+      includeLandings = TRUE,
+      includeEffort = TRUE,
+      includeSamples = TRUE,
+    )
+    ,NA)
+
+  # expect a single plotly, plot
+  expect_equal(length(plots),1)
+  expect_s3_class(plots[[1]],"plotly")
+})
+
+test_that("Gear plot stops with error if you try to plot sample data with null VD table",  {
+
+  myH1RawObject <- prepareTestData()
+  # Remove VD data
+  myNewH1 <- RDBEScore::newRDBESDataObject (DE = myH1RawObject[["DE"]],
+                                 SD = myH1RawObject[["SD"]],
+                                 VS = myH1RawObject[["VS"]],
+                                 FT = myH1RawObject[["FT"]],
+                                 FO = myH1RawObject[["FO"]],
+                                 TE = myH1RawObject[["TE"]],
+                                 LO = myH1RawObject[["LO"]],
+                                 OS = myH1RawObject[["OS"]],
+                                 LE = myH1RawObject[["LE"]],
+                                 SS = myH1RawObject[["SS"]],
+                                 SA = myH1RawObject[["SA"]],
+                                 FM = myH1RawObject[["FM"]],
+                                 BV = myH1RawObject[["BV"]],
+                                 VD = NULL,
+                                 SL = myH1RawObject[["SL"]],
+                                 IS = myH1RawObject[["IS"]],
+                                 CL = myH1RawObject[["CL"]],
+                                 CE = myH1RawObject[["CE"]])
 
 
-#}) ## end capture.output
+  myYear <- 1965
+  myvesselFlag <- "ZW"
+
+  # Gear plot
+  expect_error(
+    plots <- coverageByGear(
+      dataToPlot = myNewH1,
+      year = myYear,
+      vesselFlag = myvesselFlag,
+      catchCat = "Lan",
+      landingsVariable = "CLoffWeight",
+      effortVariable = "CEnumFracTrips",
+      samplingVariable = "SAsampWtLive",
+      includeLandings = TRUE,
+      includeEffort = TRUE,
+      includeSamples = TRUE,
+    )
+    ,"No VD data present in sample data - this is required")
+
+
+})
+
+test_that("Gear plot stops with error if you try to plot landings data with null CL table",  {
+
+  myH1RawObject <- prepareTestData()
+  # Remove CL data
+  myNewH1 <- RDBEScore::newRDBESDataObject (DE = myH1RawObject[["DE"]],
+                                            SD = myH1RawObject[["SD"]],
+                                            VS = myH1RawObject[["VS"]],
+                                            FT = myH1RawObject[["FT"]],
+                                            FO = myH1RawObject[["FO"]],
+                                            TE = myH1RawObject[["TE"]],
+                                            LO = myH1RawObject[["LO"]],
+                                            OS = myH1RawObject[["OS"]],
+                                            LE = myH1RawObject[["LE"]],
+                                            SS = myH1RawObject[["SS"]],
+                                            SA = myH1RawObject[["SA"]],
+                                            FM = myH1RawObject[["FM"]],
+                                            BV = myH1RawObject[["BV"]],
+                                            VD = myH1RawObject[["VD"]],
+                                            SL = myH1RawObject[["SL"]],
+                                            IS = myH1RawObject[["IS"]],
+                                            CL = NULL,
+                                            CE = myH1RawObject[["CE"]])
+
+
+  myYear <- 1965
+  myvesselFlag <- "ZW"
+
+  # Gear plot
+  expect_error(
+    plots <- coverageByGear(
+      dataToPlot = myNewH1,
+      year = myYear,
+      vesselFlag = myvesselFlag,
+      catchCat = "Lan",
+      landingsVariable = "CLoffWeight",
+      effortVariable = "CEnumFracTrips",
+      samplingVariable = "SAsampWtLive",
+      includeLandings = TRUE,
+      includeEffort = TRUE,
+      includeSamples = TRUE,
+    )
+    ,"No CL data present in data - this is required")
+
+})
+
+test_that("Gear plot stops with error if you try to plot effort data with null CE table",  {
+
+  myH1RawObject <- prepareTestData()
+  # Remove CE data
+  myNewH1 <- RDBEScore::newRDBESDataObject (DE = myH1RawObject[["DE"]],
+                                            SD = myH1RawObject[["SD"]],
+                                            VS = myH1RawObject[["VS"]],
+                                            FT = myH1RawObject[["FT"]],
+                                            FO = myH1RawObject[["FO"]],
+                                            TE = myH1RawObject[["TE"]],
+                                            LO = myH1RawObject[["LO"]],
+                                            OS = myH1RawObject[["OS"]],
+                                            LE = myH1RawObject[["LE"]],
+                                            SS = myH1RawObject[["SS"]],
+                                            SA = myH1RawObject[["SA"]],
+                                            FM = myH1RawObject[["FM"]],
+                                            BV = myH1RawObject[["BV"]],
+                                            VD = myH1RawObject[["VD"]],
+                                            SL = myH1RawObject[["SL"]],
+                                            IS = myH1RawObject[["IS"]],
+                                            CL = myH1RawObject[["CL"]],
+                                            CE = NULL)
+
+
+  myYear <- 1965
+  myvesselFlag <- "ZW"
+
+  # Gear plot
+  expect_error(
+    plots <- coverageByGear(
+      dataToPlot = myNewH1,
+      year = myYear,
+      vesselFlag = myvesselFlag,
+      catchCat = "Lan",
+      landingsVariable = "CLoffWeight",
+      effortVariable = "CEnumFracTrips",
+      samplingVariable = "SAsampWtLive",
+      includeLandings = TRUE,
+      includeEffort = TRUE,
+      includeSamples = TRUE,
+    )
+    ,"No CE data present in data - this is required")
+
+})
+
+}) ## end capture.output

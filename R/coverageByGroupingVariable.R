@@ -1,5 +1,5 @@
-#' Provides graphical outputs to compare the fishing gears
-#' in effort to those in the sample data.
+#' Provides graphical outputs to compare the landings, effort, and sample
+#' data.
 #'
 #' @param dataToPlot RDBES data to be plotted (as an RDBESDataObject)
 #' @param year Year to be assessed e.g 2021
@@ -26,21 +26,23 @@
 #' @examples
 #' \dontrun{
 #'
-#' myH1RawObject <- RDBEScore::createRDBESDataObject(
-#'   rdbesExtractPath = "../tests/testthat/h1_v_1_19_13"
-#' )
+#'  myH1RawObject <- RDBEScore::createRDBESDataObject(input = "tests/testthat/h1_v_20250211")
 #'
-#' myYear <- 1965
-#' myvesselFlag <- "ZW"
+#'  myPlots <- coverageByGroupingVariable(dataToPlot = myH1RawObject,
+#'                                        year = 1965,
+#'                                        quarter = NA,
+#'                                        vesselFlag = "ZW",
+#'                                        landingsVariable = "CLoffWeight",
+#'                                        effortVariable = "CEnumFracTrips",
+#'                                        samplingVariable = "SAsampWtMes",
+#'                                        groupingVariable = "gear",
+#'                                        catchCat = "Lan",
+#'                                        includeLandings = TRUE,
+#'                                        includeEffort = TRUE,
+#'                                        includeSamples = TRUE,
+#'                                        verbose = FALSE)
+#'  myPlots[1]
 #'
-#' myPlots <- coverageLandingsByGear(
-#'   dataToPlot = myH1RawObject,
-#'   year = myYear,
-#'   vesselFlag = myvesselFlag,
-#'   catchCat = "Lan"
-#' )
-#'
-#' myPlots[1]
 #' }
 coverageByGroupingVariable <- function(dataToPlot,
                            year = NA,
@@ -71,6 +73,26 @@ coverageByGroupingVariable <- function(dataToPlot,
                            topN = NA,
                            plotQuarters = FALSE,
                            verbose = FALSE) {
+
+  # For testing
+
+  #myH1RawObject <- RDBEScore::createRDBESDataObject(input = "./tests/testthat/h1_v_20250211")
+  # dataToPlot <- myH1RawObject
+  # year <- 1965
+  # quarter <- NA
+  # vesselFlag <- "ZW"
+  # landingsVariable <- "CLoffWeight"
+  # effortVariable <- "CEnumFracTrips"
+  # samplingVariable <- "SAsampWtMes"
+  # groupingVariable <- "speciesName"
+  # catchCat <- "Lan"
+  # includeLandings <- TRUE
+  # includeEffort <- FALSE
+  # includeSamples <- TRUE
+  # topN <- NA
+  # plotQuarters <- FALSE
+  # verbose <- FALSE
+
   # STEP 0) VALIDATE INPUTS
 
   # check the parameters are valid before we do anything
