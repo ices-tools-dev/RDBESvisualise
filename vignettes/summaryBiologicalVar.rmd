@@ -20,8 +20,8 @@ knitr::opts_chunk$set(
 ## Introduction
 
 `summaryBiologicalVar()` gives a quick overview of the biological variables
-(BV table) in an RDBES Data Object. For one or more measured variable (e.g.`Age`,
-`Length`, `WeightLive`, `Sex` or `Maturity`) it counts how many
+(BV table) in an RDBES Data Object. For one or more measured variables (e.g.`Age`,
+`LengthTotal`, `WeightLive`, `Sex` or `Maturity`) it counts how many
 individuals were measured, split by one or more grouping fields and restricted 
 to the selected year(s).
 
@@ -43,7 +43,7 @@ library(RDBESvisualise)
 The function expects a validated RDBES Data Object containing at least the
 `SA`, `DE`, `SD`, `FM` and `BV` tables. In this vignette the example dataset 
 H8ExampleEE1 from RDBEScore is used. Your own data can be loaded with 
-`RDBEScore::createRDBESDataObject()`
+`RDBEScore::createRDBESDataObject()`.
 
 ```{r data}
 H8RDBESobjEE <- RDBEScore::H8ExampleEE1
@@ -128,7 +128,12 @@ H8AgebyCtryPlot$plots$Age
 The plot has one panel per value of `by`; the x axis shows the values of
 `var` and the y axis the number of individuals.
 
-### Several years and a sampler split
+### Selecting several years and splitting by statistical rectangle
+
+The `year` argument only selects the data – it does not split the results by year.
+If some of the requested years are not present in the data, the function gives
+a warning naming them and continues with the years that are available. The
+caption of the plot shows which years were actually used.
 
 ```{r years}
 H8sampler <- summaryBiologicalVar(
@@ -142,8 +147,7 @@ H8sampler <- summaryBiologicalVar(
 H8sampler$plots$Age
 ```
 
-If one of the years is missing from the data, a warning names it and the
-summary is built from the years that are present.
+To see the results **for each year separately**, add `DEyear` to `by`.
 
 ### Adding summary statistics
 
@@ -160,14 +164,14 @@ H8stat <- summaryBiologicalVar(
 H8stat$statsTable
 ```
 
-With `statistics = TRUE`a histogram and a box plot of the values (mean marked 
+With `statistics = TRUE` a histogram and a box plot of the values (mean marked 
 with a cross) are drawn above a table of summary statistics (n, mean, sd, median,
 min, max).
 
 ### Age by hierarchy 
 
-This function do not work for several hierarchies in the RDBESdataObject. If you want to show results.
-Run the function and combine results.
+The function works on one hierarchy at a time. To compare several hierarchies,
+run the function separately for each RDBES Data Object and combine the results.
 
 ```{r plot_combine}
 H8AgePlot <- summaryBiologicalVar(
