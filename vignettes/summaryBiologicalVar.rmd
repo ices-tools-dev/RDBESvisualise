@@ -134,7 +134,7 @@ The plot has one panel per value of `by`; the x axis shows the values of
 H8sampler <- summaryBiologicalVar(
   data = H8RDBESobjEE,
   var = "Age",
-  by = c("SAsampler"),
+  by = c("LEstatRect"),
   year = c(2022, 2024, 2025),
   outputType = "plot",
   statistics = FALSE
@@ -188,11 +188,20 @@ H1AgePlot <- summaryBiologicalVar(
   statistics = FALSE
 )
 
-gridExtra::grid.arrange(
-  H1AgePlot$plots$Age,
-  H8AgePlot$plots$Age,
-  nrow = 2
+cols <- c("DEhierarchy", "valueNum")
+ageData <- rbind(
+  H8AgePlot$plots$Age$data[, cols, with = FALSE],
+  H1AgePlot$plots$Age$data[, cols, with = FALSE]
 )
+
+library(ggplot2)
+ggplot(ageData, aes(x = valueNum)) +
+  geom_histogram(binwidth = 1, center = 0,
+                 fill = RDBESvisualise::colourPalette[2], color = "black") +
+  facet_wrap(~ DEhierarchy) +
+  labs(title = "Number of individuals by Age and DEhierarchy",
+       x = "Age", y = "Number of individuals") +
+  theme_light()
 
 ```
 
