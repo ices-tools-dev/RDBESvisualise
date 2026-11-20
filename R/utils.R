@@ -1,4 +1,14 @@
 # This is a file to store general internal utility functions
+#' @importFrom stats as.formula quantile
+#' @importFrom utils head
+#' @importFrom dplyr desc distinct mutate case_when group_by_at n
+#' @importFrom stringr str_sub
+#' @importFrom sf st_centroid st_bbox
+#' @importFrom rnaturalearth ne_countries
+#' @importFrom ggplot2 aes geom_sf xlim ylim theme_bw guides
+#' @importFrom ggplot2 guide_colourbar guide_legend
+#' @importFrom viridis scale_fill_viridis
+#' @importFrom grid unit
 
 
 # Deal with "no visible binding for global variable.." warnings in R CMD CHECK
@@ -17,7 +27,12 @@ globalVariables(c(
   "LandingsGearCount", "LandingsGearCountQuar",
   "totalSpeCountAll", "SamplingCountYear", "totalGearYear",
   "long", "lat", "group", "mean_quartiles_land",
-  "mean_quantiles_land", "X", "Y", "bi_class",'.SD', '.data','.N','..var'
+  "mean_quantiles_land", "X", "Y", "bi_class",'.SD', '.data','.N','..var',
+  "CE","CEquar","CEstatRect","CEvesFlagCou","CEyear","FOendDate","FOid",
+  "Key","SSid","groupingVariable","mean_quantiles","rdbesobj",
+  "sumByGroupYear","sumByGroupYearQuarter","sumByYear",
+  "temp","var1","var2","varInt_contrast",
+  "varInt_sampling","variableToSum"
 ))
 
 # Palette developed by the RCGs
@@ -59,8 +74,8 @@ as.integer.or.dbl <- function(x) {
 #' Internal function to filter landings data for coverageXXX functions
 #'
 #' @param landingsData A data table of landings data ("CL")
-#' @param year (Optional) Year to be assessed e.g 2021
-#' @param quarter (Optional) Quarter to be assessed - possible choices 1,2,3 or 4
+#' @param yearToFilter (Optional) Year to be assessed e.g 2021
+#' @param quarterToFilter (Optional) Quarter to be assessed - possible choices 1,2,3 or 4
 #' @param vesselFlag (Optional) Registered Country of Vessel - e.g "IE", "ES" or "FR"
 #' @param verbose (Optional) Set to TRUE to print more information. Default is
 #' FALSE
@@ -116,8 +131,8 @@ filterLandingsDataForCoverage <- function(landingsData,
 #' Internal function to filter sample data for coverageXXX functions
 #'
 #' @param sampleData An RDBESEstObject
-#' @param year (Optional) Year to be assessed e.g 2021
-#' @param quarter (Optional) Quarter to be assessed - possible choices 1,2,3 or 4
+#' @param yearToFilter (Optional) Year to be assessed e.g 2021
+#' @param quarterToFilter (Optional) Quarter to be assessed - possible choices 1,2,3 or 4
 #' @param vesselFlag (Optional) Registered Country of Vessel - e.g "IE", "ES" or "FR".
 #' @param catchCat (Optional) Sampling catch category - landings, catch or discards
 #' @param verbose (Optional) Set to TRUE to print more information. Default is
@@ -185,8 +200,8 @@ filterSampleDataForCoverage <- function(sampleData,
 #' Internal function to filter effort data for coverageXXX functions
 #'
 #' @param effortData A data table of effort data ("CE")
-#' @param year Year to be assessed e.g 2021
-#' @param quarter Quarter to be assessed - possible choices 1,2,3 or 4
+#' @param yearToFilter Year to be assessed e.g 2021
+#' @param quarterToFilter Quarter to be assessed - possible choices 1,2,3 or 4
 #' @param vesselFlag Registered Country of Vessel - e.g "IE", "ES" or "FR"
 #' @param verbose (Optional) Set to TRUE to print more information. Default is
 #' FALSE
@@ -240,73 +255,8 @@ filterEffortDataForCoverage <- function(effortData,
 }
 
 #' Internal function to prepare sample data for coveragesXXX functions
-#'
-#' @param RDBESobj An RDBESDataObject
-#' @param verbose Set to TRUE to print more information. Default is
-#' FALSE
-#'
-#' @return an RDBESEstObject
-#'
-# This function is a temporary replace for the following preprocessSampleDataForCoverage.
-# It is basically an adaptation of the preprocessLandingsDataForCoverage function (see below).
-# This function may be deleted when  preprocessSampleDataForCoverage is fixed.
-preprocessSamplingDataForCoverage <- function(dataToPlot, verbose) {
-
-  if (verbose) {
-    print("Preparing sample data")
-  }
-
-  # get sampling data
-  sa <- dataToPlot[["SA"]]
-
-  # obtain the key to FO, in order to extract time information from there
-  sa <- merge(
-    rdbesobj[["SA"]],
-    RDBEScore:::createTableOfRDBESIds(rdbesobj) %>% dplyr::select(SAid, FOid) %>% distinct()
-  )
-
-  # merge the sa with FO keys to the FO, we use FOendDate to extract time information
-
-  if (verbose) {
-    print("Samples are distributed in time according to FO table `FOendDate` column")
-  }
-
-  sa <- merge(
-    sa,
-    rdbesobj[["FO"]] %>% dplyr::select(FOid, FOendDate),
-    by = "FOid"
-  )
-
-  # Split time information in the different components
-  sa <- sa %>%
-    mutate(
-      year = str_sub(FOendDate, 1,4),
-      month = str_sub(FOendDate, 6,7),
-      quarter = case_when(
-        month == "01" ~ 1,
-        month == "02" ~ 1,
-        month == "03" ~ 1,
-        month == "04" ~ 2,
-        month == "05" ~ 2,
-        month == "06" ~ 2,
-        month == "07" ~ 3,
-        month == "08" ~ 3,
-        month == "09" ~ 3,
-        month == "10" ~ 4,
-        month == "11" ~ 4,
-        month == "12" ~ 4
-      ),
-      semester = case_when(
-        quarter %in% c(1,2) ~ 1,
-        quarter %in% c(3,4) ~ 2
-    )
-  )
-  sa
-}
-
-#' Internal function to prepare sample data for coveragesXXX functions
 #' @param dataToPlot An RDBESDataObject
-#' @param (Optional) Set to TRUE to print more information. Default is
+#' @param verbose (Optional) Set to TRUE to print more information. Default is
 #' FALSE
 #'
 #' @return an RDBESEstObject
@@ -565,8 +515,11 @@ preprocessEffortDataForCoverage <- function(dataToPlot, verbose) {
 #' @param catchCat Catch category
 #' @param quarter Quarter of year
 #' @param landingsVariable Variable from CL to plot
-#' @param landingsVariable Variable from CE to plot
+#' @param effortVariable Variable from CE to plot
 #' @param samplingVariable variable from SA to plot
+#' @param groupingVariable variable to group by
+#' @param topN Only plot top N values
+#' @param plotQuarters Plot by quarters? Default is FALSE
 #'
 #' @return A tagList of plotly plots
 #'
@@ -828,6 +781,7 @@ barPlotsByGroupingVariable <- function(landingsData = NA,
 #' @param title  Title to use for the plot
 #' @param plotQuarters Show bars coloured by quarter?
 #' @param showLegend Show the legend?
+#' @param paletteToUse Name of the palette to use - default is "paletteForPlotting"
 #'
 #' @return A plotly plot
 #'

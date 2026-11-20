@@ -15,14 +15,14 @@ filterLandingsDataForCoverage(
 \arguments{
 \item{landingsData}{A data table of landings data ("CL")}
 
+\item{yearToFilter}{(Optional) Year to be assessed e.g 2021}
+
+\item{quarterToFilter}{(Optional) Quarter to be assessed - possible choices 1,2,3 or 4}
+
 \item{vesselFlag}{(Optional) Registered Country of Vessel - e.g "IE", "ES" or "FR"}
 
 \item{verbose}{(Optional) Set to TRUE to print more information. Default is
 FALSE}
-
-\item{year}{(Optional) Year to be assessed e.g 2021}
-
-\item{quarter}{(Optional) Quarter to be assessed - possible choices 1,2,3 or 4}
 }
 \value{
 A data table of landings data ("CL")

@@ -92,6 +92,7 @@ Description:
 License: GPL-3 + file LICENSE
 Encoding: UTF-8
 LazyData: true
+LazyDataCompression: xz
 Roxygen: list(markdown = TRUE)
 Suggests: 
     knitr,
@@ -116,7 +117,10 @@ Imports:
     gridExtra,
     grid,
     stats,
-    sp
+    sp,
+    rnaturalearth,
+    stringr,
+    viridis
 VignetteBuilder: knitr
 Config/roxygen2/version: 8.1.1
 RoxygenNote: 7.3.3

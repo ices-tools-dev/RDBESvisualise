@@ -42,6 +42,8 @@ produceSamplingCoverage(
 
 \item{vesselFlag}{(Optional) Registered Country of Vessel - e.g "IE", "ES" or "FR"}
 
+\item{catchCat}{Sampling catch category - "Lan", "Dis",or "Catch"}
+
 \item{showSamples}{(Optional) Determines whether the samples data should be displayed or not. Default is TRUE.}
 
 \item{output_type}{(Optional) Determines whether the output is tabular or a graphical plot. Possible values are "table" or "plot". Default is "plot".}
@@ -54,10 +56,4 @@ table or plot depending on user selection.
 \description{
 Provides tabular or graphical outputs which compare sampling versus
 landing coverage across the level of a factor variable specified by the user.
-}
-\examples{
-\dontrun{
-
-
-}
 }

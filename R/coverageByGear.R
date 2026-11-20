@@ -11,9 +11,9 @@
 #' @param catchCat Sampling catch category - "Lan", "Dis",or "Catch"
 #' @param includeLandings (Optional) Set to TRUE to include landings.
 #' Default is TRUE
-#' #' @param includeEffort (Optional) Set to TRUE to include effort
+#' @param includeEffort (Optional) Set to TRUE to include effort
 #' Default is TRUE
-#' #' @param includeSamples (Optional) Set to TRUE to include samples.
+#' @param includeSamples (Optional) Set to TRUE to include samples.
 #' Default is TRUE
 #' @param verbose (Optional) Set to TRUE to print more information. Default is
 #' FALSE

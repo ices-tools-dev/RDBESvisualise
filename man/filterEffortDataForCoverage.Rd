@@ -15,14 +15,14 @@ filterEffortDataForCoverage(
 \arguments{
 \item{effortData}{A data table of effort data ("CE")}
 
+\item{yearToFilter}{Year to be assessed e.g 2021}
+
+\item{quarterToFilter}{Quarter to be assessed - possible choices 1,2,3 or 4}
+
 \item{vesselFlag}{Registered Country of Vessel - e.g "IE", "ES" or "FR"}
 
 \item{verbose}{(Optional) Set to TRUE to print more information. Default is
 FALSE}
-
-\item{year}{Year to be assessed e.g 2021}
-
-\item{quarter}{Quarter to be assessed - possible choices 1,2,3 or 4}
 }
 \value{
 A data table of effort data ("CE")

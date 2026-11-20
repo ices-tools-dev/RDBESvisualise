@@ -38,10 +38,12 @@ coverageByGear(
 \item{catchCat}{Sampling catch category - "Lan", "Dis",or "Catch"}
 
 \item{includeLandings}{(Optional) Set to TRUE to include landings.
-Default is TRUE
-#' @param includeEffort (Optional) Set to TRUE to include effort
-Default is TRUE
-#' @param includeSamples (Optional) Set to TRUE to include samples.
+Default is TRUE}
+
+\item{includeEffort}{(Optional) Set to TRUE to include effort
+Default is TRUE}
+
+\item{includeSamples}{(Optional) Set to TRUE to include samples.
 Default is TRUE}
 
 \item{verbose}{(Optional) Set to TRUE to print more information. Default is

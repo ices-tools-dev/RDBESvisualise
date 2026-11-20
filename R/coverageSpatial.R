@@ -8,9 +8,16 @@
 #' @param dataToPlot RDBES data to be plotted (as an RDBESDataObject)
 #' @param year Year to be assessed e.g 2021
 #' @param vesselFlag Registered Country of Vessel - e.g "IE", "ES" or "FR".
-#' @param commercialVariable Landings variable to be assessed
+#' @param landingsVariable Variable from CL to plot
+#' @param effortVariable Variable from CE to plot
 #' @param samplingVariable Sampling Variable to be assessed
 #' @param catchCat Sampling catch category - "Lan", "Dis",or "Catch"
+#' @param includeLandings (Optional) Set to TRUE to include landings.
+#' Default is TRUE
+#' @param includeEffort (Optional) Set to TRUE to include effort
+#' Default is TRUE
+#' @param includeSamples (Optional) Set to TRUE to include samples.
+#' Default is TRUE
 #' @param verbose (Optional) Set to TRUE to print more information. Default is
 #' FALSE
 #'
@@ -112,8 +119,8 @@ coverageSpatial <- function(dataToPlot,
   if (includeLandings) {
     ld <- preprocessLandingsDataForCoverage(dataToPlot, verbose = verbose)
     ld1 <- filterLandingsDataForCoverage(ld,
-      year = year,
-      quarter = NA,
+      yearToFilter = year,
+      quarterToFilter = NA,
       vesselFlag = vesselFlag,
       verbose = verbose
     )
@@ -125,8 +132,8 @@ coverageSpatial <- function(dataToPlot,
   if (includeEffort) {
     ef <- preprocessEffortDataForCoverage(dataToPlot, verbose = verbose)
     ef1 <- filterEffortDataForCoverage(ef,
-      year = year,
-      quarter = NA,
+      yearToFilter = year,
+      quarterToFilter = NA,
       vesselFlag = vesselFlag,
       verbose = verbose
     )
@@ -138,8 +145,8 @@ coverageSpatial <- function(dataToPlot,
   if (includeSamples) {
     sa <- preprocessSampleDataForCoverage(dataToPlot, verbose = verbose)
     sa1 <- filterSampleDataForCoverage(sa,
-      year = year,
-      quarter = NA,
+      yearToFilter = year,
+      quarterToFilter = NA,
       vesselFlag = vesselFlag,
       catchCat = catchCat,
       verbose = verbose

@@ -9,7 +9,7 @@ preprocessSampleDataForCoverage(dataToPlot, verbose)
 \arguments{
 \item{dataToPlot}{An RDBESDataObject}
 
-\item{(Optional)}{Set to TRUE to print more information. Default is
+\item{verbose}{(Optional) Set to TRUE to print more information. Default is
 FALSE}
 }
 \value{

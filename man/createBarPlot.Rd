@@ -20,6 +20,8 @@ createBarPlot(
 \item{plotQuarters}{Show bars coloured by quarter?}
 
 \item{showLegend}{Show the legend?}
+
+\item{paletteToUse}{Name of the palette to use - default is "paletteForPlotting"}
 }
 \value{
 A plotly plot

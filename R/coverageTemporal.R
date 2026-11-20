@@ -98,8 +98,8 @@ coverageTemporal <- function(dataToPlot,
   if (includeLandings) {
     ld <- preprocessLandingsDataForCoverage(dataToPlot, verbose = verbose)
     ld1 <- filterLandingsDataForCoverage(ld,
-      year = year,
-      quarter = quarter,
+      yearToFilter = year,
+      quarterToFilter = quarter,
       vesselFlag = vesselFlag,
       verbose = verbose
     )
@@ -111,8 +111,8 @@ coverageTemporal <- function(dataToPlot,
   if (includeEffort) {
     ef <- preprocessEffortDataForCoverage(dataToPlot, verbose = verbose)
     ef1 <- filterEffortDataForCoverage(ef,
-      year = year,
-      quarter = quarter,
+      yearToFilter = year,
+      quarterToFilter = quarter,
       vesselFlag = vesselFlag,
       verbose = verbose
     )
@@ -124,8 +124,8 @@ coverageTemporal <- function(dataToPlot,
   if (includeSamples) {
     sa <- preprocessSampleDataForCoverage(dataToPlot, verbose = verbose)
     sa1 <- filterSampleDataForCoverage(sa,
-      year = year,
-      quarter = quarter,
+      yearToFilter = year,
+      quarterToFilter = quarter,
       vesselFlag = vesselFlag,
       catchCat = catchCat,
       verbose = verbose
@@ -165,7 +165,7 @@ coverageTemporal <- function(dataToPlot,
 #' @param vesselFlag Registered Country of Vessel - e.g "IE", "ES" or "FR".
 #' @param catchCat Catch category
 #' @param landingsVariable Variable from CL to plot
-#' @param landingsVariable Variable from CE to plot
+#' @param effortVariable Variable from CE to plot
 #' @param samplingVariable variable from SA to plot
 #'
 #' @return A tagList of plotly plots

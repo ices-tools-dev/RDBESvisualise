@@ -13,12 +13,14 @@
 #' @param catchCat Sampling catch category - "Lan", "Dis",or "Catch"
 #' @param includeLandings (Optional) Set to TRUE to include landings.
 #' Default is TRUE
-#' #' @param includeEffort (Optional) Set to TRUE to include effort
+#' @param includeEffort (Optional) Set to TRUE to include effort
 #' Default is TRUE
-#' #' @param includeSamples (Optional) Set to TRUE to include samples.
+#' @param includeSamples (Optional) Set to TRUE to include samples.
 #' Default is TRUE
 #' @param verbose (Optional) Set to TRUE to print more information. Default is
 #' FALSE
+#' @param topN Only plot top N values
+#' @param plotQuarters Plot by quarters? Default is FALSE
 #'
 #' @return A tagList of plotly plots
 #' @export
@@ -123,8 +125,8 @@ coverageByGroupingVariable <- function(dataToPlot,
   if (includeLandings) {
     ld <- preprocessLandingsDataForCoverage(dataToPlot, verbose = verbose)
     ld1 <- filterLandingsDataForCoverage(ld,
-      year = year,
-      quarter = quarter,
+      yearToFilter = year,
+      quarterToFilter = quarter,
       vesselFlag = vesselFlag,
       verbose = verbose
     )
@@ -136,8 +138,8 @@ coverageByGroupingVariable <- function(dataToPlot,
   if (includeEffort) {
     ef <- preprocessEffortDataForCoverage(dataToPlot, verbose = verbose)
     ef1 <- filterEffortDataForCoverage(ef,
-      year = year,
-      quarter = quarter,
+      yearToFilter = year,
+      quarterToFilter = quarter,
       vesselFlag = vesselFlag,
       verbose = verbose
     )
@@ -149,8 +151,8 @@ coverageByGroupingVariable <- function(dataToPlot,
   if (includeSamples) {
     sa <- preprocessSampleDataForCoverage(dataToPlot, verbose = verbose)
     sa1 <- filterSampleDataForCoverage(sa,
-      year = year,
-      quarter = quarter,
+      yearToFilter = year,
+      quarterToFilter = quarter,
       vesselFlag = vesselFlag,
       catchCat = catchCat,
       verbose = verbose
