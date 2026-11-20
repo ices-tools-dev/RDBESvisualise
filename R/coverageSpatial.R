@@ -621,9 +621,16 @@ spatialPlotCreateGraph <- function(dataToPlot,
   # plot univariate map with points
 
   gg <- ggplot2::ggplot(data = dataToPlot) +
-    ggplot2::geom_polygon(
-      data = RDBESvisualise::shoreline,
-      ggplot2::aes(x = long, y = lat, group = group),
+    # ggplot2::geom_polygon(
+    #   data = RDBESvisualise::shoreline,
+    #   ggplot2::aes(x = long, y = lat, group = group),
+    #   color = "white",
+    #   fill = "gray",
+    #   show.legend = FALSE
+    # ) +
+    # Fix for "`fortify(<SpatialPolygonsDataFrame>)` was deprecated in ggplot2" error
+    ggplot2::geom_sf(
+      data = sf::st_as_sf(RDBESvisualise::shoreline),
       color = "white",
       fill = "gray",
       show.legend = FALSE
