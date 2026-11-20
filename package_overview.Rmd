@@ -1,0 +1,82 @@
+---
+title: 'RDBESvisualise: Providing functions to visualise ICES Regional Database & Estimation System (RDBES)
+  Data'
+output:
+  powerpoint_presentation:
+    reference_doc: "./data-raw/styles.pptx"
+    slide_level: 2
+    keep_md: true
+    incremental: true
+  ioslides_presentation:
+    incremental: true
+  beamer_presentation:
+    incremental: true
+---
+
+## Introduction
+
+**RDBESvisualise** is an R package developed to provide a set of functions to allow the end user to explore the ICES Regional Database and Estimation System (RDBES) and also giving the possibility to produce overview reports built on them.  
+
+The aim of this document is to outline the package workflow explaining the data download from the [ICES Regional Database & Estimation System (RDBES)](https://rdbes.ices.dk/#/) 
+    data processing and its use with the functions included in the package.
+
+
+## RDBESvisualise package
+
+The package can be found on [RDBESvisualise GitHub](https://github.com/ices-tools-dev/RDBESvisualise).
+
+The best way to get started is to read the package documentation and the vignettes. The package documentation can be found on the [RDBESvisualise GitHub pages](https://ices-tools-dev.github.io/RDBESvisualise/), which describe the installation methods and provide worked examples for the available functions under **articles** section.
+
+These resources provide information on how to install the package, how to use the functions, and how to contribute to the development of the package.  The following will now demonstrate some of the functionalities of the package using the current **main** version.
+
+
+## Installation
+
+The most recent production version of **RDBESvisualise** can be installed using the ICES tools production repository:
+
+```{r eval=FALSE, echo=TRUE}
+install.packages("RDBESvisualise",
+  repos = c("https://ices-tools-prod.r-universe.dev",
+            "https://cloud.r-project.org"))
+```
+
+The more recent development version is available from GitHub:
+
+```{r eval=FALSE, echo=TRUE}
+install.packages("remotes")
+remotes::install_github("ices-tools-dev/RDBESvisualise/dev", build_vignettes = TRUE)
+```
+
+Then you can load the package using:
+
+```{r, message=TRUE, warning=TRUE}
+library(RDBESvisualise)
+```
+```
+
+To see the complete list of vignettes available in the package use the following command:
+```{r echo=TRUE, eval=FALSE}
+browseVignettes(package = "RDBESvisualise")
+```
+
+## Downloading RDBES data (dev)
+
+The data can be downloaded from the [RDBES](https://rdbes.ices.dk/#/) or using the package function **downloadRDBESDataZip()**. This function allows you to download the data for a specific country and year directly from RDBES into a folder of your choice. The CS data is downloaded as a `.zip` file containing all the mandatory hierarchy tables plus VD and SL.
+
+```{r}
+downloadRDBESDataZip(datatype = "CS", year = 1965, country = "ZW",
+                     hierarchy = 1, dir = "./data-raw/exampleData")
+```
+
+## Importing zipped files
+
+It can directly import the `.zip` archive from the RDBES download containing all mandatory hierarchy tables plus VD and SL:
+
+```{r}
+importedH1 <- createRDBESDataObject(input = "./data-raw/exampleData/H1_2025_02_11.zip")
+#print the not NULL table names
+names(importedH1[!unlist(lapply(importedH1, is.null))])
+```
+
+You can only read in one hierarchy at a time. If the zip file contains multiple hierarchies you need to read them separately.
+
