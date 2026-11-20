@@ -380,14 +380,23 @@ bivariatePlotCreateGraph <- function(dataToPlot,
   dataToPlot_NoNA[is.na(dataToPlot_NoNA$var1),"var1"] <- 0
   dataToPlot_NoNA[is.na(dataToPlot_NoNA$var2),"var2"] <- 0
 
+  n1 <- length(unique(dataToPlot_NoNA$var1))
+  n2 <- length(unique(dataToPlot_NoNA$var2))
+
+  # Fix for "n same as number of different finite values\neach different finite value is a separate class"
+  dim_used <- max(2,min(3, n1 - 1, n2 - 1))
+
   # create classes
   biToPlot <-
-    biscale::bi_class(
-      dataToPlot_NoNA,
-      x = var1,
-      y = var2,
-      style = "fisher",
-      dim = 3
+    suppressWarnings( # suppress warnings to avoid problem when dim_used = 2
+      biscale::bi_class(
+        dataToPlot_NoNA,
+        x = var1,
+        y = var2,
+        style = "fisher",
+        #dim = 3
+        dim = dim_used
+      )
     )
 
   ices_rect_df <- ices_rect@data
@@ -409,11 +418,16 @@ bivariatePlotCreateGraph <- function(dataToPlot,
   # ICES rectangles feature collection without NAs for bounding box
   bi_fc_No_NA <- na.omit(bi_fc)
 
+  # Fix for "`fortify(<SpatialPolygonsDataFrame>)` was deprecated in ggplot2  3.4.4." error
+  shoreline_sf <- sf::st_as_sf(RDBESvisualise::shoreline)
+
   # create map
   map <- ggplot2::ggplot() +
-    ggplot2::geom_polygon(
-      data = RDBESvisualise::shoreline,
-      ggplot2::aes(x = long, y = lat, group = group),
+    #ggplot2::geom_polygon(
+    ggplot2::geom_sf(
+      #data = RDBESvisualise::shoreline,
+      data = shoreline_sf,
+     # ggplot2::aes(x = long, y = lat, group = group),
       color = "azure2",
       fill = "azure4",
       show.legend = FALSE
@@ -427,7 +441,8 @@ bivariatePlotCreateGraph <- function(dataToPlot,
     ) +
     biscale::bi_scale_fill(
       pal = "GrPink",
-      dim = 3,
+      #dim = 3,
+      dim = dim_used,
       na.value = "transparent"
     ) +
     ggplot2::labs(
@@ -457,7 +472,8 @@ bivariatePlotCreateGraph <- function(dataToPlot,
   # legend
   legend <- biscale::bi_legend(
     pal = "GrPink",
-    dim = 3,
+    #dim = 3,
+    dim = dim_used,
     xlab = xlab,
     ylab = ylab,
     size = 9
