@@ -46,3 +46,7 @@ hierarchy.The function works only for RDBESDataObject of one hierarchy.
 
 Internal function to prepare sample data for coveragesXXX functions
 }
+\examples{
+RDBESDataObject <- createRDBESDataObject(input = "data-raw/exampleData/H1_2024_10_14.zip")
+SA<-preprocessSamplingDataForCoverage(RDBESDataObject)
+}

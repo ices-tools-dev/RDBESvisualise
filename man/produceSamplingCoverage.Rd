@@ -2,7 +2,7 @@
 % Please edit documentation in R/produceSamplingCoverage.R
 \name{produceSamplingCoverage}
 \alias{produceSamplingCoverage}
-\title{Provides tabular or graphical outputs which compare sampling versus 
+\title{Provides tabular or graphical outputs which compare sampling versus
 landing coverage across the level of a factor variable specified by the user.}
 \usage{
 produceSamplingCoverage(
@@ -52,7 +52,7 @@ produceSamplingCoverage(
 table or plot depending on user selection.
 }
 \description{
-Provides tabular or graphical outputs which compare sampling versus 
+Provides tabular or graphical outputs which compare sampling versus
 landing coverage across the level of a factor variable specified by the user.
 }
 \examples{

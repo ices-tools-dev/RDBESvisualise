@@ -7,8 +7,8 @@
 \format{
 A data frame containing the species information
 \describe{
-  \item{Key}{WORMS aphiaid}
-  \item{Description}{Species name}
+\item{Key}{WORMS aphiaid}
+\item{Description}{Species name}
 }
 }
 \source{

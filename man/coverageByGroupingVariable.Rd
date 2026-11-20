@@ -2,8 +2,8 @@
 % Please edit documentation in R/coverageByGroupingVariable.R
 \name{coverageByGroupingVariable}
 \alias{coverageByGroupingVariable}
-\title{Provides graphical outputs to compare the fishing gears
-in effort to those in the sample data.}
+\title{Provides graphical outputs to compare the landings, effort, and sample
+data.}
 \usage{
 coverageByGroupingVariable(
   dataToPlot,
@@ -57,26 +57,28 @@ FALSE}
 A tagList of plotly plots
 }
 \description{
-Provides graphical outputs to compare the fishing gears
-in effort to those in the sample data.
+Provides graphical outputs to compare the landings, effort, and sample
+data.
 }
 \examples{
 \dontrun{
 
-myH1RawObject <- RDBEScore::createRDBESDataObject(
-  rdbesExtractPath = "../tests/testthat/h1_v_1_19_13"
-)
+ myH1RawObject <- RDBEScore::createRDBESDataObject(input = "tests/testthat/h1_v_20250211")
 
-myYear <- 1965
-myvesselFlag <- "ZW"
+ myPlots <- coverageByGroupingVariable(dataToPlot = myH1RawObject,
+                                       year = 1965,
+                                       quarter = NA,
+                                       vesselFlag = "ZW",
+                                       landingsVariable = "CLoffWeight",
+                                       effortVariable = "CEnumFracTrips",
+                                       samplingVariable = "SAsampWtMes",
+                                       groupingVariable = "gear",
+                                       catchCat = "Lan",
+                                       includeLandings = TRUE,
+                                       includeEffort = TRUE,
+                                       includeSamples = TRUE,
+                                       verbose = FALSE)
+ myPlots[1]
 
-myPlots <- coverageLandingsByGear(
-  dataToPlot = myH1RawObject,
-  year = myYear,
-  vesselFlag = myvesselFlag,
-  catchCat = "Lan"
-)
-
-myPlots[1]
 }
 }
