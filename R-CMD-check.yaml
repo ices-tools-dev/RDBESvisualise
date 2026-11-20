@@ -1,0 +1,55 @@
+name: R-CMD-check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  R-CMD-check:
+    runs-on: ${{ matrix.os }}
+    name: ${{ matrix.os }} (${{ matrix.r }})
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+        r: ['devel', 'release', 'oldrel-1', 'oldrel-2', 'oldrel-3']
+
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      R_KEEP_PKG_SOURCE: yes
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: r-lib/actions/setup-pandoc@v2
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: ${{ matrix.r }}
+          use-public-rspm: true
+          extra-repositories: https://ices-tools-prod.r-universe.dev
+
+      - name: Install gettext for macOS R-devel
+        if: runner.os == 'macOS' && runner.arch == 'ARM64' && matrix.r == 'devel'
+        run: |
+          if [ ! -f /opt/R/arm64/include/libintl.h ]; then
+            curl -fsSL https://mac.r-project.org/bin/darwin23/arm64/gettext-0.22.5-darwin.23-arm64.tar.xz -o /tmp/gettext.tar.xz
+            sudo tar -xJf /tmp/gettext.tar.xz -C /
+          fi
+          test -f /opt/R/arm64/include/libintl.h
+
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: any::rcmdcheck
+          needs: check
+
+      - uses: r-lib/actions/check-r-package@v2
+        with:
+          upload-snapshots: true
