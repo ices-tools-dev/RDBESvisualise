@@ -147,6 +147,18 @@ summaryBiologicalVar <- function(data,
   partData <- RDBEScore::getLinkedDataFromLevel(b, byValues, data, "BV", verbose = verbose)
   partData <- data.table::as.data.table(partData)
 
+  # Fix to make sure the grouping variable is still in partData
+  if (!b %in% names(partData)) {
+    keyCol <- paste0(substr(b, 1, 2), "id")
+
+    partData <- merge(
+      partData,
+      data[[substr(b, 1, 2)]][, c(keyCol, b), with = FALSE],
+      by = keyCol,
+      all.x = TRUE
+    )
+  }
+
   if (is.null(plotData)) {
     plotData <- partData
   } else if(!b %in% names(plotData)) {
@@ -184,6 +196,18 @@ summaryBiologicalVar <- function(data,
 
   plotData[, valueNum := NA_real_]
   plotData[BVtypeMeas %in% numericVar, valueNum := suppressWarnings(as.numeric(BVvalueMeas))]
+
+  # Check whether our grouping variable is present
+  # Fixes issues "Some items of .SDcols are not column names:..."
+  missing_by <- setdiff(by, names(plotData))
+  if (length(missing_by) > 0) {
+    stop(
+      paste(
+        "The following grouping variable(s) are not available in the linked biological data:",
+        paste(missing_by, collapse = ", ")
+      )
+    )
+  }
 
   #group used in the plots of statistics
   plotData[, group := do.call(paste, c(.SD, sep = '/')), .SDcols = by]
