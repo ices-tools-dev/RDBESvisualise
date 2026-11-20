@@ -15,7 +15,7 @@ Authors:
 \itemize{
   \item David Currie (\href{https://orcid.org/0000-0002-3523-6895}{ORCID})
   \item Richard Meitern \email{richard.meitern@ut.ee} (\href{https://orcid.org/0000-0002-2600-3002}{ORCID})
-  \item Nuno Prista \email{nuno.prista@slu.se} (\href{https://orcid.org/0000-0002-5145-7241}{ORCID})
+  \item Nuno Prista (\href{https://orcid.org/0000-0002-5145-7241}{ORCID})
   \item Nicholas Carey \email{nicholas.carey@gov.scot}
   \item Petri Sarvamaa \email{Petri.Sarvamaa@luke.fi}
   \item Kirsten Birch Håkansson \email{kih@aqua.dtu.dk}

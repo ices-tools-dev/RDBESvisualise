@@ -104,6 +104,7 @@ coverageLandings <- function(dataToPlot,
   if (length(Vessel_flag) > 1) {
     stop("Only one vessel flag country can be provided")
   }
+
   if (var == "Statrec" || length(var) > 1) {
     if (length(CommercialVariable) > 1 ||
       length(SamplingVariable) > 1) {
