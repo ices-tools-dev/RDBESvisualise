@@ -5,9 +5,27 @@
 \alias{icesRectSF}
 \title{ICES statistical rectangles}
 \format{
-A data frame containing spatial information
+An sf object with 19 variables:
 \describe{
-\item{ICESNAME}{Name of the stat rectangle}...
+\item{OBJECTID}{Object identifier from the source GIS layer.}
+\item{ID}{Internal identifier.}
+\item{ICESNAME}{ICES statistical rectangle code.}
+\item{SOUTH}{Southern latitude boundary.}
+\item{WEST}{Western longitude boundary.}
+\item{NORTH}{Northern latitude boundary.}
+\item{EAST}{Eastern longitude boundary.}
+\item{AREA_KM2}{Area in square kilometres.}
+\item{stat_x}{X coordinate of the rectangle centroid.}
+\item{stat_y}{Y coordinate of the rectangle centroid.}
+\item{Area_27}{ICES Area 27 code.}
+\item{Perc}{Percentage overlap with associated ICES area.}
+\item{MaxPer}{Maximum overlap percentage.}
+\item{RNDMaxPer}{Rounded maximum overlap percentage.}
+\item{AreasList}{List of overlapping ICES areas.}
+\item{Shape_Leng}{Polygon perimeter length from the source GIS layer.}
+\item{Shape_Le_1}{Additional perimeter length field from the source GIS layer.}
+\item{Shape_Area}{Polygon area from the source GIS layer.}
+\item{geometry}{sf geometry column containing ICES statistical rectangle polygons.}
 }
 }
 \source{

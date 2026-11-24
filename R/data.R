@@ -16,9 +16,27 @@
 #'
 #' An sf object containing spatial information for ICES statistical rectangles
 #'
-#' @format A data frame containing spatial information
+#' @format An sf object with 19 variables:
 #' \describe{
-#'   \item{ICESNAME}{Name of the stat rectangle}...
+#'   \item{OBJECTID}{Object identifier from the source GIS layer.}
+#'   \item{ID}{Internal identifier.}
+#'   \item{ICESNAME}{ICES statistical rectangle code.}
+#'   \item{SOUTH}{Southern latitude boundary.}
+#'   \item{WEST}{Western longitude boundary.}
+#'   \item{NORTH}{Northern latitude boundary.}
+#'   \item{EAST}{Eastern longitude boundary.}
+#'   \item{AREA_KM2}{Area in square kilometres.}
+#'   \item{stat_x}{X coordinate of the rectangle centroid.}
+#'   \item{stat_y}{Y coordinate of the rectangle centroid.}
+#'   \item{Area_27}{ICES Area 27 code.}
+#'   \item{Perc}{Percentage overlap with associated ICES area.}
+#'   \item{MaxPer}{Maximum overlap percentage.}
+#'   \item{RNDMaxPer}{Rounded maximum overlap percentage.}
+#'   \item{AreasList}{List of overlapping ICES areas.}
+#'   \item{Shape_Leng}{Polygon perimeter length from the source GIS layer.}
+#'   \item{Shape_Le_1}{Additional perimeter length field from the source GIS layer.}
+#'   \item{Shape_Area}{Polygon area from the source GIS layer.}
+#'   \item{geometry}{sf geometry column containing ICES statistical rectangle polygons.}
 #' }
 #' @source ICES
 "icesRectSF"
@@ -26,9 +44,19 @@
 #'
 #' An sf object containing spatial information for ICES statistical areas
 #'
-#' @format A data frame containing spatial information
+#' @format An sf object with 11 variables:
 #' \describe{
-#'   \item{Area_Full}{Name of the ICES statistical area}...
+#'   \item{OBJECTID_1}{Object identifier from the source GIS layer.}
+#'   \item{OBJECTID}{Object identifier from the source GIS layer.}
+#'   \item{Major_FA}{Major FAO fishing area.}
+#'   \item{SubArea}{ICES Subarea.}
+#'   \item{Division}{ICES Division.}
+#'   \item{SubDivisio}{ICES Subdivision.}
+#'   \item{Unit}{ICES assessment or management unit.}
+#'   \item{Area_Full}{Full name of the ICES area.}
+#'   \item{Area_27}{ICES Area 27 code.}
+#'   \item{Area_km2}{Area in square kilometres.}
+#'   \item{geometry}{sf geometry column containing ICES area polygons.}
 #' }
 #' @source ICES: https://gis.ices.dk/geonetwork/srv/api/records/c784a0a3-752f-4b50-b02f-f225f6c815eb
 "icesAreaSF"
@@ -83,11 +111,10 @@
 #' @format A named character vector of hex colour codes.
 #' @source Created with `data-raw/palette.R`.
 "colourPalette"
-#' ICES statistical rectangles with their ICES areas and RCG regions
+#' ICES Statistical Rectangle Lookup Table
 #'
-#' One row per ICES statistical rectangle. Built from [icesRectSF] and
-#' [icesAreaSF] by `data-raw/icesStatRecLookup.R`.
-#'
+#' Lookup table linking ICES statistical rectangles to ICES areas and
+#' higher-level spatial regions.
 #' @format A data frame:
 #' \describe{
 #'   \item{StatRec}{ICES statistical rectangle, e.g. "41F6"}

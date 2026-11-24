@@ -1,9 +1,9 @@
 ---
-title: "Amount by Group function"
+title: "Use Amount by Group function"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Amount by Group function}
+  %\VignetteIndexEntry{Use Amount by Group function}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

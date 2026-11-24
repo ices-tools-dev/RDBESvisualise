@@ -120,7 +120,8 @@ Imports:
     sp,
     rnaturalearth,
     stringr,
-    viridis
+    viridis,
+    cowplot
 VignetteBuilder: knitr
 Config/roxygen2/version: 8.1.1
 RoxygenNote: 7.3.3

@@ -3,7 +3,7 @@
 \docType{data}
 \name{icesStatRecLookup}
 \alias{icesStatRecLookup}
-\title{ICES statistical rectangles with their ICES areas and RCG regions}
+\title{ICES Statistical Rectangle Lookup Table}
 \format{
 A data frame:
 \describe{
@@ -24,7 +24,7 @@ ICES Spatial Facility, via icesRectSF and icesAreaSF
 icesStatRecLookup
 }
 \description{
-One row per ICES statistical rectangle. Built from \link{icesRectSF} and
-\link{icesAreaSF} by \code{data-raw/icesStatRecLookup.R}.
+Lookup table linking ICES statistical rectangles to ICES areas and
+higher-level spatial regions.
 }
 \keyword{datasets}

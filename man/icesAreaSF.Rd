@@ -5,9 +5,19 @@
 \alias{icesAreaSF}
 \title{ICES statistical areas}
 \format{
-A data frame containing spatial information
+An sf object with 11 variables:
 \describe{
-\item{Area_Full}{Name of the ICES statistical area}...
+\item{OBJECTID_1}{Object identifier from the source GIS layer.}
+\item{OBJECTID}{Object identifier from the source GIS layer.}
+\item{Major_FA}{Major FAO fishing area.}
+\item{SubArea}{ICES Subarea.}
+\item{Division}{ICES Division.}
+\item{SubDivisio}{ICES Subdivision.}
+\item{Unit}{ICES assessment or management unit.}
+\item{Area_Full}{Full name of the ICES area.}
+\item{Area_27}{ICES Area 27 code.}
+\item{Area_km2}{Area in square kilometres.}
+\item{geometry}{sf geometry column containing ICES area polygons.}
 }
 }
 \source{
