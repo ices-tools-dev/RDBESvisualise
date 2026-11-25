@@ -1,7 +1,7 @@
 [![License](https://img.shields.io/badge/license-GPL%20(%3E%3D%202)-blue.svg)](https://www.gnu.org/licenses/gpl-3.0.en.html)
 <!--
 [![codecov](https://codecov.io/gh/ices-tools-prod/RDBESvisualise/branch/master/graph/badge.svg)](https://codecov.io/gh/ices-tools-prod/RDBESvisualise)
-[![GitHub release](https://img.shields.io/github/release/ices-tools-prod/RDBESvisualise.svg?maxAge=2592001)]()
+[![GitHub release](https://img.shields.io/github/release/ices-tools-prod/RDBESvisualise.svg?maxAge=2592001)](https://github.com/ices-tools-dev/RDBESvisualise/releases)
 [![CRAN Status](http://www.r-pkg.org/badges/version/RDBESvisualise)](https://cran.r-project.org/package=RDBESvisualise)
 [![CRAN Monthly](http://cranlogs.r-pkg.org/badges/RDBESvisualise)](https://cran.r-project.org/package=RDBESvisualise)
 [![CRAN Total](http://cranlogs.r-pkg.org/badges/grand-total/RDBESvisualise)](https://cran.r-project.org/package=RDBESvisualise)
@@ -12,7 +12,7 @@
 `RDBESvisualise`
 =========
  
-`RDBESvisualise` provides functions to visualise [**Regional DataBase and Estimation System (RDBES)**](https://rdbes.ices.dk/) data.
+`RDBESvisualise` provides functions to visualise [**Regional DataBase and Estimation System (RDBES)**](https://www.ices.dk/data/data-portals/Pages/rdbes.aspx) data.
 
 It is implemented as an [**R**](https://www.r-project.org) package and
 available on <!-- [CRAN](https://cran.r-project.org/package=RDBESvisualise) --> 
@@ -42,7 +42,7 @@ install_github("ices-tools-dev/RDBESvisualise", build_vignettes = TRUE)
 Usage
 -----
 
-For a summary of the package see the following [Vignettes]():
+For a summary of the package see the following [Vignettes](https://github.com/ices-tools-dev/RDBESvisualise/tree/main/vignettes):
 
 ```R
 browseVignettes(package = "RDBESvisualise")
@@ -53,7 +53,7 @@ References
 ----------
 
 * Regional Database & Estimation System:
-https://rdbes.ices.dk/
+https://www.ices.dk/data/data-portals/Pages/rdbes.aspx
 
 * Working Group on Governance of the Regional Database & Estimation System:
 https://www.ices.dk/community/groups/Pages/WGRDBESGOV.aspx

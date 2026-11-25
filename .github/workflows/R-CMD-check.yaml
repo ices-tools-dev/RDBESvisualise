@@ -36,13 +36,48 @@ jobs:
           use-public-rspm: true
           extra-repositories: https://ices-tools-prod.r-universe.dev
 
-      - name: Install gettext for macOS R-devel
+      - name: Install macOS system libraries for R-devel
         if: runner.os == 'macOS' && runner.arch == 'ARM64' && matrix.r == 'devel'
         run: |
-          if [ ! -f /opt/R/arm64/include/libintl.h ]; then
-            curl -fsSL https://mac.r-project.org/bin/darwin23/arm64/gettext-0.22.5-darwin.23-arm64.tar.xz -o /tmp/gettext.tar.xz
-            sudo tar -xJf /tmp/gettext.tar.xz -C /
-          fi
+          # CRAN does not provide macOS binaries for R-devel, so sf, terra and
+          # units are built from source. Install the arm64 libraries that CRAN
+          # links against into the toolchain prefix used by R.
+          libs="
+            pkgconfig-0.29.2
+            xz-5.8.3
+            libpq-14.22
+            proj-9.5.1
+            openjpeg-2.5.4
+            libwebp-1.6.0
+            libgeotiff-1.7.3
+            freexl-1.0.6
+            sqlite3-3.48.0
+            expat-2.7.5
+            hdf4-4.3.0
+            hdf5-1.14.5
+            szip-2.1.1
+            netcdf-4.9.2
+            geos-3.14.1
+            unixodbc-2.3.14
+            blosc-1.21.6
+            zstd-1.5.7
+            openssl-3.6.1
+            pcre2-10.47
+            tiff-4.7.0
+            libpng-1.6.56
+            jpeg-9f
+            libdeflate-1.25
+            lz4-1.9.4
+            gdal-3.8.5
+            udunits-2.2.28
+            gettext-0.22.5
+          "
+          for lib in $libs; do
+            curl -fsSL "https://mac.r-project.org/bin/darwin23/arm64/${lib}-darwin.23-arm64.tar.xz" -o /tmp/lib.tar.xz
+            sudo tar -xJf /tmp/lib.tar.xz -C /
+          done
+          test -x /opt/R/arm64/bin/gdal-config
+          test -f /opt/R/arm64/include/udunits2.h
           test -f /opt/R/arm64/include/libintl.h
 
       - uses: r-lib/actions/setup-r-dependencies@v2

@@ -89,7 +89,9 @@ Authors@R:
            )
 Description: 
     Provides utility functions to summarise and visualise data from Regional Database and Estimation System (RDBES).
-License: GPL-3 + file LICENSE
+License: GPL-3
+URL: https://github.com/ices-tools-dev/RDBESvisualise
+BugReports: https://github.com/ices-tools-dev/RDBESvisualise/issues
 Encoding: UTF-8
 LazyData: true
 LazyDataCompression: xz
