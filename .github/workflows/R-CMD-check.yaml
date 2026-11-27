@@ -36,15 +36,6 @@ jobs:
           use-public-rspm: true
           extra-repositories: https://ices-tools-prod.r-universe.dev
 
-      - name: Install gettext for macOS R-devel
-        if: runner.os == 'macOS' && runner.arch == 'ARM64' && matrix.r == 'devel'
-        run: |
-          if [ ! -f /opt/R/arm64/include/libintl.h ]; then
-            curl -fsSL https://mac.r-project.org/bin/darwin23/arm64/gettext-0.22.5-darwin.23-arm64.tar.xz -o /tmp/gettext.tar.xz
-            sudo tar -xJf /tmp/gettext.tar.xz -C /
-          fi
-          test -f /opt/R/arm64/include/libintl.h
-
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: any::rcmdcheck

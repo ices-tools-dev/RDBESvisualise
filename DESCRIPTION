@@ -1,7 +1,7 @@
 Package: RDBESvisualise
 Type: Package
 Title: Visualisation and Summarisation Tools for RDBES Data
-Version: 0.1.1
+Version: 0.2.1
 Authors@R: 
     c(
     person(given = "David", 
@@ -16,7 +16,6 @@ Authors@R:
     person(given = "Nuno", 
            family = "Prista", 
            role = c("aut"), 
-		   email = "nuno.prista@slu.se", 
 		   comment = c(ORCID = "0000-0002-5145-7241")),
     person(given = "Nicholas", 
            family = "Carey", 
@@ -91,19 +90,40 @@ Authors@R:
 Description: 
     Provides utility functions to summarise and visualise data from Regional Database and Estimation System (RDBES).
 License: GPL-3
+URL: https://github.com/ices-tools-dev/RDBESvisualise
+BugReports: https://github.com/ices-tools-dev/RDBESvisualise/issues
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.3.3
+LazyDataCompression: xz
 Roxygen: list(markdown = TRUE)
 Suggests: 
     knitr,
     rmarkdown,
     testthat
 Depends: 
-    R (>= 4.1)
+    R (>= 4.1),
+    sf
 Imports: 
+    dplyr, 
     data.table,
-    ggplot2,
+    lubridate,
+    ggiraph,
+    ggplot2,   
+    plotly,
     magrittr,
-    RDBEScore
+    htmltools,
+    rlang,
+    purrr,
+    biscale,
+    RDBEScore,
+    gridExtra,
+    grid,
+    stats,
+    sp,
+    rnaturalearth,
+    stringr,
+    viridis,
+    cowplot
 VignetteBuilder: knitr
+Config/roxygen2/version: 8.1.1
+RoxygenNote: 7.3.3
